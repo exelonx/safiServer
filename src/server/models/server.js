@@ -6,13 +6,14 @@ const colors = require('colors/safe');
 // Importación de la conexión y parametros de la DB
 const { db } = require('../database/db-conexion');
 const Parametro = require('../models/seguridad/parametro');
-const { clear } = require('console');
 
 // Routers de las APIs
-// const routerAuth = require('../routes/seguridad/auth.routes');
+const routerAuth = require('../routes/seguridad/auth.routes');
+const routerUsuario = require('../routes/seguridad/usuario.routes');
 
 class Server {
     constructor () {
+
         // Configuración de express y WebSocket
         this.app    = express();
         this.http   = require('http').Server(this.app);
@@ -30,12 +31,13 @@ class Server {
             rol:             '/api/rol',
             preguntaUsuario: '/api/pregunta-usuario'
         }
-        
         this.conexionDB();
         this.middlewares();
-        // this.routes();
+        this.routes();
         this.websocket();
     }
+
+    // ---------------Métodos---------------
 
     async conexionDB () {
         try {
@@ -49,10 +51,6 @@ class Server {
         }
     }
 
-    async llamarParametros () {
-        return await Parametro.findAll();
-    }
-
     middlewares () {
         //Cors para express
         this.app.use(cors());
@@ -64,7 +62,7 @@ class Server {
     routes () {
         // Seguridad
         this.app.use(this.apiPath.auth, routerAuth)         //Autenticación (Login)
-        // this.app.use(this.apiPath.usuario, routerUsuario)   //Usuarios
+        this.app.use(this.apiPath.usuario, routerUsuario)   //Usuarios
     }
 
     async listen () {

@@ -3,10 +3,11 @@ const Usuario = require("../models/seguridad/usuario");
 const bcrypt = require('bcryptjs');
 const { generarJWT } = require("../helpers/jwt");
 
-const login = async(req = request, res = response) => {
+const registrar = async(req = request, res = response) => {
 
     const { usuario, contraseña } = req.body;
 
+    res.json({msg: 'hi'})
     try {
         // Confirmar existencia del usuario
         const dbUser = await Usuario.findOne({where: { USUARIO: usuario }})
@@ -47,22 +48,6 @@ const login = async(req = request, res = response) => {
     }
 }
 
-const revalidarToken = async(req = request, res = response) => {
-
-    const { uid, name } = req;
-
-    // Generar el JWT
-    const token = await generarJWT( uid, name);
-
-    return res.json({
-        ok: true,
-        uid,
-        name,
-        token
-    })
-}
-
 module.exports = {
-    login,
-    revalidarToken
+    registrar
 }
