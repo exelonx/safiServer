@@ -18,6 +18,7 @@ router.post('/login', [
     // Validaciones de contraseña
     check('contraseña', 'La contraseña es obligatoria').not().isEmpty(),
     validarLongitudDB,
+    // Validaciones genericas
     validarEspaciosLogin,
     validarCampos
 ], login)

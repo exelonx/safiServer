@@ -17,9 +17,9 @@ const login = async(req = request, res = response) => {
             })
         }
 
-        // Confirmar si el password hace match
-        // const validarPassword = await bcrypt.compareSync( password, dbUser.password )
-        // if( !validarPassword ) {
+        // Confirmar si el contraseña hace match
+        // const validarContraseña = await bcrypt.compareSync( contraseña, dbUser.CONTRASENA )
+        // if( !validarContraseña ) {
         //     return res.status(404).json({
         //         ok: false,
         //         msg: 'El correo o la contraseña no coinciden'
@@ -34,6 +34,7 @@ const login = async(req = request, res = response) => {
             ok: true,
             id_usuario : dbUser.ID_USUARIO,
             id_rol: dbUser.ID_ROL,
+            estado: dbUser.ESTADO_USUARIO,
             token
         })
 

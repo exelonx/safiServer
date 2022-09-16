@@ -7,7 +7,6 @@ const registrar = async(req = request, res = response) => {
 
     const { usuario, contraseña } = req.body;
 
-    res.json({msg: 'hi'})
     try {
         // Confirmar existencia del usuario
         const dbUser = await Usuario.findOne({where: { USUARIO: usuario }})
