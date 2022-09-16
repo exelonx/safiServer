@@ -3,7 +3,7 @@ const { DataTypes } = require('sequelize')
 const { db } = require('../../database/db-conexion')
 
 
-const Parametros = db.define(`TBL_MS_PARAMETRO`, {
+const Parametro = db.define(`TBL_MS_PARAMETRO`, {
     ID_PARAMETRO: {
         type: DataTypes.INTEGER,
         primaryKey: true
@@ -23,4 +23,4 @@ const Parametros = db.define(`TBL_MS_PARAMETRO`, {
 })
 
 //Para exportar el modelo
-module.exports = Parametros;
+module.exports = Parametro;
