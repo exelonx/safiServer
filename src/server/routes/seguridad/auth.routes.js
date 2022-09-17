@@ -6,6 +6,7 @@ const { validarJWT } = require("../../middlewares/validar-jwt");
 const { login, revalidarToken } = require('../../controllers/auth.controllers');
 const { validarEspaciosLogin } = require('../../middlewares/validar-espacios');
 const { validarLongitudDB } = require('../../middlewares/validar-longitudDB');
+const { validarContraseña } = require('../../middlewares/validar-contraseña');
 
 const router = Router();
 
@@ -19,8 +20,9 @@ router.post('/login', [
     check('contraseña', 'La contraseña es obligatoria').not().isEmpty(),
     validarLongitudDB,
     // Validaciones genericas
+    validarContraseña,
     validarEspaciosLogin,
-    validarCampos
+    validarCampos,
 ], login)
 
 //Validar y revalidar token

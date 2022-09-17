@@ -42,7 +42,6 @@ const validarLongitudDB = async(req = request, res = response, next) => {
         })
     }
 
-    console.log(parametros)
     //TODO OK!
     next();
 
