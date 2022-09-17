@@ -1,11 +1,11 @@
 const { response, request } = require("express");
-const Usuario = require("../models/seguridad/usuario");
+const Usuario = require("../../models/seguridad/usuario");
 const bcrypt = require('bcryptjs');
-const { generarJWT } = require("../helpers/jwt");
+const { generarJWT } = require("../../helpers/jwt");
 
 const login = async(req = request, res = response) => {
 
-    const { usuario, contraseña } = req.body;
+    const { usuario, contrasena } = req.body;
 
     try {
         // Confirmar existencia del usuario
@@ -18,7 +18,7 @@ const login = async(req = request, res = response) => {
         }
 
         // Confirmar si el contraseña hace match
-        const validarContraseña = await bcrypt.compareSync( contraseña, dbUser.CONTRASENA )
+        const validarContraseña = await bcrypt.compareSync( contrasena, dbUser.CONTRASENA )
         if( !validarContraseña ) {
             return res.status(404).json({
                 ok: false,

@@ -3,10 +3,9 @@ const { check } = require("express-validator");
 
 const { validarCampos } = require("../../middlewares/validar-campos");
 const { validarJWT } = require("../../middlewares/validar-jwt");
-const { login, revalidarToken } = require('../../controllers/auth.controllers');
 const { validarEspaciosLogin } = require('../../middlewares/validar-espacios');
 const { validarLongitudDBContra } = require('../../middlewares/validar-longitudDB-contraseña');
-const { registrar } = require('../../controllers/usuario.controllers');
+const { registrar } = require('../../controllers/seguridad/usuario.controllers');
 const { emailExistente } = require('../../helpers/db-validators');
 const { validarContraseña } = require('../../middlewares/validar-contraseña');
 

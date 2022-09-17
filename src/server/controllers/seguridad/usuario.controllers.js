@@ -1,10 +1,10 @@
 const { response, request } = require("express");
-const Usuario = require("../models/seguridad/usuario");
+const Usuario = require("../../models/seguridad/usuario");
 const bcrypt = require('bcryptjs');
-const { generarJWT } = require("../helpers/jwt");
+const { generarJWT } = require("../../helpers/jwt");
 const { resolveContent } = require("nodemailer/lib/shared");
-const Parametro = require("../models/seguridad/parametro");
-const modificarDias = require("../helpers/manipulacion-fechas");
+const Parametro = require("../../models/seguridad/parametro");
+const modificarDias = require("../../helpers/manipulacion-fechas");
 
 const registrar = async(req = request, res = response) => {
 

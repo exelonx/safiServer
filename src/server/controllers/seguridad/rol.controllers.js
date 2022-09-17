@@ -1,6 +1,6 @@
 const { request, response } = require('express');
 const { Op } = require('sequelize');
-const Rol = require('../models/seguridad/rol');
+const Rol = require('../../models/seguridad/rol');
 
 // Llamar todos los roles paginados
 const getRoles = async (req = request, res = response) => {
