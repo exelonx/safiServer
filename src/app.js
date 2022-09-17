@@ -16,6 +16,9 @@
 
 const Server = require('./server/models/server');
 
+const fecha = new Date();
+const fechaFutura = new Date(fecha.setDate(fecha.getDate() + 360))
+console.log(fechaFutura)
 const server = new Server();
 
 server.listen();

@@ -10,6 +10,7 @@ const Parametro = require('../models/seguridad/parametro');
 // Routers de las APIs
 const routerAuth = require('../routes/seguridad/auth.routes');
 const routerUsuario = require('../routes/seguridad/usuario.routes');
+const routerRol = require('../routes/seguridad/roles.routes');
 
 class Server {
     constructor () {
@@ -61,8 +62,9 @@ class Server {
 
     routes () {
         // Seguridad
-        this.app.use(this.apiPath.auth, routerAuth)         //Autenticación (Login)
-        this.app.use(this.apiPath.usuario, routerUsuario)   //Usuarios
+        this.app.use(this.apiPath.auth, routerAuth);         // Autenticación (Login)
+        this.app.use(this.apiPath.usuario, routerUsuario);   // Usuarios
+        this.app.use(this.apiPath.rol, routerRol);           // Roles
     }
 
     async listen () {
