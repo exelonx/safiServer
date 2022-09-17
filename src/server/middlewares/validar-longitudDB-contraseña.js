@@ -15,7 +15,7 @@ const validarLongitudDBContra = async(req = request, res = response, next) => {
     })
 
     // data del body 
-    const { contraseña } = req.body;
+    const { contrasena } = req.body;
 
     // Asignar datos para facilitar lectura
     let maximo, minimo = "";
@@ -28,14 +28,14 @@ const validarLongitudDBContra = async(req = request, res = response, next) => {
     }
 
     // Validar que la contraseña no sea
-    if ( maximo < contraseña.length ) {
+    if ( maximo < contrasena.length ) {
         return res.status(400).json({
             ok: false,
             msg: `Número de carácteres máximos en la contraseña: ${maximo}`
         })
     }
 
-    if ( minimo > contraseña.length ) {
+    if ( minimo > contrasena.length ) {
         return res.status(400).json({
             ok: false,
             msg: `Número de carácteres mínimo en la contraseña: ${minimo}`

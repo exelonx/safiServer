@@ -2,50 +2,76 @@ const { response, request } = require("express");
 const Usuario = require("../models/seguridad/usuario");
 const bcrypt = require('bcryptjs');
 const { generarJWT } = require("../helpers/jwt");
+const { resolveContent } = require("nodemailer/lib/shared");
+const Parametro = require("../models/seguridad/parametro");
+const modificarDias = require("../helpers/manipulacion-fechas");
 
 const registrar = async(req = request, res = response) => {
 
-    const { usuario, contraseña } = req.body;
+    const { usuario, nombre_usuario, contrasena, rol, correo  } = req.body;
 
     try {
-        // Confirmar existencia del usuario
-        const dbUser = await Usuario.findOne({where: { USUARIO: usuario }})
-        if( !dbUser ) {
-            return res.status(404).json({
-                ok: false,
-                msg: 'El correo o la contraseña no coinciden'
-            })
-        }
 
-        // Confirmar si el password hace match
-        // const validarPassword = await bcrypt.compareSync( password, dbUser.password )
-        // if( !validarPassword ) {
-        //     return res.status(404).json({
+        // Verificar el email
+        // let user = await Usuario.findOne({ USUARIO: usuario });
+
+        // if (user) {
+        //     return res.status(400).json({
         //         ok: false,
-        //         msg: 'El correo o la contraseña no coinciden'
+        //         msg: 'El usuario ya existe con ese email'
         //     })
         // }
+        const diasVigencias = await Parametro.findOne({
+            where:{
+                PARAMETRO: 'ADMIN_DIAS_VIGENCIA'
+            }
+        });
 
-        // Generar JWT
-        const token = await generarJWT(dbUser.ID_USUARIO, dbUser.ID_ROL)
+        const fechaActual = new Date();
+        const fechaVencimiento = (modificarDias(fechaActual, parseInt(diasVigencias.VALOR,10)));
 
-        //Respuesta del servicio
-        return res.json({
+
+        // Crear usuario con el modelo
+        DBusuario = await Usuario.build({
+            USUARIO: usuario,
+            NOMBRE_USUARIO: nombre_usuario,
+            CONTRASENA :contrasena,
+            ID_ROL: rol,
+            CORREO_ELECTRONICO: correo,
+            FECHA_VENCIMIENTO: fechaVencimiento
+        })
+
+        // // Hashear contraseña
+        const salt = bcrypt.genSaltSync();
+        DBusuario.CONTRASENA = bcrypt.hashSync(contrasena, salt);
+
+        // // Generar JWT
+        const token = await generarJWT(DBusuario.id, usuario)
+
+        // // Crear usuario de DB
+        DBusuario.save()
+
+        // // Generar respuesta exitosa
+        return res.status(201).json({
             ok: true,
-            id_usuario : dbUser.ID_USUARIO,
-            id_rol: dbUser.ID_ROL,
+            uid: DBusuario.id,
+            usuario, 
+            nombre_usuario,  
+            rol, 
+            correo,
             token
         })
 
-        
     } catch (error) {
         console.log(error);
         return res.status(500).json({
             ok: false,
-            msg: 'Hable con su administrador'
-        })
+            msg: 'Por favor hable con el administrador'
+        });
     }
+
 }
+
 
 module.exports = {
     registrar

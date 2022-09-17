@@ -15,13 +15,14 @@ const Usuarios = db.define(`TBL_MS_USUARIO`, {
         type: DataTypes.STRING
     },
     ESTADO_USUARIO: {
-        type: DataTypes.STRING
+        type: DataTypes.STRING,
+        default: true
     },
     CONTRASENA: {
         type: DataTypes.STRING
     },
     ID_ROL: {
-        type: DataTypes.INTEGER
+        type: DataTypes.INTEGER.UNSIGNED
     },
     FECHA_ULTIMA_CONEXION: {
         type: DataTypes.DATE

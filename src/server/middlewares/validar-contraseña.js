@@ -5,7 +5,7 @@ const passwordValidator = require('password-validator');
 const validarContraseña = (req = request, res = response, next) => {
 
     // Leer contraseña del body
-    const { contraseña } = req.body;
+    const { contrasena } = req.body;
 
     //configuración de validaciones
     const esquema = new passwordValidator();
@@ -16,8 +16,8 @@ const validarContraseña = (req = request, res = response, next) => {
         .has().min(1).digits(1, 'Mínimo un carácter numérico')     // Contener min 1 número
 
     // Validar contraseña con esquema de validaciones
-    if ( !esquema.validate( contraseña ) ) {
-        const [message] = esquema.validate( contraseña, {details: true} )
+    if ( !esquema.validate( contrasena ) ) {
+        const [message] = esquema.validate( contrasena, {details: true} )
         return res.status(400).json({
             ok: false,
             msg: message.message
