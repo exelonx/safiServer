@@ -18,13 +18,13 @@ const login = async(req = request, res = response) => {
         }
 
         // Confirmar si el contraseña hace match
-        // const validarContraseña = await bcrypt.compareSync( contraseña, dbUser.CONTRASENA )
-        // if( !validarContraseña ) {
-        //     return res.status(404).json({
-        //         ok: false,
-        //         msg: 'El correo o la contraseña no coinciden'
-        //     })
-        // }
+        const validarContraseña = await bcrypt.compareSync( contraseña, dbUser.CONTRASENA )
+        if( !validarContraseña ) {
+            return res.status(404).json({
+                ok: false,
+                msg: 'El correo o la contraseña no coinciden'
+            })
+        }
 
         // Generar JWT
         const token = await generarJWT(dbUser.ID_USUARIO, dbUser.ID_ROL)
