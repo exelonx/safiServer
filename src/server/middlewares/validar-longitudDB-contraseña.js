@@ -3,7 +3,7 @@ const { response, request } = require("express");
 
 const Parametro = require("../models/seguridad/parametro");
 
-const validarLongitudDB = async(req = request, res = response, next) => {
+const validarLongitudDBContra = async(req = request, res = response, next) => {
 
     const parametros = await Parametro.findAll({
         where: {
@@ -48,5 +48,5 @@ const validarLongitudDB = async(req = request, res = response, next) => {
 }
 
 module.exports = {
-    validarLongitudDB
+    validarLongitudDBContra
 }
