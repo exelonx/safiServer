@@ -49,7 +49,7 @@ const registrar = async(req = request, res = response) => {
         const token = await generarJWT(DBusuario.id, usuario)
 
         // // Crear usuario de DB
-        DBusuario.save()
+        // DBusuario.save()
 
         // // Generar respuesta exitosa
         return res.status(201).json({
@@ -71,6 +71,7 @@ const registrar = async(req = request, res = response) => {
     }
 
 }
+
 
 
 module.exports = {
