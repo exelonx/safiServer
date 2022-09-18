@@ -8,7 +8,7 @@ const ViewPreguntaUsuario = db.define(`VIEW_MS_PREGUNTA_USUARIO`, {
         type: DataTypes.INTEGER
     },
     ID_PREGUNTA: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.INTEGER
     },
     PREGUNTA: {
         type: DataTypes.STRING

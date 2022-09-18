@@ -1,7 +1,7 @@
 const { request, response } = require('express');
 const { Op } = require('sequelize');
 const bcrypt = require('bcryptjs');
-const Pregunta = require('../../models/seguridad/Pregunta');
+
 const PreguntaUsuario = require('../../models/seguridad/pregunta-usuario');
 const ViewPreguntaUsuario = require('../../models/seguridad/sql-vistas/view-pregunta-usuario');
 
