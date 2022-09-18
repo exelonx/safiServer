@@ -1,12 +1,14 @@
 const { request, response } = require('express');
 const { Op } = require('sequelize');
+const bcrypt = require('bcryptjs');
 const Pregunta = require('../../models/seguridad/Pregunta');
 const PreguntaUsuario = require('../../models/seguridad/pregunta-usuario');
 const ViewPreguntaUsuario = require('../../models/seguridad/sql-vistas/view-pregunta-usuario');
 
-// Llamar todas las preguntas paginadas
+// Llamar todas las preguntas de los usuarios paginadas
 const getPreguntasAllUsuarios = async (req = request, res = response) => {
     
+    const { buscar = "" } = req.body;
     let { limite = 10, desde = 0 } = req.query
 
     try {
@@ -14,7 +16,15 @@ const getPreguntasAllUsuarios = async (req = request, res = response) => {
         // Paginación
         const preguntas = await ViewPreguntaUsuario.findAll({
             limit: parseInt(limite, 10),
-            offset: parseInt(desde, 10)
+            offset: parseInt(desde, 10),
+            where: {
+                // WHERE PREGUNTA LIKE %${BUSCAR}% OR LIKE %${BUSCAR}%
+                [Op.or]: [{
+                    PREGUNTA: { [Op.like]: `%${buscar.toUpperCase() }%`}
+                }, {
+                    USUARIO: { [Op.like]: `%${buscar.toUpperCase()}%`}
+                }]
+            }
         });
         
         // Contar resultados total
@@ -31,19 +41,19 @@ const getPreguntasAllUsuarios = async (req = request, res = response) => {
     }
 }
 
-// Para llamar 1 sola pregunta
+// Para llamar 1 sola pregunta de usuario
 const getPregunta = async (req = request, res = response) => {
      
     const { id_pregunta } = req.params
 
     try {
         
-        const pregunta = await Pregunta.findByPk( id_pregunta );
+        const pregunta = await ViewPreguntaUsuario.findByPk( id_pregunta );
 
         // Validar Existencia
         if( !pregunta ){
             return res.status(404).json({
-                msg: 'No existe una pregunta con el id ' + id_pregunta
+                msg: 'No existe una pregunta de usuario con el id ' + id_pregunta
             })
         }
 
@@ -58,22 +68,28 @@ const getPregunta = async (req = request, res = response) => {
 
 }
 
-const postPregunta = async (req = request, res = response) => {
+const postRespuesta = async (req = request, res = response) => {
     //body
-    const { pregunta } = req.body;
+    const { id_usuario, id_pregunta, respuesta } = req.body;
     
     try {
 
         // Construir modelo
-        const nuevaPregunta = await Pregunta.build({
-            PREGUNTA: pregunta
+        const nuevaRespuesta = await PreguntaUsuario.build({
+            ID_USUARIO: id_usuario,
+            ID_PREGUNTA: id_pregunta,
+            RESPUESTA: respuesta
         });
 
+        // Hashear respuesta
+        const salt = bcrypt.genSaltSync();
+        nuevaRespuesta.RESPUESTA = bcrypt.hashSync(respuesta, salt);
+
         // Insertar a DB
-        await nuevaPregunta.save();   
+        await nuevaRespuesta.save();   
 
         // Responder
-        res.json( nuevaPregunta );
+        res.json( nuevaRespuesta );
 
     } catch (error) {
         console.log(error);
@@ -83,22 +99,28 @@ const postPregunta = async (req = request, res = response) => {
     }
 }
 
-const putPregunta = async (req = request, res = response) => {
-    const { id_pregunta } = req.params
-    const { pregunta } = req.body;
+const putRespuesta = async (req = request, res = response) => {
+
+    const { id_respuesta } = req.params
+    const { id_pregunta, respuesta } = req.body;
 
     try {
 
+        // Hashear respuesta
+        const salt = bcrypt.genSaltSync();
+        const respuestaHasheada = bcrypt.hashSync(respuesta, salt);
+
         // Actualizar db Pregunta
-        await Pregunta.update({
-            PREGUNTA: pregunta
+        await PreguntaUsuario.update({
+            ID_PREGUNTA: id_pregunta,
+            RESPUESTA: respuestaHasheada
         }, {
             where: {
-                ID_PREGUNTA: id_pregunta
+                ID: id_respuesta
             }
         })
 
-        res.json({ id_pregunta, pregunta });
+        res.json({ id_respuesta, id_pregunta, respuestaHasheada });
 
     } catch (error) {
         console.log(error);
@@ -106,38 +128,11 @@ const putPregunta = async (req = request, res = response) => {
             msg: error.message
         })
     }
-}
-
-const deletePregunta = async (req = request, res = response) => {
-    const { id_pregunta } = req.params
-
-    try {
-
-        // Llamar la pregunta a borrar
-        const pregunta = await Pregunta.findByPk( id_pregunta );
-
-        // Extraer la descripcion de la pregunta
-        const { PREGUNTA } = pregunta;
-
-        // Borrar Rol
-        await pregunta.destroy();
-
-        res.json({
-            msg: `La pregunta: "${PREGUNTA}" ha sido eliminado`
-        });
-
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({
-            msg: error.message
-        })
-    }  
 }
 
 module.exports = {
     getPreguntasAllUsuarios,
     getPregunta,
-    postPregunta,
-    putPregunta,
-    deletePregunta
+    postRespuesta,
+    putRespuesta,
 }

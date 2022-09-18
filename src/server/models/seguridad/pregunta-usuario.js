@@ -4,8 +4,12 @@ const { db } = require('../../database/db-conexion')
 
 
 const PreguntaUsuario = db.define(`TBL_MS_PREGUNTA_USUARIO`, {
-    ID_PREGUNTA: {
+    ID: {
         type: DataTypes.INTEGER,
+        primaryKey: true
+    },
+    ID_PREGUNTA: {
+        type: DataTypes.INTEGER
     },
     ID_USUARIO: {
         type: DataTypes.INTEGER
@@ -17,7 +21,5 @@ const PreguntaUsuario = db.define(`TBL_MS_PREGUNTA_USUARIO`, {
     tableName: 'TBL_MS_PREGUNTA_USUARIO',
     timestamps: false,
 })
-
-PreguntaUsuario.removeAttribute('id');
 
 module.exports = PreguntaUsuario;

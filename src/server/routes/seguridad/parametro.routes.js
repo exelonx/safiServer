@@ -8,19 +8,9 @@ const router = Router();
 
 router.get('/', getPreguntasAllUsuarios);
 
-router.get('/:id_pregunta', getPregunta);
+router.get('/:id_parametro', getPregunta);
 
-router.post('/', [
-    // Validaciones de usuarios y preguntas
-    check('id_pregunta', 'La pregunta es obligatoria').not().isEmpty(),
-    check('id_usuario', 'El usuario es obligatoria').not().isEmpty(),
-    // Validaciones de respuesta
-    check('respuesta', 'La pregunta es obligatoria').not().isEmpty(),
-    check('respuesta', 'La pregunta debe estar en Mayúsculas').isUppercase(),
-    validarCampos
-], postRespuesta);
-
-router.put('/:id_respuesta', [
+router.put('/:id_parametro', [
     // Validar existencia
     check('id_respuesta').custom( noExisteRespuesta ),
     // Validaciones de preguntas

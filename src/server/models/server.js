@@ -13,6 +13,7 @@ const routerUsuario = require('../routes/seguridad/usuario.routes');
 const routerRol = require('../routes/seguridad/roles.routes');
 const routerPregunta = require('../routes/seguridad/pregunta.routes');
 const routerPregUser = require('../routes/seguridad/pregunta-usuario.routes');
+const routerParametro = require('../routes/seguridad/parametro.routes');
 
 class Server {
     constructor () {
@@ -33,8 +34,11 @@ class Server {
             usuario:          '/api/usuario',
             rol:              '/api/rol',
             pregunta:         '/api/pregunta',
-            preguntaUsuarios: '/api/pregunta-usuario'
+            preguntaUsuarios: '/api/pregunta-usuario',
+            parametro:        '/api/parametro'
         }
+
+        // middlewares
         this.conexionDB();
         this.middlewares();
         this.routes();
@@ -69,7 +73,8 @@ class Server {
         this.app.use(this.apiPath.usuario, routerUsuario);             // Usuarios
         this.app.use(this.apiPath.rol, routerRol);                     // Roles
         this.app.use(this.apiPath.pregunta, routerPregunta);           // Pregunta
-        this.app.use(this.apiPath.preguntaUsuarios, routerPregUser)
+        this.app.use(this.apiPath.preguntaUsuarios, routerPregUser)    // Preguntas de los usuarios (Respuestas)
+        this.app.use(this.apiPath.parametro, routerParametro)          // Parametros del sistema
     }
 
     async listen () {

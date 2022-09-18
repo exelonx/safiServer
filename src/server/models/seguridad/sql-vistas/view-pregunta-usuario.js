@@ -4,6 +4,9 @@ const { db } = require('../../../database/db-conexion')
 
 
 const ViewPreguntaUsuario = db.define(`VIEW_MS_PREGUNTA_USUARIO`, {
+    ID: {
+        type: DataTypes.INTEGER
+    },
     ID_PREGUNTA: {
         type: DataTypes.INTEGER,
     },
@@ -23,7 +26,5 @@ const ViewPreguntaUsuario = db.define(`VIEW_MS_PREGUNTA_USUARIO`, {
     tableName: 'VIEW_MS_PREGUNTA_USUARIO',
     timestamps: false,
 })
-
-ViewPreguntaUsuario.removeAttribute('id');
 
 module.exports = ViewPreguntaUsuario;
