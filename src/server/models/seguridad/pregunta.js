@@ -12,6 +12,9 @@ const Preguntas = db.define('TBL_MS_PREGUNTA', {
         type: DataTypes.STRING
     }
     
+}, {
+    tableName: 'TBL_MS_PREGUNTA',
+    timestamps: false,
 });
 
 module.exports = Preguntas;

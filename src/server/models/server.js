@@ -11,6 +11,7 @@ const Parametro = require('../models/seguridad/parametro');
 const routerAuth = require('../routes/seguridad/auth.routes');
 const routerUsuario = require('../routes/seguridad/usuario.routes');
 const routerRol = require('../routes/seguridad/roles.routes');
+const routerPregunta = require('../routes/seguridad/pregunta.routes');
 
 class Server {
     constructor () {
@@ -30,7 +31,7 @@ class Server {
             auth:            '/api/auth',
             usuario:         '/api/usuario',
             rol:             '/api/rol',
-            preguntaUsuario: '/api/pregunta-usuario'
+            pregunta:        '/api/pregunta'
         }
         this.conexionDB();
         this.middlewares();
@@ -65,6 +66,7 @@ class Server {
         this.app.use(this.apiPath.auth, routerAuth);         // Autenticación (Login)
         this.app.use(this.apiPath.usuario, routerUsuario);   // Usuarios
         this.app.use(this.apiPath.rol, routerRol);           // Roles
+        this.app.use(this.apiPath.pregunta, routerPregunta);           // Pregunta
     }
 
     async listen () {
