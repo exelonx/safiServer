@@ -1,9 +1,9 @@
 const { DataTypes } = require('sequelize')
 
-const { db } = require('../../database/db-conexion')
+const { db } = require('../../../database/db-conexion')
 
 
-const Usuarios = db.define(`TBL_MS_USUARIO`, {
+const ViewUsuarios = db.define(`VIEW_MS_USUARIO`, {
     ID_USUARIO: {
         type: DataTypes.INTEGER,
         primaryKey: true
@@ -24,6 +24,9 @@ const Usuarios = db.define(`TBL_MS_USUARIO`, {
     ID_ROL: {
         type: DataTypes.INTEGER
     },
+    ROL: {
+        type: DataTypes.STRING
+    },
     FECHA_ULTIMA_CONEXION: {
         type: DataTypes.DATE
     },
@@ -40,9 +43,9 @@ const Usuarios = db.define(`TBL_MS_USUARIO`, {
         type: DataTypes.STRING
     }
 }, {
-    tableName: 'TBL_MS_USUARIO',
+    tableName: 'VIEW_MS_USUARIO',
     timestamps: false,
 })
 
 //Para exportar el modelo
-module.exports = Usuarios;
+module.exports = ViewUsuarios;

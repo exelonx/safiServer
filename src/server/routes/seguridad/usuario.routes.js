@@ -1,37 +1,67 @@
 const { Router } = require('express');
-const { check } = require("express-validator");
-
-// const { validarCampos } = require("../../middlewares/validar-campos");
-// const { validarJWT } = require("../../middlewares/validar-jwt");
-// const { validarEspaciosLogin } = require('../../middlewares/validar-espacios');
-// const { validarLongitudDBContra } = require('../../middlewares/validar-longitudDB-contraseña');
-// const { validarContraseña } = require('../../middlewares/validar-contraseña');
+const { check, body } = require("express-validator");
 
 const { validarCampos,
-    validarJWT,
-    validarEspaciosLogin,
     validarLongitudDBContra,
     validarContraseña,
-    noExisteRolPorId} = require('../../middlewares');
+    existeUsuario,
+    validarEspacio,
+    existeUsuarioUpdated,
     
-const { registrar } = require('../../controllers/seguridad/usuario.controllers');
+} = require('../../middlewares');
+    
+const { registrar, getUsuarios, getUsuario, bloquearUsuario, putContrasena, putUsuario } = require('../../controllers/seguridad/usuario.controllers');
 
-const { emailExistente, esRoleValido } = require('../../helpers/db-validators');
+const { emailExistente, emailExistenteUpdate } = require('../../helpers/db-validators');
 
 const router = Router();
 
 router.post('/registro', [
-    //Validaciones de campos
-    check('usuario', 'El usuario el obligatorio').not().isEmpty(),
-    check('nombre_usuario', 'El nombre de usuario el obligatorio').not().isEmpty(),
+    //Validaciones de usuario
+    check('usuario', 'El usuario es obligatorio').not().isEmpty(),
+    check('usuario', 'El usuario debe estar en mayúscula').isUppercase(),
+    check('usuario', 'No se permite espacios en blanco en el usuario').custom(validarEspacio),
+    // Validaciones de nombre de usuario
+    check('nombre_usuario', 'El nombre de usuario es obligatorio').not().isEmpty(),
+    check('nombre_usuario', 'El nombre de usuario debe estar en mayúscula').isUppercase(),
+    // validaciones de correo
+    check('correo', 'El correo es obligatorio').not().isEmpty(),
     check('correo', 'El correo no es valido').isEmail(),
     check('correo').custom(emailExistente),
-    validarEspaciosLogin,
+    // Validar contraseña
+    existeUsuario,
     validarLongitudDBContra,
     validarContraseña,
     validarCampos
 ], registrar)
 
-router.get('/actualizar',  )
+router.get('/', getUsuarios);
+
+router.get('/:id_usuario', getUsuario)
+
+router.put('/bloquear/:id_usuario', bloquearUsuario)
+
+router.put('/cambiar-contrasena/:id_usuario', [
+    // Validar contraseña
+    validarLongitudDBContra,
+    validarContraseña,
+    validarCampos
+], putContrasena)
+
+router.put('/actualizar/:id_usuario', [
+        //Validaciones de usuario
+        check('usuario', 'El usuario debe estar en mayúscula').isUppercase(),
+        check('usuario', 'No se permite espacios en blanco en el usuario').custom(validarEspacio),
+        // Validaciones de nombre de usuario
+        check('nombre_usuario', 'El nombre de usuario debe estar en mayúscula').isUppercase(),
+        // validaciones de correo
+        check('correo', 'El correo no es valido').if(body('correo').exists()).isEmail(),
+        emailExistenteUpdate,
+        // Validar contraseña
+        existeUsuarioUpdated,
+        validarLongitudDBContra,
+        validarContraseña,
+        validarCampos
+], putUsuario)
 
 module.exports = router;

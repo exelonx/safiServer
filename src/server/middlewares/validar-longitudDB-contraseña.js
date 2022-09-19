@@ -15,7 +15,7 @@ const validarLongitudDBContra = async(req = request, res = response, next) => {
     })
 
     // data del body 
-    const { contrasena } = req.body;
+    const { contrasena = "" } = req.body;
 
     // Asignar datos para facilitar lectura
     let maximo, minimo = "";

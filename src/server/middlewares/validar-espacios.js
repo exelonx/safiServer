@@ -2,7 +2,7 @@ const { response, request } = require("express");
 
 const validarEspaciosLogin = (req = request, res = response, next) => {
 
-    const { usuario, contrasena } = req.body;
+    const { usuario = "", contrasena = "" } = req.body;
 
     // Validar que no exista espacio en blanco
     if ( usuario.includes(' ') || contrasena.includes(' ') ) {
@@ -17,6 +17,14 @@ const validarEspaciosLogin = (req = request, res = response, next) => {
 
 }
 
+const validarEspacio = async( campo = '' ) => {
+    // Validar que no exista espacio en blanco
+    if ( campo.includes(' ') ) {
+            throw new Error()
+    }
+};
+
 module.exports = {
-    validarEspaciosLogin
+    validarEspaciosLogin,
+    validarEspacio
 }
