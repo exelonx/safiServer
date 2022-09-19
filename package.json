@@ -23,6 +23,7 @@
     "nodemailer": "^6.7.8",
     "password-validator": "^5.3.0",
     "sequelize": "^6.21.6",
-    "socket.io": "^4.5.2"
+    "socket.io": "^4.5.2",
+    "validator": "^13.7.0"
   }
 }
