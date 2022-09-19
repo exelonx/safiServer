@@ -1,8 +1,12 @@
 const { Router } = require('express');
 const { check } = require('express-validator');
 const { getParametros, getParametro, putParametro } = require('../../controllers/seguridad/parametros.controllers');
-const { validarCamposYExistenciaParametros } = require('../../middlewares/validaciones-parametro');
-const { validarCampos } = require('../../middlewares/validar-campos');
+
+const { validarCampos,
+        validarCamposYExistenciaParametros } = require('../../middlewares');
+        
+// const { validarCamposYExistenciaParametros } = require('../../middlewares/validaciones-parametro');
+// const { validarCampos } = require('../../middlewares/validar-campos');
 
 const router = Router();
 

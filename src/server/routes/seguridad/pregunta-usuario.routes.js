@@ -1,8 +1,10 @@
 const { Router } = require('express');
 const { check } = require('express-validator');
 const { getPreguntasAllUsuarios, getPregunta, postRespuesta, putRespuesta } = require('../../controllers/seguridad/pregunta-usuario.controllers');
-const { noExisteRespuesta } = require('../../middlewares');
-const { validarCampos } = require('../../middlewares/validar-campos');
+
+const { noExisteRespuesta,
+        validarCampos } = require('../../middlewares');
+// const { validarCampos } = require('../../middlewares/validar-campos');
 
 const router = Router();
 

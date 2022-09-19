@@ -1,14 +1,23 @@
 const { DataTypes } = require('sequelize')
 
-const { db } = require('../../database/db-conexion')
+const { db } = require('../../../database/db-conexion')
 
-
-const Permiso = db.define(`TBL_MS_PERMISO`, {
-    ID_ROL: {
+const ViewPermiso = db.define(`VIEW_MS_PERMISO`, {
+    ID_PERMISO: {
         type: DataTypes.INTEGER,
+        primaryKey: true
+    },
+    ID_ROL: {
+        type: DataTypes.INTEGER
+    },
+    ROL: {
+        type: DataTypes.STRING
     },
     ID_OBJETO: {
         type: DataTypes.INTEGER
+    },
+    OBJETO: {
+        type: DataTypes.STRING
     },
     PERMISO_INSERCION: {
         type: DataTypes.BOOLEAN
@@ -23,10 +32,8 @@ const Permiso = db.define(`TBL_MS_PERMISO`, {
         type: DataTypes.BOOLEAN
     }
 }, {
-    tableName: 'TBL_MS_PERMISO',
+    tableName: 'VIEW_MS_PERMISO',
     timestamps: false,
 })
 
-Permiso.removeAttribute('id');
-
-module.exports = Permiso;
+module.exports = ViewPermiso;

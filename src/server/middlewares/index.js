@@ -6,6 +6,8 @@ const validarLongitudDBContra = require('../middlewares/validar-longitudDB-contr
 const existenciaRolParaPut = require('../middlewares/validar-nombre-rol-put');
 const validarRolExistente = require('../middlewares/validar-rol-existencia');
 const validarRespuestas = require('../middlewares/validacion-respuestas')
+const validarParametros = require('../middlewares/validaciones-parametro');
+const validarPreguntas = require('../middlewares/validaciones-pregunta');
 
 module.exports = {
     ...validarCampos,
@@ -15,5 +17,7 @@ module.exports = {
     ...validarLongitudDBContra,
     ...existenciaRolParaPut,
     ...validarRolExistente,
-    ...validarRespuestas
+    ...validarRespuestas,
+    ...validarParametros,
+    ...validarPreguntas
 }

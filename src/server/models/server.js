@@ -14,6 +14,7 @@ const routerRol = require('../routes/seguridad/roles.routes');
 const routerPregunta = require('../routes/seguridad/pregunta.routes');
 const routerPregUser = require('../routes/seguridad/pregunta-usuario.routes');
 const routerParametro = require('../routes/seguridad/parametro.routes');
+const routerPermiso = require('../routes/seguridad/permiso.routes');
 
 class Server {
     constructor () {
@@ -35,7 +36,8 @@ class Server {
             rol:              '/api/rol',
             pregunta:         '/api/pregunta',
             preguntaUsuarios: '/api/pregunta-usuario',
-            parametro:        '/api/parametro'
+            parametro:        '/api/parametro',
+            permiso:          '/api/permiso'
         }
 
         // middlewares
@@ -73,8 +75,9 @@ class Server {
         this.app.use(this.apiPath.usuario, routerUsuario);             // Usuarios
         this.app.use(this.apiPath.rol, routerRol);                     // Roles
         this.app.use(this.apiPath.pregunta, routerPregunta);           // Pregunta
-        this.app.use(this.apiPath.preguntaUsuarios, routerPregUser)    // Preguntas de los usuarios (Respuestas)
-        this.app.use(this.apiPath.parametro, routerParametro)          // Parametros del sistema
+        this.app.use(this.apiPath.preguntaUsuarios, routerPregUser);   // Preguntas de los usuarios (Respuestas)
+        this.app.use(this.apiPath.parametro, routerParametro);         // Parametros del sistema
+        this.app.use(this.apiPath.permiso, routerPermiso);             // Permisos
     }
 
     async listen () {
