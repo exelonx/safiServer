@@ -8,6 +8,7 @@ const modificarDias = require("../../helpers/manipulacion-fechas");
 const { Op } = require("sequelize");
 const ViewUsuarios = require("../../models/seguridad/sql-vistas/view_usuario");
 const Usuarios = require("../../models/seguridad/usuario");
+const HistorialContrasena = require('../../models/seguridad/historial-contrena');
 
 const registrar = async(req = request, res = response) => {
 
@@ -46,7 +47,18 @@ const registrar = async(req = request, res = response) => {
         const token = await generarJWT(DBusuario.id, usuario)
 
         // Crear usuario de DB
-        DBusuario.save()
+        await DBusuario.save()
+
+        // Llamar al usuario recien creado
+        const usuarioCreado = await Usuario.findOne({where:{USUARIO: usuario}});
+
+        console.log(usuarioCreado)
+        historialContrasena = await HistorialContrasena.build({
+            ID_USUARIO: usuarioCreado.ID_USUARIO,
+            CONTRASENA: DBusuario.CONTRASENA
+        })
+
+        historialContrasena.save();
 
         // Generar respuesta exitosa
         return res.status(201).json({
@@ -217,6 +229,16 @@ const putContrasena = async (req = request, res = response) => {
     let { contrasena } = req.body;
 
     try {
+        // Validar si existe la misma contraseña en el historial de contraseñas
+        const buscarContrasena = await HistorialContrasena.findAll({where: {ID_USUARIO: id_usuario}});
+        for await (const contra of buscarContrasena){
+
+            if (await bcrypt.compareSync( contrasena, contra.CONTRASENA )) {
+                return res.status(400).json({
+                    msg: 'La contraseña ' + contrasena + ' ya existe en el historial'
+                })
+            }
+        }
 
         // Hashear contraseña
         const salt = bcrypt.genSaltSync();
@@ -230,6 +252,13 @@ const putContrasena = async (req = request, res = response) => {
             })
         }
 
+        // Validar numero del historial
+        const countContrasenas = await HistorialContrasena.count({where:{ID_USUARIO: id_usuario}});
+        if (countContrasenas >= 10) {
+            const primeraContrasena = await HistorialContrasena.findOne({order:["ID_HIST"], limit: 1})
+            await primeraContrasena.destroy();
+        }
+
         // Actualizar db Usuario
         await usuario.update({
             CONTRASENA: contrasena
@@ -238,6 +267,14 @@ const putContrasena = async (req = request, res = response) => {
                 ID_USUARIO: id_usuario
             }
         })
+
+        const historialContrasena = await HistorialContrasena.build({
+            ID_USUARIO: id_usuario,
+            CONTRASENA: contrasena
+        })
+        
+        await historialContrasena.save();
+        
 
         res.json(usuario);
 
