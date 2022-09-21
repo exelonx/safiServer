@@ -83,7 +83,6 @@ const putPermisos = async(req = request, res = response) =>{
         })
     }
 
-
 }
 
 module.exports = {

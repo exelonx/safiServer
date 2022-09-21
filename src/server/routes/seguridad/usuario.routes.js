@@ -22,6 +22,7 @@ router.post('/registro', [
     //Validaciones de usuario
     check('usuario', 'El usuario es obligatorio').not().isEmpty(),
     check('usuario', 'El usuario debe estar en mayúscula').isUppercase(),
+    check('usuario', 'El máximo de carácteres son de 15').isLength({max: 15}),
     check('usuario', 'No se permite espacios en blanco en el usuario').custom(validarEspacio),
     // Validaciones de nombre de usuario
     check('nombre_usuario', 'El nombre de usuario es obligatorio').not().isEmpty(),
@@ -53,6 +54,7 @@ router.put('/cambiar-contrasena/:id_usuario', [
 router.put('/actualizar/:id_usuario', [
         //Validaciones de usuario
         check('usuario', 'El usuario debe estar en mayúscula').isUppercase(),
+        check('usuario', 'El máximo de carácteres son de 15').isLength({max: 15}),
         check('usuario', 'No se permite espacios en blanco en el usuario').custom(validarEspacio),
         // Validaciones de nombre de usuario
         check('nombre_usuario', 'El nombre de usuario debe estar en mayúscula').isUppercase(),

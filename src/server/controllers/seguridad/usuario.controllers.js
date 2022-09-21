@@ -237,7 +237,7 @@ const bloquearUsuario = async (req = request, res = response) => {
 
 const putUsuario = async (req = request, res = response) => {
     const { id_usuario } = req.params
-    const { usuario, nombre_usuario, correo, id_rol, estado, fecha_ultima_conexion, fechaVencimiento } = req.body;
+    const { usuario = "", nombre_usuario = "", correo = "", id_rol = "", estado = "", fecha_ultima_conexion = "", fechaVencimiento = "" } = req.body;
 
     try {
 
@@ -249,15 +249,15 @@ const putUsuario = async (req = request, res = response) => {
             })
         }
 
-        // Actualizar db Pregunta
+        // Actualizar db Usuario
         await usuarioModelo.update({
-            USUARIO: usuario,
-            NOMBRE_USUARIO: nombre_usuario,
-            ESTADO_USUARIO: estado,
-            CORREO_ELECTRONICO: correo,
-            ID_ROL: id_rol,
-            FECHA_VENCIMIENTO: fechaVencimiento,
-            FECHA_ULTIMA_CONEXION: fecha_ultima_conexion
+            USUARIO: usuario !== "" ? usuario : Usuario.USUARIO,
+            NOMBRE_USUARIO: nombre_usuario !== "" ? nombre_usuario : Usuario.NOMBRE_USUARIO,
+            ESTADO_USUARIO: estado !== "" ? estado : Usuario.ESTADO_USUARIO,
+            CORREO_ELECTRONICO: correo !== "" ? correo : Usuario.CORREO_ELECTRONICO,
+            ID_ROL: id_rol !== "" ? id_rol : Usuario.ID_ROL,
+            FECHA_VENCIMIENTO: fechaVencimiento !== "" ? fechaVencimiento : Usuario.FECHA_VENCIMIENTO,
+            FECHA_ULTIMA_CONEXION: fecha_ultima_conexion !== "" ? fecha_ultima_conexion : Usuario.FECHA_ULTIMA_CONEXION
         }, {
             where: {
                 ID_USUARIO: id_usuario
@@ -312,7 +312,7 @@ const putContrasena = async (req = request, res = response) => {
         // Si el usuario esta bloqueado, se activara, si tiene otro estado, se mantiene su estado
         let estadoActualizado = usuario.ESTADO_USUARIO === 'BLOQUEADO' ? "ACTIVO" : usuario.ESTADO_USUARIO;
 
-        // Actualizar db Usuario
+        // Actualizar la Contraseña y Estado del Usuario en db
         await usuario.update({
             CONTRASENA: contrasena,
             ESTADO_USUARIO: estadoActualizado
