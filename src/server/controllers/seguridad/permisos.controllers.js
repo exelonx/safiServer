@@ -61,23 +61,21 @@ const getPermiso = async(req = request, res = response) => {
 const putPermisos = async(req = request, res = response) =>{
 
     const {id_permiso} = req.params;
-    const {id_rol, id_objeto, permiso_insercion, permiso_eliminacion, permiso_actualizacion, permiso_consultar} = req.body;
+    const {permiso_insercion = "", permiso_eliminacion = "", permiso_actualizacion = "", permiso_consultar = ""} = req.body;
 
     try {
         await Permisos.update({
-            ID_ROL: id_rol,
-            ID_OBJETO: id_objeto,
-            PERMISO_INSERCION: permiso_insercion,
-            PERMISO_ELIMINACION: permiso_eliminacion,
-            PERMISO_ACTUALIZACION: permiso_actualizacion,
-            PERMISO_CONSULTAR: permiso_consultar
+            PERMISO_INSERCION: permiso_insercion !== "" ? permiso_insercion : Permisos.PERMISO_INSERCION,
+            PERMISO_ELIMINACION: permiso_eliminacion !== "" ? permiso_eliminacion : Permisos.PERMISO_ELIMINACION,
+            PERMISO_ACTUALIZACION: permiso_actualizacion !== "" ? permiso_actualizacion : Permisos.PERMISO_ACTUALIZACION,
+            PERMISO_CONSULTAR: permiso_consultar !== "" ? permiso_consultar : Permisos.PERMISO_CONSULTAR
         }, {
             where:{
                 ID_PERMISO: id_permiso
             }
         })
 
-        res.json({id_rol, id_objeto, permiso_insercion, permiso_eliminacion, permiso_actualizacion, permiso_consultar})
+        res.json({permiso_insercion, permiso_eliminacion, permiso_actualizacion, permiso_consultar})
     } catch (error) {
         console.log(error);
         res.status(500).json({

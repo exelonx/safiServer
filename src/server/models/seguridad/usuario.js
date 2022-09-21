@@ -38,6 +38,9 @@ const Usuarios = db.define(`TBL_MS_USUARIO`, {
     },
     CORREO_ELECTRONICO: {
         type: DataTypes.STRING
+    },
+    INTENTOS: {
+        type: DataTypes.INTEGER
     }
 }, {
     tableName: 'TBL_MS_USUARIO',

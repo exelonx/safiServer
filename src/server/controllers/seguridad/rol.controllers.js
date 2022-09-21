@@ -1,12 +1,14 @@
 const { request, response } = require('express');
 const { Op } = require('sequelize');
 const Rol = require('../../models/seguridad/rol');
+const Server = require('../../models/server');
 
 // Llamar todos los roles paginados
 const getRoles = async (req = request, res = response) => {
     
     let { limite = 10, desde = 0 } = req.query
 
+    await console.log( await Server.parametros)
     try {
 
         // Paginación

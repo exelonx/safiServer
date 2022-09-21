@@ -30,6 +30,7 @@ router.put('/:id_respuesta', [
     // Validaciones de respuesta
     check('respuesta', 'La pregunta es obligatoria').not().isEmpty(),
     check('respuesta', 'La pregunta debe estar en Mayúsculas').isUppercase(),
+    check('respuesta', 'Máximo de caracteres: 100').isLength({ max: 100 }),
     validarCampos
 ], putRespuesta);
 

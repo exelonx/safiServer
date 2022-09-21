@@ -14,6 +14,7 @@ const login = async(req = request, res = response) => {
     try {
         // Confirmar existencia del usuario
         const dbUser = await Usuario.findOne({where: { USUARIO: usuario }})
+        const intentosParametro = await Parametro.findOne({where: { PARAMETRO: 'ADMIN_INTENTOS' }})
 
         if( !dbUser ) {
             return res.status(404).json({
@@ -25,9 +26,39 @@ const login = async(req = request, res = response) => {
         // Confirmar si el contraseña hace match
         const validarContraseña = await bcrypt.compareSync( contrasena, dbUser.CONTRASENA )
         if( !validarContraseña ) {
+            let msgIntentos;
+
+            //Incrementa en 1 los intentos usados
+            dbUser.INTENTOS++;
+
+            //Bloquear usuario si los intentos se acaban
+            if(dbUser.INTENTOS === parseInt( intentosParametro.VALOR, 10 )) {
+
+                dbUser.ESTADO_USUARIO = 'BLOQUEADO'
+                // Notificar por correo
+                const transporte = await crearTransporteSMTP();
+                await transporte.sendMail({
+                    from: '"Dr. Burger 🍔" <drburger.safi.mailer@gmail.com>', // sender address
+                    to: dbUser.CORREO_ELECTRONICO, // list of receivers
+                    subject: "Cuenta bloqueada 🍔👌", // Subject line
+                    html: `<b>Su cuenta ha superado los intentos permitidos y ha sido bloqueada, cambie la contraseña o comuniquese con el administrador</b>
+                    <img src="cid:unique@kreata.ee"/>`,
+                    attachments: [{
+                        filename: 'image.png',
+                        path: './src/assets/svg/foto2.png',
+                        cid: 'unique@kreata.ee' //same cid value as in the html img src
+                    }]
+                })
+                msgIntentos = 'Ha superado los intentos permitidos, su cuenta ha sido bloqueada, reinicie la contraseña.'
+
+            }
+            // Guardar cambios del usuario
+            await dbUser.save();
+            // Retornar que no coincide la contraseña
             return res.status(404).json({
                 ok: false,
-                msg: 'El correo o la contraseña no coinciden'
+                msg: 'El correo o la contraseña no coinciden',
+                msgIntentos
             })
         }
 
@@ -54,8 +85,22 @@ const login = async(req = request, res = response) => {
             })
         }
 
+        // Validar fecha de contraseña siga siendo válida
+        if (dbUser.FECHA_VENCIMIENTO < new Date()){
+            return res.status(401).json({
+                ok: false,
+                msg: 'Contraseña del usuario ha caducado, cambie la contraseña'
+            })
+        }
+
         // Generar JWT
         const token = await generarJWT( dbUser.ID_USUARIO, '1h', process.env.SEMILLA_SECRETA_JWT_LOGIN )
+
+        
+        dbUser.INTENTOS = 0;                        // Reiniciar intentos a 0
+        dbUser.PRIMER_INGRESO++                     // Aumentar contador de ingresos
+        dbUser.FECHA_ULTIMA_CONEXION = new Date();  // Registrar última conexión
+        await dbUser.save();
 
         //Respuesta del servicio
         return res.json({
