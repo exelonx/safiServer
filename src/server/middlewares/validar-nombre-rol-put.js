@@ -5,7 +5,7 @@ const Roles = require("../models/seguridad/rol");
 const existenciaRolParaPut = async(req = request, res = response, next) => {
 
     const { id_rol } = req.params;
-    const { rol } = req.body;
+    const { rol = "" } = req.body;
 
     const existenciaRol = await Roles.findOne({
         where: {    //Where ROL = rol and NOT ID_ROL = id_rol

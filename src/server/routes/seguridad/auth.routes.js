@@ -1,7 +1,7 @@
 const { Router } = require('express');
 const { check } = require("express-validator");
 
-const { login, revalidarToken } = require('../../controllers/seguridad/auth.controllers');
+const { login, revalidarToken, generarCorreoRecuperacion } = require('../../controllers/seguridad/auth.controllers');
 // const { validarCampos } = require("../../middlewares/validar-campos");
 // const { validarJWT } = require("../../middlewares/validar-jwt");
 // const { validarEspaciosLogin } = require('../../middlewares/validar-espacios');
@@ -29,9 +29,11 @@ router.post('/login', [
 ], login)
 
 //Validar y revalidar token
-router.get('/renew', [
+router.get('/revalidar', [
     validarJWT,
     revalidarToken
-], )
+], revalidarToken)
+
+router.post('/generar-correo-recuperacion', generarCorreoRecuperacion)
 
 module.exports = router;

@@ -9,6 +9,8 @@ const { Op } = require("sequelize");
 const ViewUsuarios = require("../../models/seguridad/sql-vistas/view_usuario");
 const Usuarios = require("../../models/seguridad/usuario");
 const HistorialContrasena = require('../../models/seguridad/historial-contrena');
+const { crearTransporteSMTP } = require("../../configs/nodemailer");
+
 
 const registrar = async(req = request, res = response) => {
 
@@ -27,7 +29,6 @@ const registrar = async(req = request, res = response) => {
         const fechaActual = new Date();
         const fechaVencimiento = (modificarDias(fechaActual, parseInt(diasVigencias.VALOR,10)));
 
-
         // Crear usuario con el modelo
         DBusuario = await Usuario.build({
             USUARIO: usuario,
@@ -44,7 +45,7 @@ const registrar = async(req = request, res = response) => {
         DBusuario.CONTRASENA = bcrypt.hashSync(contrasena, salt);
 
         // Generar JWT
-        const token = await generarJWT(DBusuario.id, usuario)
+        const token = await generarJWT(DBusuario.ID_USUARIO, '1h', process.env.SEMILLA_SECRETA_JWT_LOGIN)
 
         // Crear usuario de DB
         await DBusuario.save()
@@ -52,13 +53,46 @@ const registrar = async(req = request, res = response) => {
         // Llamar al usuario recien creado
         const usuarioCreado = await Usuario.findOne({where:{USUARIO: usuario}});
 
-        console.log(usuarioCreado)
         historialContrasena = await HistorialContrasena.build({
             ID_USUARIO: usuarioCreado.ID_USUARIO,
             CONTRASENA: DBusuario.CONTRASENA
         })
 
         historialContrasena.save();
+
+        // Para enviar correos
+        const transporte = await crearTransporteSMTP();
+
+        // Al usuario
+        await transporte.sendMail({
+            from: '"Dr. Burger 🍔" <drburger.safi.mailer@gmail.com>', // sender address
+	    	to: "kevin.cubas.hn@outlook.com", // list of receivers
+	    	subject: "¡Cuenta creada! 🍔👌", // Subject line
+	    	text: "Bienvenido a Dr. Buger, su cuenta ha sido creada, contacte con el administrador para activar su cuenta", // plain text body
+	    	html: `<br> Embedded image: <img src="cid:unique@kreata.ee"/>`,
+	    	attachments: [{
+	    		filename: 'image.png',
+	    		path: './src/assets/svg/foto2.png',
+	    		cid: 'unique@kreata.ee' //same cid value as in the html img src
+	    	}]
+	    });
+        // Al administrador
+        await transporte.sendMail({
+            from: '"Dr. Burger 🍔" <drburger.safi.mailer@gmail.com>', // sender address
+	    	to: "drburger.safi.mailer@gmail.com", // list of receivers
+	    	subject: "¡Nuevo usuario creado! 🍔👌", // Subject line
+	    	text: "Un nuevo usuario ha sido creado", // plain text body
+	    	html: `
+            <b>Usuario: <strong>${usuario}</strong></b><br>
+            <b>Nombre del usuario: <strong>${nombre_usuario}</strong></b>
+            <br> Embedded image: <img src="cid:unique@kreata.ee"/>
+            `,
+	    	attachments: [{
+	    		filename: 'image.png',
+	    		path: './src/assets/svg/foto2.png',
+	    		cid: 'unique@kreata.ee' //same cid value as in the html img src
+	    	}]
+        })
 
         // Generar respuesta exitosa
         return res.status(201).json({
@@ -166,13 +200,29 @@ const bloquearUsuario = async (req = request, res = response) => {
 
         // Actualizar db Pregunta
         await usuario.update({
-            ESTADO_USUARIO: 'BLOQUEADO'
+            ESTADO_USUARIO: 'INACTIVO'
         }, {
             where: {
                 ID_USUARIO: id_usuario
             }
         })
 
+        // Para enviar correos
+        const transporte = await crearTransporteSMTP();
+
+        // Notificar Al usuario por correo
+        await transporte.sendMail({
+            from: '"Dr. Burger 🍔" <drburger.safi.mailer@gmail.com>', // sender address
+	    	to: "kevin.cubas.hn@outlook.com", // list of receivers
+	    	subject: "Cuenta desactivada 🍔", // Subject line
+	    	text: "Su cuenta ha sido desactivada por el administrador", // plain text body
+	    	html: `<br> Embedded image: <img src="cid:unique@kreata.ee"/>`,
+	    	attachments: [{
+	    		filename: 'image.png',
+	    		path: './src/assets/svg/foto2.png',
+	    		cid: 'unique@kreata.ee' //same cid value as in the html img src
+	    	}]
+	    });
 
         res.json( usuario )
 
@@ -259,9 +309,13 @@ const putContrasena = async (req = request, res = response) => {
             await primeraContrasena.destroy();
         }
 
+        // Si el usuario esta bloqueado, se activara, si tiene otro estado, se mantiene su estado
+        let estadoActualizado = usuario.ESTADO_USUARIO === 'BLOQUEADO' ? "ACTIVO" : usuario.ESTADO_USUARIO;
+
         // Actualizar db Usuario
         await usuario.update({
-            CONTRASENA: contrasena
+            CONTRASENA: contrasena,
+            ESTADO_USUARIO: estadoActualizado
         }, {
             where: {
                 ID_USUARIO: id_usuario

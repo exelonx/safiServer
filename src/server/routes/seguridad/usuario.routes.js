@@ -16,6 +16,8 @@ const { emailExistente, emailExistenteUpdate } = require('../../helpers/db-valid
 
 const router = Router();
 
+// APIs
+
 router.post('/registro', [
     //Validaciones de usuario
     check('usuario', 'El usuario es obligatorio').not().isEmpty(),
@@ -59,8 +61,6 @@ router.put('/actualizar/:id_usuario', [
         emailExistenteUpdate,
         // Validar contraseña
         existeUsuarioUpdated,
-        validarLongitudDBContra,
-        validarContraseña,
         validarCampos
 ], putUsuario)
 

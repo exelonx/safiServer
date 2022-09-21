@@ -1,12 +1,12 @@
 const jwt = require('jsonwebtoken')
 
-const generarJWT = ( uid, rol ) => {
+const generarJWT = ( uid, duracion, semilla ) => {
 
-    const payload = { uid, rol };
+    const payload = { uid };
     
     return new Promise((resolve, reject) => {
-        jwt.sign( payload, process.env.SEMILLA_SECRETA_JWT, {
-            expiresIn: '24h'
+        jwt.sign( payload, semilla, {
+            expiresIn: duracion
         }, (err, token) => {
     
             if ( err ) {
@@ -23,11 +23,7 @@ const generarJWT = ( uid, rol ) => {
 
 }
 
-const recuperarContraPorJWT = () => {
-    // TODO: Generar un token con duración máxima
-}
 
 module.exports = {
     generarJWT,
-    recuperarContraPorJWT
 }

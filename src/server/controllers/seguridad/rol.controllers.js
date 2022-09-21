@@ -85,14 +85,14 @@ const postRol = async (req = request, res = response) => {
 
 const putRol = async (req = request, res = response) => {
     const { id_rol } = req.params
-    const { rol, descripcion } = req.body;
+    const { rol = "", descripcion = "" } = req.body;
 
     try {
 
         // Actualizar db Rol
         await Rol.update({
-            ROL: rol,
-            DESCRIPCION: descripcion
+            ROL: rol !== "" ? rol : Rol.ROL,
+            DESCRIPCION: descripcion !== "" ? descripcion : Rol.DESCRIPCION
         }, {
             where: {
                 ID_ROL: id_rol

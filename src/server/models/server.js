@@ -53,7 +53,7 @@ class Server {
         try {
             await db.authenticate();
             const sistemaNombre = await Parametro.findOne({where: { PARAMETRO: 'SYS_NOMBRE' } });
-            console.log(colors.underline.cyan(sistemaNombre.VALOR))
+            console.log(colors.underline.cyan('\n'+sistemaNombre.VALOR))
             console.log(colors.bold.green('Base de datos online'));
         } catch (error) {
             console.log(error)
@@ -81,11 +81,9 @@ class Server {
     }
 
     async listen () {
-        // Extraer el parametro del puerto
-        const puerto = await Parametro.findOne({where: { PARAMETRO: 'ADMIN_CPUERTO' } });
         // Levantar servidor
-        this.http.listen(puerto.VALOR, () => {
-            console.log(`\nCorriendo en el puerto: ${colors.bold.red(puerto.VALOR)}`)
+        this.http.listen(process.env.PORT, () => {
+            console.log(`\nCorriendo en el puerto: ${colors.bold.red(process.env.PORT)}`)
         })
     }
 
