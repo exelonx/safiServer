@@ -294,7 +294,7 @@ const putContrasena = async (req = request, res = response) => {
 
             if (await bcrypt.compareSync( contrasena, contra.CONTRASENA )) {
                 return res.status(400).json({
-                    msg: 'La contraseña ' + contrasena + ' ya existe en el historial'
+                    msg: 'La contraseña ya existe en el historial'
                 })
             }
         }

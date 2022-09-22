@@ -1,7 +1,7 @@
 const { Router } = require('express');
 const { check } = require("express-validator");
 
-const { login, revalidarToken, generarCorreoRecuperacion } = require('../../controllers/seguridad/auth.controllers');
+const { login, revalidarToken, generarCorreoRecuperacion, revalidarTokenCorreo } = require('../../controllers/seguridad/auth.controllers');
 // const { validarCampos } = require("../../middlewares/validar-campos");
 // const { validarJWT } = require("../../middlewares/validar-jwt");
 // const { validarEspaciosLogin } = require('../../middlewares/validar-espacios');
@@ -10,7 +10,8 @@ const { login, revalidarToken, generarCorreoRecuperacion } = require('../../cont
 const {validarCampos,
        validarJWT,
        validarEspaciosLogin,
-       validarLongitudDBContra} = require('../../middlewares')
+       validarLongitudDBContra,
+       validarCorreoJWT} = require('../../middlewares')
 
 const router = Router();
 
@@ -34,6 +35,12 @@ router.get('/revalidar', [
     revalidarToken
 ], revalidarToken)
 
+//API para solicitar correo de recuperación
 router.post('/generar-correo-recuperacion', generarCorreoRecuperacion)
+
+//API para validar token de correo de recuperación
+router.get('/validar-token-correo/:token', [
+    validarCorreoJWT
+], revalidarTokenCorreo)
 
 module.exports = router;

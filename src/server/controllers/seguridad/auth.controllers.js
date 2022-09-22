@@ -63,7 +63,7 @@ const login = async(req = request, res = response) => {
         }
 
         // Confirmar acceso válido
-        if( !(dbUser.ESTADO_USUARIO === 'NUEVO' || !dbUser.ESTADO_USUARIO === 'ACTIVO') ) {
+        if( !(dbUser.ESTADO_USUARIO === 'NUEVO' || dbUser.ESTADO_USUARIO === 'ACTIVO') ) {
             if(dbUser === 'BLOQUEADO') {
                 return res.status(401).json({
                     ok: false,
@@ -188,8 +188,20 @@ const generarCorreoRecuperacion = async(req = request, res = response) => {
     
 }
 
+const revalidarTokenCorreo = async(req = request, res = response) => {
+
+    const { uid } = req;
+
+    return res.json({
+        ok: true,
+        uid,
+    })
+
+}
+
 module.exports = {
     login,
     revalidarToken,
-    generarCorreoRecuperacion
+    generarCorreoRecuperacion,
+    revalidarTokenCorreo
 }

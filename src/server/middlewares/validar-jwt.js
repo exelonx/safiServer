@@ -42,8 +42,7 @@ const validarCorreoJWT = (req = request, res = response, next) => {
 
     try {
 
-
-        const { uid } = jwt.verify( token, process.env.SEMILLA_SECRETA_JWT_LOGIN );
+        const { uid } = jwt.verify( token, process.env.SEMILLA_SECRETA_JWT_CORREO );
         req.uid = uid;
         
     } catch (error) {
@@ -59,5 +58,6 @@ const validarCorreoJWT = (req = request, res = response, next) => {
 }
 
 module.exports = {
-    validarJWT
+    validarJWT,
+    validarCorreoJWT
 }
