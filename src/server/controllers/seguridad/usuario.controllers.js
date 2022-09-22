@@ -275,7 +275,7 @@ const putUsuario = async (req = request, res = response) => {
 }
 
 const putContrasena = async (req = request, res = response) => {
-    const { id_usuario } = req.params
+    const { id_usuario } = req.params;
     let { contrasena } = req.body;
 
     try {
