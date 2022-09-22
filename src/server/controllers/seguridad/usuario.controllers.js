@@ -279,6 +279,15 @@ const putContrasena = async (req = request, res = response) => {
     let { contrasena } = req.body;
 
     try {
+
+        // Validar usuario inactivo
+        const estado = await Usuario.findOne({where: {ID_USUARIO: id_usuario}})
+        if(estado.ESTADO_USUARIO === 'INACTIVO'){
+            return res.status(401).json({
+                msg: `El usuario ${estado.USUARIO}, no tiene permisos de cambiar la contraseña`
+            })
+        }
+
         // Validar si existe la misma contraseña en el historial de contraseñas
         const buscarContrasena = await HistorialContrasena.findAll({where: {ID_USUARIO: id_usuario}});
         for await (const contra of buscarContrasena){
@@ -309,26 +318,34 @@ const putContrasena = async (req = request, res = response) => {
             await primeraContrasena.destroy();
         }
 
-        // Si el usuario esta bloqueado, se activara, si tiene otro estado, se mantiene su estado
-        let estadoActualizado = usuario.ESTADO_USUARIO === 'BLOQUEADO' ? "ACTIVO" : usuario.ESTADO_USUARIO;
-
-        // Actualizar la Contraseña y Estado del Usuario en db
-        await usuario.update({
-            CONTRASENA: contrasena,
-            ESTADO_USUARIO: estadoActualizado
-        }, {
-            where: {
-                ID_USUARIO: id_usuario
-            }
-        })
-
         const historialContrasena = await HistorialContrasena.build({
             ID_USUARIO: id_usuario,
             CONTRASENA: contrasena
         })
         
         await historialContrasena.save();
-        
+
+        // Si el usuario esta bloqueado, se activara, si tiene otro estado, se mantiene su estado
+        if(usuario.ESTADO_USUARIO === 'BLOQUEADO'){
+            usuario.ESTADO_USUARIO = 'ACTIVO'
+        }
+
+        usuario.CONTRASENA = contrasena;
+        usuario.INTENTOS = 0;
+
+        // Traer días de vigencia de parametros
+        const diasVigencias = await Parametro.findOne({
+            where:{
+                PARAMETRO: 'ADMIN_DIAS_VIGENCIA'
+            }
+        });
+
+        // Calcular fecha de vencimiento
+        const fechaActual = new Date();
+        const fechaVencimiento = (modificarDias(fechaActual, parseInt(diasVigencias.VALOR,10)));
+
+        usuario.FECHA_VENCIMIENTO = fechaVencimiento
+        await usuario.save();
 
         res.json(usuario);
 
