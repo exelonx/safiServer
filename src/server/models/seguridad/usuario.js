@@ -43,10 +43,10 @@ const Usuarios = db.define(`TBL_MS_USUARIO`, {
         type: DataTypes.INTEGER
     },
     CREADO_POR: {
-        type: DataTypes.STRING
+        type: DataTypes.INTEGER
     },
-    MODIFICACION_POR: {
-        type: DataTypes.STRING
+    MODIFICADO_POR: {
+        type: DataTypes.INTEGER
     }
 }, {
     tableName: 'TBL_MS_USUARIO',
