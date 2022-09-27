@@ -4,6 +4,7 @@ const bcrypt = require('bcryptjs');
 const { generarJWT } = require("../../helpers/jwt");
 const Parametro = require("../../models/seguridad/parametro");
 const { crearTransporteSMTP } = require("../../configs/nodemailer");
+const PreguntaUsuario = require("../../models/seguridad/pregunta-usuario");
 
 const login = async(req = request, res = response) => {
 
@@ -24,7 +25,6 @@ const login = async(req = request, res = response) => {
         // Confirmar si el contraseña hace match
         const validarContraseña = await bcrypt.compareSync( contrasena, dbUser.CONTRASENA )
         if( !validarContraseña ) {
-            let msgIntentos;
 
             // Incrementa en 1 los intentos usados
             dbUser.INTENTOS++;
@@ -46,16 +46,23 @@ const login = async(req = request, res = response) => {
                     html: `<b>Su cuenta ha superado los intentos permitidos y ha sido bloqueada, 
                     cambie la contraseña o comuniquese con el administrador</b>`
                 })
-                msgIntentos = 'Ha superado los intentos permitidos, su cuenta ha sido bloqueada, reinicie la contraseña.'
+
+                // Guardar cambios del usuario
+                await dbUser.save();
+
+                return res.status(404).json({
+                    ok: false,
+                    msg: 'Ha superado los intentos permitidos, su cuenta ha sido bloqueada, reinicie la contraseña.'
+                });
 
             };
+
             // Guardar cambios del usuario
             await dbUser.save();
             // Retornar que no coincide la contraseña
             return res.status(404).json({
                 ok: false,
-                msg: 'El correo o la contraseña no coinciden',
-                msgIntentos // Mensaje de bloqueo por intentos
+                msg: 'El correo o la contraseña no coinciden'
             });
         };
 
@@ -176,7 +183,7 @@ const generarCorreoRecuperacion = async(req = request, res = response) => {
         from: `"${nombreEmpresaSMTP.VALOR} 🍔" <${correoSMTP.VALOR.VALOR}>`, // Datos de emisor
 		to: usuarioSinPass.CORREO_ELECTRONICO, // Receptor
 		subject: "Recuperación de contraseña 🍔👌", // Subject line
-		html: `<b>haga clic en el siguiente enlace o péguelo en su navegador para completar el proceso de recuperación: </b><a href=http://localhost:4200/${token}>Recuperar contraseña</a><br>`,
+		html: `<b>haga clic en el siguiente enlace o péguelo en su navegador para completar el proceso de recuperación: </b><a href=http://localhost:4200/auth/cambio-contrasena/${token}>Recuperar contraseña</a><br>`,
 	});
     // Respuesta
     return res.json({
@@ -197,9 +204,105 @@ const revalidarTokenCorreo = async(req = request, res = response) => {
 
 }
 
+// Validar que exista usuario para recuperar por pregunta
+const usuarioPorUsernameRecovery = async (req = request, res = response) => {
+
+    const { usuario } = req.body;
+
+    try {
+        
+        // Buscar usuario en la DB
+        const dbUsuario = await Usuario.findOne({
+            where: {
+                USUARIO: usuario
+            }
+        })
+
+        // Validar existencia del usuario
+        if( !dbUsuario ) {
+            return res.status(404).json({
+                ok: false,
+                msg: 'No existe el usuario ingresado'
+            })
+        }
+
+        // Validar que tenga configuradas las preguntas
+        // Contar las preguntas usuario
+        const preguntaUsuario = await PreguntaUsuario.count({
+            where: {
+                ID_USUARIO: dbUsuario.ID_USUARIO
+            }
+        });
+
+        // Traer los parametros de número de preguntas
+        const parametroNumPreguntas = await Parametro.findOne({
+            where: {
+                PARAMETRO: 'ADMIN_PREGUNTAS'
+            }
+        })
+
+        if( preguntaUsuario < parametroNumPreguntas.VALOR ) {
+            return res.status(404).json({
+                ok: false,
+                msg: 'Usuario no tiene configuradas las preguntas secretas'
+            })
+        }
+
+        // Generar JWT 
+        const token = await generarJWT( dbUsuario.ID_USUARIO, '10m', process.env.SEMILLA_SECRETA_JWT_PREGUNTA );
+
+        // Retornar el ID del usuario
+        res.json({
+            ok: true,
+            token: token
+        })
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: error.message
+        })
+    }
+}
+
+const revalidarTokenPregunta = async(req = request, res = response) => {
+
+    const { uid } = req;
+
+    // Validar que tenga configuradas las preguntas (PENSAR EN LA PEOR SITUACIÓN ES LO MEJOR)
+    // Contar las preguntas usuario
+    const preguntaUsuario = await PreguntaUsuario.count({
+        where: {
+            ID_USUARIO: uid
+        }
+    });
+
+    // Traer los parametros de número de preguntas
+    const parametroNumPreguntas = await Parametro.findOne({
+        where: {
+            PARAMETRO: 'ADMIN_PREGUNTAS'
+        }
+    })
+
+    if( preguntaUsuario < parametroNumPreguntas.VALOR ) {
+        return res.status(404).json({
+            ok: false,
+            msg: 'Usuario no tiene configuradas las preguntas secretas'
+        })
+    }
+
+    return res.json({
+        ok: true,
+        id_usuario: uid,
+    });
+
+}
+
 module.exports = {
     login,
     revalidarToken,
     generarCorreoRecuperacion,
-    revalidarTokenCorreo
+    revalidarTokenCorreo,
+    revalidarTokenPregunta,
+    usuarioPorUsernameRecovery
 }

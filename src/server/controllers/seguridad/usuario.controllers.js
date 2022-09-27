@@ -10,6 +10,7 @@ const ViewUsuarios = require("../../models/seguridad/sql-vistas/view_usuario");
 const Usuarios = require("../../models/seguridad/usuario");
 const HistorialContrasena = require('../../models/seguridad/historial-contrena');
 const { crearTransporteSMTP } = require("../../configs/nodemailer");
+const PreguntaUsuario = require("../../models/seguridad/pregunta-usuario");
 
 
 const registrar = async(req = request, res = response) => {
@@ -167,6 +168,7 @@ const getUsuario = async (req = request, res = response) => {
         // Validar Existencia
         if( !usuario ){
             return res.status(404).json({
+                ok: false,
                 msg: 'No existe un usuario con el id ' + id_usuario
             })
         }
@@ -181,6 +183,7 @@ const getUsuario = async (req = request, res = response) => {
     }
 
 }
+
 
 // Banear usuario
 const bloquearUsuario = async (req = request, res = response) => {

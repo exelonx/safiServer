@@ -1,13 +1,14 @@
 const { Router } = require('express');
 const { check } = require("express-validator");
 
-const { login, revalidarToken, generarCorreoRecuperacion, revalidarTokenCorreo } = require('../../controllers/seguridad/auth.controllers');
+const { login, revalidarToken, generarCorreoRecuperacion, revalidarTokenCorreo, usuarioPorUsernameRecovery, revalidarTokenPregunta } = require('../../controllers/seguridad/auth.controllers');
 
 const {validarCampos,
        validarJWT,
        validarEspaciosLogin,
        validarLongitudDBContra,
-       validarCorreoJWT} = require('../../middlewares')
+       validarCorreoJWT,
+       validarPreguntaJWT} = require('../../middlewares')
 
 const router = Router();
 
@@ -43,5 +44,17 @@ router.post('/generar-correo-recuperacion', [
 router.get('/validar-token-correo/:token', [
     validarCorreoJWT
 ], revalidarTokenCorreo)
+
+//API para validar token de preguntas secretas
+router.get('/validar-token-pregunta/:token', [
+    validarPreguntaJWT
+], revalidarTokenPregunta)
+
+router.post('/buscar/username-password', [
+    // Validaciones de usuario
+    check('usuario', 'El usuario es obligatorio').not().isEmpty(),
+    check('usuario', 'Usuario debe estar en Mayúsculas').isUppercase(),
+    check('usuario', 'Máximo de 15 carácteres').isLength({ max: 15 }),
+], usuarioPorUsernameRecovery)
 
 module.exports = router;

@@ -65,7 +65,39 @@ const validarCorreoJWT = (req = request, res = response, next) => {
 
 }
 
+// Validar Token de correo
+const validarPreguntaJWT = (req = request, res = response, next) => {
+
+    // Leer token desde los params
+    const { token } = req.params;
+
+    if ( !token ) {
+        return res.status(401).json({
+            ok: false,
+            msg: 'error en el token'
+        })
+    }
+
+    try {
+
+        // Usa semilla de correo
+        const { uid } = jwt.verify( token, process.env.SEMILLA_SECRETA_JWT_PREGUNTA );
+        req.uid = uid;
+        
+    } catch (error) {
+        return res.status(401).json({
+            ok: false,
+            msg: 'Token no válido'
+        })
+    }
+
+    //TODO OK!
+    next();
+
+}
+
 module.exports = {
     validarJWT,
-    validarCorreoJWT
+    validarCorreoJWT,
+    validarPreguntaJWT
 }

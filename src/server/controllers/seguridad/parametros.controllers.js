@@ -1,7 +1,7 @@
 const { request, response } = require('express');
 const { Op } = require('sequelize');
 
-const Parametro = require('../../models/seguridad/parametro');
+const ViewParametro = require('../../models/seguridad/parametro');
 
 // Llamar todas los parametros
 const getParametros = async (req = request, res = response) => {
@@ -10,7 +10,7 @@ const getParametros = async (req = request, res = response) => {
 
     try {
 
-        const parametros = await Parametro.findAll({
+        const parametros = await ViewParametro.findAll({
             where: {
                 // WHERE COLUMNA1 LIKE %${BUSCAR}% OR COLUMNA2 LIKE %${BUSCAR}%
                 [Op.or]: [{
@@ -19,6 +19,8 @@ const getParametros = async (req = request, res = response) => {
                     VALOR: { [Op.like]: `%${buscar.toUpperCase()}%`}
                 }, {
                     CREADO_POR: { [Op.like]: `%${buscar.toUpperCase()}%`}
+                }, {
+                    MODIFICADO_POR: { [Op.like]: `%${buscar.toUpperCase()}%`}
                 }]
             }
         });
@@ -64,13 +66,13 @@ const getParametro = async (req = request, res = response) => {
 const putParametro = async (req = request, res = response) => {
 
     const { id_parametro } = req.params
-    const { valor, usuario } = req.body;
+    const { valor, id_usuario } = req.body;
 
     try {
 
         // Actualizar db Parametro
         await Parametro.update({
-            MODIFICACION_POR: usuario,
+            MODIFICADO_POR: id_usuario,
             VALOR: valor
         }, {
             where: {
@@ -78,7 +80,7 @@ const putParametro = async (req = request, res = response) => {
             }
         })
 
-        res.json({ id_parametro, valor, usuario });
+        res.json({ id_parametro, valor, id_usuario });
 
     } catch (error) {
         console.log(error);
