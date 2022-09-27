@@ -15,10 +15,10 @@ const Parametro = db.define(`TBL_MS_PARAMETRO`, {
         type: DataTypes.STRING
     },
     CREADO_POR: {
-        type: DataTypes.STRING
+        type: DataTypes.INTEGER
     },
-    MODIFICACION_POR: {
-        type: DataTypes.STRING
+    MODIFICADO_POR: {
+        type: DataTypes.INTEGER
     }
 }, {
     tableName: 'TBL_MS_PARAMETRO',

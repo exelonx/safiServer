@@ -14,11 +14,23 @@ const ViewParametro = db.define(`VIEW_MS_PARAMETRO`, {
     VALOR: {
         type: DataTypes.STRING
     },
-    ID_USUARIO: {
+    ID_CREADO_POR: {
         type: DataTypes.INTEGER
     },
-    USUARIO: {
+    CREADO_POR: {
         type: DataTypes.STRING
+    },
+    FECHA_CREACION:{
+        type: DataTypes.DATE
+    },
+    ID_MODIFICADO_POR: {
+        type: DataTypes.INTEGER
+    },
+    MODIFICADO_POR: {
+        type: DataTypes.STRING
+    },
+    FECHA_MODIFICACION: {
+        type: DataTypes.DATE
     }
 }, {
     tableName: 'VIEW_MS_PARAMETRO',

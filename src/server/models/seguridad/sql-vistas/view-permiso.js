@@ -1,4 +1,4 @@
-const { DataTypes } = require('sequelize')
+const { DataTypes, DATE } = require('sequelize')
 
 const { db } = require('../../../database/db-conexion')
 
@@ -30,6 +30,24 @@ const ViewPermiso = db.define(`VIEW_MS_PERMISO`, {
     },
     PERMISO_CONSULTAR: {
         type: DataTypes.BOOLEAN
+    },
+    ID_CREADO_POR:{
+        type: DataTypes.INTEGER
+    },
+    CREADO_POR: {
+        type: DataTypes.STRING
+    },
+    FECHA_CREACION: {
+        type: DataTypes.DATE
+    },
+    ID_MODIFICADO_POR: {
+        type: DataTypes.INTEGER
+    },
+    MODIFICADO_POR: {
+        type: DataTypes.STRING
+    },
+    FECHA_MODIFICACION: {
+        type: DataTypes.DATE
     }
 }, {
     tableName: 'VIEW_MS_PERMISO',
