@@ -41,10 +41,18 @@ const Usuarios = db.define(`TBL_MS_USUARIO`, {
     },
     INTENTOS: {
         type: DataTypes.INTEGER
+    },
+    CREADO_POR: {
+        type: DataTypes.STRING
+    },
+    MODIFICACION_POR: {
+        type: DataTypes.STRING
     }
 }, {
     tableName: 'TBL_MS_USUARIO',
     timestamps: false,
+    createdAt: 'FECHA_CREACION',
+    updatedAt: 'FECHA_MODIFICACION'
 })
 
 //Para exportar el modelo

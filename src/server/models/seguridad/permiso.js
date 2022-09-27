@@ -25,10 +25,18 @@ const Permiso = db.define(`TBL_MS_PERMISO`, {
     },
     PERMISO_CONSULTAR: {
         type: DataTypes.BOOLEAN
+    },
+    CREADO_POR: {
+        type: DataTypes.STRING
+    },
+    MODIFICACION_POR: {
+        type: DataTypes.STRING
     }
 }, {
     tableName: 'TBL_MS_PERMISO',
     timestamps: false,
+    createdAt: 'FECHA_CREACION',
+    updatedAt: 'FECHA_MODIFICACION'
 })
 
 Permiso.removeAttribute('id');

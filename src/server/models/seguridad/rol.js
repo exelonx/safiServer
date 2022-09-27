@@ -13,10 +13,18 @@ const Roles = db.define(`TBL_MS_ROL`, {
     },
     DESCRIPCION: {
         type: DataTypes.STRING
+    },
+    CREADO_POR: {
+        type: DataTypes.STRING
+    },
+    MODIFICACION_POR: {
+        type: DataTypes.STRING
     }
 }, {
     tableName: 'TBL_MS_ROL',
     timestamps: false,
+    createdAt: 'FECHA_CREACION',
+    updatedAt: 'FECHA_MODIFICACION'
 })
 
 //Solo cuando no tenga llave primaria
