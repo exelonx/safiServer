@@ -17,6 +17,7 @@ router.get('/:id_parametro', getParametro);
 router.put('/:id_parametro', [
     // Validar que venga el campo
     check('valor', 'El valor del parametro es obligatorio').not().isEmpty(),
+    check('usuario', 'EL usuario es obligatorio').not().isEmpty(),
     validarCampos,
     // Validaciones personalizadas
     validarCamposYExistenciaParametros

@@ -2,7 +2,6 @@ const { request, response } = require('express');
 const { Op } = require('sequelize');
 
 const Parametro = require('../../models/seguridad/parametro');
-const ViewParametro = require('../../models/seguridad/sql-vistas/view-parametro');
 
 // Llamar todas los parametros
 const getParametros = async (req = request, res = response) => {
@@ -11,7 +10,7 @@ const getParametros = async (req = request, res = response) => {
 
     try {
 
-        const parametros = await ViewParametro.findAll({
+        const parametros = await Parametro.findAll({
             where: {
                 // WHERE COLUMNA1 LIKE %${BUSCAR}% OR COLUMNA2 LIKE %${BUSCAR}%
                 [Op.or]: [{
@@ -19,7 +18,7 @@ const getParametros = async (req = request, res = response) => {
                 }, {
                     VALOR: { [Op.like]: `%${buscar.toUpperCase()}%`}
                 }, {
-                    USUARIO: { [Op.like]: `%${buscar.toUpperCase()}%`}
+                    CREADO_POR: { [Op.like]: `%${buscar.toUpperCase()}%`}
                 }]
             }
         });
@@ -42,7 +41,7 @@ const getParametro = async (req = request, res = response) => {
 
     try {
         
-        const parametro = await ViewParametro.findByPk( id_parametro );
+        const parametro = await Parametro.findByPk( id_parametro );
 
         // Validar Existencia
         if( !parametro ){
@@ -65,13 +64,13 @@ const getParametro = async (req = request, res = response) => {
 const putParametro = async (req = request, res = response) => {
 
     const { id_parametro } = req.params
-    const { valor, id_usuario } = req.body;
+    const { valor, usuario } = req.body;
 
     try {
 
         // Actualizar db Parametro
         await Parametro.update({
-            ID_USUARIO: id_usuario,
+            MODIFICACION_POR: usuario,
             VALOR: valor
         }, {
             where: {
@@ -79,7 +78,7 @@ const putParametro = async (req = request, res = response) => {
             }
         })
 
-        res.json({ id_parametro, valor, id_usuario });
+        res.json({ id_parametro, valor, usuario });
 
     } catch (error) {
         console.log(error);
