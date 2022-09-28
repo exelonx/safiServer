@@ -68,6 +68,46 @@ const getPregunta = async (req = request, res = response) => {
 
 }
 
+// Para todas las pregunta de un usuario
+const getPreguntasUsuario = async (req = request, res = response) => {
+     
+    const { id_usuario } = req.params
+
+    try {
+        
+        const preguntas = await ViewPreguntaUsuario.findAll({
+            where: {
+                ID_USUARIO: id_usuario
+            }
+        });
+
+        // Validar Existencia
+        if( !preguntas ){
+            return res.status(404).json({
+                msg: 'El usuario no tiene configurada las preguntas de seguridad'
+            })
+        }
+
+        const preguntasMapped = preguntas.map( pregunta => {
+ 
+             return {
+                id: pregunta.ID,
+                pregunta: pregunta.PREGUNTA
+             }
+
+        })
+
+        res.json( preguntasMapped )
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: error.message
+        })
+    }
+
+}
+
 const postRespuesta = async (req = request, res = response) => {
     //body
     const { id_usuario, id_pregunta, respuesta } = req.body;
@@ -133,6 +173,7 @@ const putRespuesta = async (req = request, res = response) => {
 module.exports = {
     getPreguntasAllUsuarios,
     getPregunta,
+    getPreguntasUsuario,
     postRespuesta,
     putRespuesta,
 }
