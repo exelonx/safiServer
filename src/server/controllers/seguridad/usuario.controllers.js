@@ -279,14 +279,23 @@ const putUsuario = async (req = request, res = response) => {
 
 const putContrasena = async (req = request, res = response) => {
     const { id_usuario } = req.params;
-    let { contrasena } = req.body;
+    let { contrasena, confirmContrasena } = req.body;
 
     try {
+
+        // Validar que hagan match la confirmación de contraseña
+        if( contrasena !== confirmContrasena ) {
+            return res.status(401).json({
+                ok: false,
+                msg: `Contraseña no coincide`
+            })
+        }
 
         // Validar usuario inactivo
         const estado = await Usuario.findOne({where: {ID_USUARIO: id_usuario}})
         if(estado.ESTADO_USUARIO === 'INACTIVO'){
             return res.status(401).json({
+                ok: false,
                 msg: `El usuario ${estado.USUARIO}, no tiene permisos de cambiar la contraseña`
             })
         }
@@ -297,6 +306,7 @@ const putContrasena = async (req = request, res = response) => {
 
             if (await bcrypt.compareSync( contrasena, contra.CONTRASENA )) {
                 return res.status(400).json({
+                    ok: false,
                     msg: 'La contraseña ya existe en el historial'
                 })
             }
@@ -310,6 +320,7 @@ const putContrasena = async (req = request, res = response) => {
         const usuario = await Usuarios.findByPk( id_usuario );
         if( !usuario ){
             return res.status(404).json({
+                ok: false,
                 msg: 'No existe un usuario con el id ' + id_usuario
             })
         }
@@ -328,10 +339,21 @@ const putContrasena = async (req = request, res = response) => {
         
         await historialContrasena.save();
 
+        // Traer el número de preguntas configuradas del usuario
+        const countPreguntasUser = await PreguntaUsuario.count({where: {
+            ID_USUARIO: id_usuario
+        }})
+        
+        // Traer los parametros de número de preguntas
+        const parametroNumPreguntas = await Parametro.findOne({
+            where: {
+                PARAMETRO: 'ADMIN_PREGUNTAS'
+            }
+        })
+        
+        
         // Si el usuario esta bloqueado, se activara, si tiene otro estado, se mantiene su estado
-        if(usuario.ESTADO_USUARIO === 'BLOQUEADO'){
-            usuario.ESTADO_USUARIO = 'ACTIVO'
-        }
+        usuario.ESTADO_USUARIO = (countPreguntasUser >= parametroNumPreguntas) && (usuario.ESTADO_USUARIO === 'BLOQUEADO') ? 'ACTIVO' : 'NUEVO';
 
         usuario.CONTRASENA = contrasena;
         usuario.INTENTOS = 0;
@@ -350,11 +372,15 @@ const putContrasena = async (req = request, res = response) => {
         usuario.FECHA_VENCIMIENTO = fechaVencimiento
         await usuario.save();
 
-        res.json(usuario);
+        res.json({
+            ok: true,
+            usuario
+        });
 
     } catch (error) {
         console.log(error);
         res.status(500).json({
+            ok: false,
             msg: error.message
         })
     }

@@ -199,7 +199,7 @@ const revalidarTokenCorreo = async(req = request, res = response) => {
 
     return res.json({
         ok: true,
-        uid,
+        id_usuario: uid,
     });
 
 }

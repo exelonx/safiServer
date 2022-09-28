@@ -48,6 +48,7 @@ router.put('/cambiar-contrasena/:id_usuario', [
     // Validar contraseña
     validarLongitudDBContra,
     validarContraseña,
+    check('confirmContrasena', "La confirmación es obligatoria").not().isEmpty(),
     validarCampos
 ], putContrasena)
 
