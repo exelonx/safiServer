@@ -8,12 +8,12 @@ const validarJWT = (req, res = response, next) => {
     const token = req.header('x-token');
 
     // Validar existencia
-    if ( !token ) {
-        return res.status(401).json({
-            ok: false,
-            msg: 'error en el token'
-        })
-    }
+    // if ( !token ) {
+    //     return res.status(401).json({
+    //         ok: false,
+    //         msg: 'error en el token'
+    //     })
+    // }
 
     try {
 
@@ -48,12 +48,12 @@ const validarCorreoJWT = (req = request, res = response, next) => {
     // Leer token desde los params
     const { token } = req.params;
 
-    if ( !token ) {
-        return res.status(401).json({
-            ok: false,
-            msg: 'error en el token'
-        })
-    }
+    // if ( !token ) {
+    //     return res.status(401).json({
+    //         ok: false,
+    //         msg: 'error en el token'
+    //     })
+    // }
 
     try {
 
@@ -88,12 +88,12 @@ const validarPreguntaJWT = (req = request, res = response, next) => {
     // Leer token desde los params
     const { token } = req.params;
 
-    if ( !token ) {
-        return res.status(401).json({
-            ok: false,
-            msg: 'error en el token'
-        })
-    }
+    // if ( !token ) {
+    //     return res.status(401).json({
+    //         ok: false,
+    //         msg: 'error en el token'
+    //     })
+    // }
 
     try {
 

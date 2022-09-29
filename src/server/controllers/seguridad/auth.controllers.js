@@ -135,7 +135,7 @@ const revalidarToken = async(req = request, res = response) => {
     const usuario = await Usuario.findByPk( uid );
 
     // Si se bloquea el usuario sus tokens quedan invalidos
-    if( !(dbUser.ESTADO_USUARIO === 'NUEVO' || dbUser.ESTADO_USUARIO === 'ACTIVO') ) {
+    if( !(usuario.ESTADO_USUARIO === 'NUEVO' || usuario.ESTADO_USUARIO === 'ACTIVO') ) {
         return res.status(401).json({
             ok: false,
             msg: 'El usuario no tiene acceso, hable con el administrador'
@@ -148,7 +148,7 @@ const revalidarToken = async(req = request, res = response) => {
 
     return res.json({
         ok: true,
-        uid,
+        id_usuario: uid,
         id_rol: usuario.ID_ROL,
         estado: usuario.ESTADO_USUARIO,
         token
