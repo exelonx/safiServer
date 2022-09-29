@@ -4,6 +4,7 @@ const bcrypt = require('bcryptjs');
 
 const PreguntaUsuario = require('../../models/seguridad/pregunta-usuario');
 const ViewPreguntaUsuario = require('../../models/seguridad/sql-vistas/view-pregunta-usuario');
+const Usuarios = require('../../models/seguridad/Usuario');
 
 // Llamar todas las preguntas de los usuarios paginadas
 const getPreguntasAllUsuarios = async (req = request, res = response) => {
@@ -108,6 +109,61 @@ const getPreguntasUsuario = async (req = request, res = response) => {
 
 }
 
+const compararPregunta = async (req = request, res = response) => { 
+
+    const { id, respuesta } = req.body;
+
+    try {
+
+        // Buscar la pregunta del usuario
+        const pregunta = await PreguntaUsuario.findByPk(id);
+
+        // Validar Existencia
+        if( !pregunta ) {
+            return res.status(404).json({
+                ok: true,
+                msg: 'No se encontro la pregunta seleccionada'
+            })
+        }
+
+        // Confirmar si la respuesta hace match
+        const validarRespuesta = await bcrypt.compareSync( respuesta, pregunta.RESPUESTA )
+        if( !validarRespuesta ) {
+            
+            // Bloquear usuario
+            const usuario = await Usuarios.findByPk(pregunta.ID_USUARIO);
+            let msgBloqueo = '';
+
+            // Validar si ya esta bloqueado
+            if( usuario.ESTADO_USUARIO !== 'BLOQUEADO') {
+
+                msgBloqueo = ' Usuario bloqueado'
+                usuario.ESTADO_USUARIO = 'BLOQUEADO';
+                usuario.save(); // Guardar cambios
+
+            }
+
+            // Respuesta
+            return res.status(404).json({
+                ok: true,
+                msg: 'Respuesta incorrecta.' + msgBloqueo
+            });
+        }
+
+        // Responder éxito
+        res.json({
+            ok: true
+        });
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: error.message
+        })
+    }
+
+}
+
 const postRespuesta = async (req = request, res = response) => {
     //body
     const { id_usuario, id_pregunta, respuesta } = req.body;
@@ -174,6 +230,7 @@ module.exports = {
     getPreguntasAllUsuarios,
     getPregunta,
     getPreguntasUsuario,
+    compararPregunta,
     postRespuesta,
     putRespuesta,
 }

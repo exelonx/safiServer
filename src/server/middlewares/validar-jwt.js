@@ -22,7 +22,15 @@ const validarJWT = (req, res = response, next) => {
         req.uid = uid;
         
     } catch (error) {
-        // Si token no coincide con la semilla
+        // Error de token expirado
+        if( error instanceof jwt.TokenExpiredError ) {
+            return res.status(401).json({
+                ok: false,
+                msg: 'Su sesión ha expirado'
+            })
+        }
+
+        // Token modificado o no válido
         return res.status(401).json({
             ok: false,
             msg: 'Token no válido'
@@ -54,6 +62,15 @@ const validarCorreoJWT = (req = request, res = response, next) => {
         req.uid = uid;
         
     } catch (error) {
+        // Error de token expirado
+        if( error instanceof jwt.TokenExpiredError ) {
+            return res.status(401).json({
+                ok: false,
+                msg: 'Su tiempo ha expirado'
+            })
+        }
+
+        // Token modificado o no válido
         return res.status(401).json({
             ok: false,
             msg: 'Token no válido'
@@ -82,9 +99,20 @@ const validarPreguntaJWT = (req = request, res = response, next) => {
 
         // Usa semilla de correo
         const { uid } = jwt.verify( token, process.env.SEMILLA_SECRETA_JWT_PREGUNTA );
+        const algo = jwt.verify( token, process.env.SEMILLA_SECRETA_JWT_PREGUNTA );
+        console.log(algo)
         req.uid = uid;
         
     } catch (error) {
+        // Error de token expirado
+        if( error instanceof jwt.TokenExpiredError ) {
+            return res.status(401).json({
+                ok: false,
+                msg: 'Su tiempo ha expirado'
+            })
+        }
+
+        // Token modificado o no válido
         return res.status(401).json({
             ok: false,
             msg: 'Token no válido'
