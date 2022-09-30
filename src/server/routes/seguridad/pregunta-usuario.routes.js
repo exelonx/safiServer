@@ -1,6 +1,6 @@
 const { Router } = require('express');
 const { check } = require('express-validator');
-const { getPreguntasAllUsuarios, getPregunta, postRespuesta, putRespuesta, getPreguntasUsuario, compararPregunta } = require('../../controllers/seguridad/pregunta-usuario.controllers');
+const { getPreguntasAllUsuarios, getPregunta, postRespuesta, putRespuesta, getPreguntasUsuario, compararPregunta, getPreguntasFaltantes, postMultiplesRespuestas } = require('../../controllers/seguridad/pregunta-usuario.controllers');
 
 const { noExisteRespuesta,
         validarCampos } = require('../../middlewares');
@@ -16,6 +16,8 @@ router.get('/get-preguntas-usuario/:id_usuario', getPreguntasUsuario) // Api par
 
 router.post('/comparar-pregunta', compararPregunta)
 
+router.get('/pregunta-faltante/:id_usuario', getPreguntasFaltantes)
+
 router.post('/', [
     // Validaciones de usuarios y preguntas
     check('id_pregunta', 'La pregunta es obligatoria').not().isEmpty(),
@@ -25,6 +27,8 @@ router.post('/', [
     check('respuesta', 'La pregunta debe estar en Mayúsculas').isUppercase(),
     validarCampos
 ], postRespuesta);
+
+router.post('/configurar-preguntas', postMultiplesRespuestas)
 
 router.put('/:id_respuesta', [
     // Validar existencia

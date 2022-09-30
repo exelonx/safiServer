@@ -5,6 +5,8 @@ const bcrypt = require('bcryptjs');
 const PreguntaUsuario = require('../../models/seguridad/pregunta-usuario');
 const ViewPreguntaUsuario = require('../../models/seguridad/sql-vistas/view-pregunta-usuario');
 const Usuarios = require('../../models/seguridad/Usuario');
+const Parametros = require('../../models/seguridad/Parametro');
+
 
 // Llamar todas las preguntas de los usuarios paginadas
 const getPreguntasAllUsuarios = async (req = request, res = response) => {
@@ -109,6 +111,45 @@ const getPreguntasUsuario = async (req = request, res = response) => {
 
 }
 
+// Api solo para la pantalla de configurar preguntas
+const getPreguntasFaltantes = async (req = request, res = response) => {
+    
+    const { id_usuario } = req.params;
+
+    try {
+        // traer el número de preguntas configuradas
+        const preguntasUsuario = await PreguntaUsuario.count({where: {
+            ID_USUARIO: id_usuario
+        }});
+
+        // Traer el número requeridas de pregutas por el sistema
+        const preguntasRequeridas = await Parametros.findOne({where:{PARAMETRO:'ADMIN_PREGUNTAS'}});
+
+        // Validar que de verdad no las tenga configuradas
+        if( preguntasRequeridas.VALOR <= preguntasUsuario ) {
+            return res.status(404).json({
+                ok: false,
+                msg: 'El usuario ya tiene configurada las preguntas de seguridad'
+            })
+        }
+
+        // Calcular preguntas faltantes y enviarlas
+        const faltantes = parseInt(preguntasRequeridas.VALOR) - parseInt(preguntasUsuario)
+
+        // Responder
+        res.json({
+            ok: true,
+            msg: faltantes
+        })
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: error.message
+        })
+    }
+}
+
 const compararPregunta = async (req = request, res = response) => { 
 
     const { id, respuesta } = req.body;
@@ -121,7 +162,7 @@ const compararPregunta = async (req = request, res = response) => {
         // Validar Existencia
         if( !pregunta ) {
             return res.status(404).json({
-                ok: true,
+                ok: false,
                 msg: 'No se encontro la pregunta seleccionada'
             })
         }
@@ -145,7 +186,7 @@ const compararPregunta = async (req = request, res = response) => {
 
             // Respuesta
             return res.status(404).json({
-                ok: true,
+                ok: false,
                 msg: 'Respuesta incorrecta.' + msgBloqueo
             });
         }
@@ -195,6 +236,42 @@ const postRespuesta = async (req = request, res = response) => {
     }
 }
 
+const postMultiplesRespuestas = async (req = request, res = response) => {
+    const { arregloRespuestas } = req.body
+        
+    try {
+
+        // Hashear respuesta
+        const salt = bcrypt.genSaltSync();
+
+        // Validar que sea un arreglo válido
+        arregloRespuestas.forEach((respuesta, i) => {
+            if(!(respuesta.ID_USUARIO && respuesta.RESPUESTA && respuesta.ID_PREGUNTA)){
+                // Respuesta
+                return res.status(400).json({
+                    ok: false,
+                    msg: 'Se esperaba un arreglo de preguntas de usuario válido, error en el índice: '+i
+                });
+            }
+            respuesta.RESPUESTA = bcrypt.hashSync(respuesta.RESPUESTA, salt);   // Encriptar respuesta
+        });
+
+        //Insertar en la base de datos
+        const preguntaUsuario = await PreguntaUsuario.bulkCreate(arregloRespuestas);
+
+        // Respuesta éxitosa
+        res.json({
+            ok: true,
+            msg: '¡Preguntas configuradas con éxito!'
+        })
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: error.message
+        })
+    }
+}
+
 const putRespuesta = async (req = request, res = response) => {
 
     const { id_respuesta } = req.params
@@ -230,7 +307,9 @@ module.exports = {
     getPreguntasAllUsuarios,
     getPregunta,
     getPreguntasUsuario,
+    getPreguntasFaltantes,
     compararPregunta,
     postRespuesta,
+    postMultiplesRespuestas,
     putRespuesta,
 }
