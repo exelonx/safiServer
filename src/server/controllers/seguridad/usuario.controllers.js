@@ -5,7 +5,7 @@ const { generarJWT } = require("../../helpers/jwt");
 const { resolveContent } = require("nodemailer/lib/shared");
 const Parametro = require("../../models/seguridad/parametro");
 const modificarDias = require("../../helpers/manipulacion-fechas");
-const { Op } = require("sequelize");
+const { Op, where } = require("sequelize");
 const ViewUsuarios = require("../../models/seguridad/sql-vistas/view_usuario");
 const Usuarios = require("../../models/seguridad/usuario");
 const HistorialContrasena = require('../../models/seguridad/historial-contrena');
@@ -15,7 +15,7 @@ const PreguntaUsuario = require("../../models/seguridad/pregunta-usuario");
 
 const registrar = async(req = request, res = response) => {
 
-    const { usuario = "", nombre_usuario, contrasena, correo = "", rol, fecha_ultima_conexion } = req.body;
+    const { usuario = "", nombre_usuario, contrasena, correo = "", rol } = req.body;
 
     try {
 
@@ -30,6 +30,8 @@ const registrar = async(req = request, res = response) => {
         const fechaActual = new Date();
         const fechaVencimiento = (modificarDias(fechaActual, parseInt(diasVigencias.VALOR,10)));
 
+        
+
         // Crear usuario con el modelo
         DBusuario = await Usuario.build({
             USUARIO: usuario,
@@ -38,7 +40,6 @@ const registrar = async(req = request, res = response) => {
             ID_ROL: rol,
             CORREO_ELECTRONICO: correo,
             FECHA_VENCIMIENTO: fechaVencimiento,
-            FECHA_ULTIMA_CONEXION: fecha_ultima_conexion
         })
 
         // Hashear contraseña
@@ -46,7 +47,7 @@ const registrar = async(req = request, res = response) => {
         DBusuario.CONTRASENA = bcrypt.hashSync(contrasena, salt);
 
         // Generar JWT
-        const token = await generarJWT(DBusuario.ID_USUARIO, '1h', process.env.SEMILLA_SECRETA_JWT_LOGIN)
+        // const token = await generarJWT(DBusuario.ID_USUARIO, '1h', process.env.SEMILLA_SECRETA_JWT_LOGIN)
 
         // Crear usuario de DB
         await DBusuario.save()
@@ -60,6 +61,18 @@ const registrar = async(req = request, res = response) => {
         })
 
         historialContrasena.save();
+
+        const user = await Usuario.findOne({where:{USUARIO: usuario}});
+
+        await Usuario.update({
+            CREADO_POR: user.ID_USUARIO,
+            MODIFICADO_POR: user.ID_USUARIO
+
+        },{
+            where:{
+                ID_USUARIO: user.ID_USUARIO
+            }
+        })
 
         // Para enviar correos
         const transporte = await crearTransporteSMTP();
@@ -103,7 +116,7 @@ const registrar = async(req = request, res = response) => {
             nombre_usuario,  
             rol, 
             correo,
-            token
+            // token
         })
 
     } catch (error) {

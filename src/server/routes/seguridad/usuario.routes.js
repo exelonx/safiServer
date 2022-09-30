@@ -7,6 +7,7 @@ const { validarCampos,
     existeUsuario,
     validarEspacio,
     existeUsuarioUpdated,
+    existeIDUsuario,
     
 } = require('../../middlewares');
     

@@ -64,5 +64,5 @@ const existeUsuarioUpdated = async( req = request, res = response, next ) => {
 module.exports = {
     existeEmail,
     existeUsuario,
-    existeUsuarioUpdated
+    existeUsuarioUpdated,
 }
