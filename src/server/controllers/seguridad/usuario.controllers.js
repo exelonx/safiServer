@@ -366,7 +366,7 @@ const putContrasena = async (req = request, res = response) => {
         
         
         // Si el usuario esta bloqueado, se activara, si tiene otro estado, se mantiene su estado
-        if(usuario.ESTADO_USUARIO === 'BLOQUEADO') {
+        if(usuario.ESTADO_USUARIO === 'BLOQUEADO' || usuario.ESTADO_USUARIO === 'NUEVO') {
             if(countPreguntasUser >= parametroNumPreguntas.VALOR) {
                 usuario.ESTADO_USUARIO = 'ACTIVO'
             } else {

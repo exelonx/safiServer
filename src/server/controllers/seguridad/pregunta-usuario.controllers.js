@@ -125,14 +125,6 @@ const getPreguntasFaltantes = async (req = request, res = response) => {
         // Traer el número requeridas de pregutas por el sistema
         const preguntasRequeridas = await Parametros.findOne({where:{PARAMETRO:'ADMIN_PREGUNTAS'}});
 
-        // Validar que de verdad no las tenga configuradas
-        if( preguntasRequeridas.VALOR <= preguntasUsuario ) {
-            return res.status(404).json({
-                ok: false,
-                msg: 'El usuario ya tiene configurada las preguntas de seguridad'
-            })
-        }
-
         // Calcular preguntas faltantes y enviarlas
         const faltantes = parseInt(preguntasRequeridas.VALOR) - parseInt(preguntasUsuario)
 
@@ -238,7 +230,8 @@ const postRespuesta = async (req = request, res = response) => {
 
 const postMultiplesRespuestas = async (req = request, res = response) => {
     const { arregloRespuestas } = req.body
-        
+    let error = false;    // Para evitar crasheo del servidor
+    let indice = 0;
     try {
 
         // Hashear respuesta
@@ -248,17 +241,29 @@ const postMultiplesRespuestas = async (req = request, res = response) => {
         arregloRespuestas.forEach((respuesta, i) => {
             if(!(respuesta.ID_USUARIO && respuesta.RESPUESTA && respuesta.ID_PREGUNTA)){
                 // Respuesta
-                return res.status(400).json({
-                    ok: false,
-                    msg: 'Se esperaba un arreglo de preguntas de usuario válido, error en el índice: '+i
-                });
+                error = true
+                indice = i;
+                return // Salir del bucle
             }
             respuesta.RESPUESTA = bcrypt.hashSync(respuesta.RESPUESTA, salt);   // Encriptar respuesta
         });
 
-        //Insertar en la base de datos
+        // Lanzar error
+        if( error ) {
+            return res.status(400).json({
+                ok: false,
+                msg: 'Se esperaba un arreglo de preguntas de usuario válido, error en el índice: '+indice
+            });
+        }
+
+        // Insertar en la base de datos
         const preguntaUsuario = await PreguntaUsuario.bulkCreate(arregloRespuestas);
 
+        // Actualizar usuario
+        const usuario = await Usuarios.findByPk(preguntaUsuario[0].ID_USUARIO)
+        // usuario.ESTADO_USUARIO = "ACTIVO"
+
+        console.log(preguntaUsuario)
         // Respuesta éxitosa
         res.json({
             ok: true,
