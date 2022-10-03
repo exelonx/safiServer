@@ -6,6 +6,7 @@ const PreguntaUsuario = require('../../models/seguridad/pregunta-usuario');
 const ViewPreguntaUsuario = require('../../models/seguridad/sql-vistas/view-pregunta-usuario');
 const Usuarios = require('../../models/seguridad/Usuario');
 const Parametros = require('../../models/seguridad/Parametro');
+const { red } = require('colors');
 
 
 // Llamar todas las preguntas de los usuarios paginadas
@@ -184,9 +185,22 @@ const compararPregunta = async (req = request, res = response) => {
         }
 
         // Responder éxito
-        res.json({
-            ok: true
-        });
+        const usuario = await Usuarios.findByPk(pregunta.ID_USUARIO);
+        if(usuario.ESTADO_USUARIO !== 'BLOQUEADO'){
+            if(validarRespuesta){
+                usuario.PREGUNTAS_CONTESTADAS++
+                usuario.save()
+                return res.json({
+                    ok: true
+                });
+            }
+        }else{
+            return res.status(400).json({
+                msg: `Usuario ${usuario.USUARIO} esta bloqueado`
+            })
+        }
+        
+        
 
     } catch (error) {
         console.log(error);

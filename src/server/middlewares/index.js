@@ -9,7 +9,7 @@ const validarRespuestas = require('../middlewares/validacion-respuestas')
 const validarParametros = require('../middlewares/validaciones-parametro');
 const validarPreguntas = require('../middlewares/validaciones-pregunta');
 const validarUsuario = require('../middlewares/validaciones-usuarios');
-
+const validarEspaciosdeRespuesta = require('../middlewares/validar-espacios-respuesta');
 module.exports = {
     ...validarCampos,
     ...validarContraseña,
@@ -21,5 +21,6 @@ module.exports = {
     ...validarRespuestas,
     ...validarParametros,
     ...validarPreguntas,
-    ...validarUsuario
+    ...validarUsuario,
+    ...validarEspaciosdeRespuesta
 }

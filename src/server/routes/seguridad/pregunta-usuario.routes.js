@@ -3,7 +3,8 @@ const { check } = require('express-validator');
 const { getPreguntasAllUsuarios, getPregunta, postRespuesta, putRespuesta, getPreguntasUsuario, compararPregunta, getPreguntasFaltantes, postMultiplesRespuestas } = require('../../controllers/seguridad/pregunta-usuario.controllers');
 
 const { noExisteRespuesta,
-        validarCampos } = require('../../middlewares');
+        validarCampos, 
+        validarEspaciosRespuesta} = require('../../middlewares');
 // const { validarCampos } = require('../../middlewares/validar-campos');
 
 const router = Router();
@@ -12,9 +13,11 @@ router.get('/', getPreguntasAllUsuarios);
 
 router.get('/:id_pregunta', getPregunta);
 
-router.get('/get-preguntas-usuario/:id_usuario', getPreguntasUsuario) // Api para traer todas las preguntas de un usuario
+router.get('/get-preguntas-usuario/:id_usuario', getPreguntasUsuario) // Api para traer todas las preguntas de un usuario 
 
-router.post('/comparar-pregunta', compararPregunta)
+router.post('/comparar-pregunta', [
+    validarEspaciosRespuesta
+],compararPregunta)
 
 router.get('/pregunta-faltante/:id_usuario', getPreguntasFaltantes)
 
