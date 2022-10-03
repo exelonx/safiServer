@@ -1,8 +1,6 @@
 const { response, request } = require("express");
 const Usuario = require("../../models/seguridad/usuario");
 const bcrypt = require('bcryptjs');
-const { generarJWT } = require("../../helpers/jwt");
-const { resolveContent } = require("nodemailer/lib/shared");
 const Parametro = require("../../models/seguridad/parametro");
 const modificarDias = require("../../helpers/manipulacion-fechas");
 const { Op, where } = require("sequelize");
@@ -15,9 +13,19 @@ const PreguntaUsuario = require("../../models/seguridad/pregunta-usuario");
 
 const registrar = async(req = request, res = response) => {
 
-    const { usuario = "", nombre_usuario, contrasena, correo = "", rol } = req.body;
+    const { usuario = "", nombre_usuario = "", contrasena = "", confirmContrasena = "", correo = "" } = req.body;
 
     try {
+
+        console.log()
+
+        // Validar que hagan match la confirmación de contraseña
+        if( contrasena !== confirmContrasena ) {
+            return res.status(401).json({
+                ok: false,
+                msg: `Contraseña no coincide`
+            })
+        }
 
         // Traer días de vigencia de parametros
         const diasVigencias = await Parametro.findOne({
@@ -28,16 +36,13 @@ const registrar = async(req = request, res = response) => {
 
         // Calcular fecha de vencimiento
         const fechaActual = new Date();
-        const fechaVencimiento = (modificarDias(fechaActual, parseInt(diasVigencias.VALOR,10)));
-
-        
+        const fechaVencimiento = (modificarDias(fechaActual, parseInt(diasVigencias.VALOR,10)));  
 
         // Crear usuario con el modelo
         DBusuario = await Usuario.build({
             USUARIO: usuario,
             NOMBRE_USUARIO: nombre_usuario,
             CONTRASENA :contrasena,
-            ID_ROL: rol,
             CORREO_ELECTRONICO: correo,
             FECHA_VENCIMIENTO: fechaVencimiento,
         })
@@ -46,11 +51,10 @@ const registrar = async(req = request, res = response) => {
         const salt = bcrypt.genSaltSync();
         DBusuario.CONTRASENA = bcrypt.hashSync(contrasena, salt);
 
-        // Generar JWT
-        // const token = await generarJWT(DBusuario.ID_USUARIO, '1h', process.env.SEMILLA_SECRETA_JWT_LOGIN)
-
         // Crear usuario de DB
         await DBusuario.save()
+
+        //''''''''''''''''''''''' Guardar contraseña en historial ''''''''''''''''''''''''''
 
         // Llamar al usuario recien creado
         const usuarioCreado = await Usuario.findOne({where:{USUARIO: usuario}});
@@ -62,61 +66,53 @@ const registrar = async(req = request, res = response) => {
 
         historialContrasena.save();
 
+        // Traer ID del usuario creado
         const user = await Usuario.findOne({where:{USUARIO: usuario}});
-
+        //Actualizar quién lo modifico y creo
         await Usuario.update({
             CREADO_POR: user.ID_USUARIO,
             MODIFICADO_POR: user.ID_USUARIO
-
         },{
             where:{
                 ID_USUARIO: user.ID_USUARIO
             }
         })
 
+        // ------------------ Mandar Correos ----------------------
+
         // Para enviar correos
         const transporte = await crearTransporteSMTP();
 
+        // Parametros del mailer
+        const correoSMTP = await Parametro.findOne({where: { PARAMETRO: 'SMTP_CORREO' }});
+        const correoAdmin = await Parametro.findOne({where: { PARAMETRO: 'ADMIN_CORREO'}});
+        const nombreEmpresaSMTP = await Parametro.findOne({where: { PARAMETRO: 'SMTP_NOMBRE_EMPRESA' }});
+        console.log( correoAdmin)
         // Al usuario
         await transporte.sendMail({
-            from: '"Dr. Burger 🍔" <drburger.safi.mailer@gmail.com>', // sender address
-	    	to: "kevin.cubas.hn@outlook.com", // list of receivers
-	    	subject: "¡Cuenta creada! 🍔👌", // Subject line
-	    	text: "Bienvenido a Dr. Buger, su cuenta ha sido creada, contacte con el administrador para activar su cuenta", // plain text body
-	    	html: `<br> Embedded image: <img src="cid:unique@kreata.ee"/>`,
-	    	attachments: [{
-	    		filename: 'image.png',
-	    		path: './src/assets/svg/foto2.png',
-	    		cid: 'unique@kreata.ee' //same cid value as in the html img src
-	    	}]
+            from: `"${nombreEmpresaSMTP.VALOR} 🍔" <${correoSMTP.VALOR}>`, // Datos de emisor
+	    	to: correo, // Receptor
+	    	subject: "¡Cuenta creada! 🍔👌", // Asunto
+	    	html: `<b>Bienvenido a Dr. Buger, su cuenta ha sido creada, contacte con el administrador para activar su cuenta</b>`
 	    });
+
         // Al administrador
         await transporte.sendMail({
-            from: '"Dr. Burger 🍔" <drburger.safi.mailer@gmail.com>', // sender address
-	    	to: "drburger.safi.mailer@gmail.com", // list of receivers
-	    	subject: "¡Nuevo usuario creado! 🍔👌", // Subject line
-	    	text: "Un nuevo usuario ha sido creado", // plain text body
+            from: `"${nombreEmpresaSMTP.VALOR} 🍔" <${correoSMTP.VALOR}>`, // Datos de emisor
+	    	to: correoAdmin.VALOR, // Receptor
+	    	subject: "¡Nuevo usuario creado! 🍔👌", // Asunto
 	    	html: `
+            <b>Un nuevo usuario ha sido creado</b><br>
             <b>Usuario: <strong>${usuario}</strong></b><br>
             <b>Nombre del usuario: <strong>${nombre_usuario}</strong></b>
-            <br> Embedded image: <img src="cid:unique@kreata.ee"/>
-            `,
-	    	attachments: [{
-	    		filename: 'image.png',
-	    		path: './src/assets/svg/foto2.png',
-	    		cid: 'unique@kreata.ee' //same cid value as in the html img src
-	    	}]
+            <br>
+            `
         })
 
         // Generar respuesta exitosa
         return res.status(201).json({
             ok: true,
-            uid: DBusuario.id,
-            usuario, 
-            nombre_usuario,  
-            rol, 
-            correo,
-            // token
+            msg: 'Registro éxitoso'
         })
 
     } catch (error) {
@@ -201,7 +197,7 @@ const getUsuario = async (req = request, res = response) => {
 // Banear usuario
 const bloquearUsuario = async (req = request, res = response) => {
      
-    const { id_usuario } = req.params
+    const { id_usuario, quienModifico } = req.params
 
     try {
         
@@ -216,28 +212,29 @@ const bloquearUsuario = async (req = request, res = response) => {
 
         // Actualizar db Pregunta
         await usuario.update({
-            ESTADO_USUARIO: 'INACTIVO'
+            ESTADO_USUARIO: 'INACTIVO',
+            MODIFICADO_POR: quienModifico
         }, {
             where: {
                 ID_USUARIO: id_usuario
             }
         })
 
+        // ------------------ Mandar Correos ----------------------
+
         // Para enviar correos
         const transporte = await crearTransporteSMTP();
 
+        // Parametros del mailer
+        const correoSMTP = await Parametro.findOne({where: { PARAMETRO: 'SMTP_CORREO' }});
+        const nombreEmpresaSMTP = await Parametro.findOne({where: { PARAMETRO: 'SMTP_NOMBRE_EMPRESA' }});
+
         // Notificar Al usuario por correo
         await transporte.sendMail({
-            from: '"Dr. Burger 🍔" <drburger.safi.mailer@gmail.com>', // sender address
-	    	to: "kevin.cubas.hn@outlook.com", // list of receivers
-	    	subject: "Cuenta desactivada 🍔", // Subject line
-	    	text: "Su cuenta ha sido desactivada por el administrador", // plain text body
-	    	html: `<br> Embedded image: <img src="cid:unique@kreata.ee"/>`,
-	    	attachments: [{
-	    		filename: 'image.png',
-	    		path: './src/assets/svg/foto2.png',
-	    		cid: 'unique@kreata.ee' //same cid value as in the html img src
-	    	}]
+            from: `"${nombreEmpresaSMTP.VALOR} 🍔" <${correoSMTP.VALOR.VALOR}>`, // Datos de emisor
+	    	to: usuario.CORREO_ELECTRONICO, // Receptor
+	    	subject: "Cuenta desactivada 🍔", // Asunto
+	    	html: `<b>Su cuenta ha sido desactivada por el administrador</b><br>`
 	    });
 
         res.json( usuario )
@@ -253,7 +250,7 @@ const bloquearUsuario = async (req = request, res = response) => {
 
 const putUsuario = async (req = request, res = response) => {
     const { id_usuario } = req.params
-    const { usuario = "", nombre_usuario = "", correo = "", id_rol = "", estado = "", fecha_ultima_conexion = "", fechaVencimiento = "" } = req.body;
+    const { usuario = "", nombre_usuario = "", correo = "", id_rol = "", estado = "", fechaVencimiento = "", quienModifico } = req.body;
 
     try {
 
@@ -273,7 +270,7 @@ const putUsuario = async (req = request, res = response) => {
             CORREO_ELECTRONICO: correo !== "" ? correo : Usuario.CORREO_ELECTRONICO,
             ID_ROL: id_rol !== "" ? id_rol : Usuario.ID_ROL,
             FECHA_VENCIMIENTO: fechaVencimiento !== "" ? fechaVencimiento : Usuario.FECHA_VENCIMIENTO,
-            FECHA_ULTIMA_CONEXION: fecha_ultima_conexion !== "" ? fecha_ultima_conexion : Usuario.FECHA_ULTIMA_CONEXION
+            MODIFICADO_POR: quienModifico
         }, {
             where: {
                 ID_USUARIO: id_usuario
@@ -292,7 +289,7 @@ const putUsuario = async (req = request, res = response) => {
 
 const putContrasena = async (req = request, res = response) => {
     const { id_usuario } = req.params;
-    let { contrasena, confirmContrasena } = req.body;
+    let { contrasena, confirmContrasena, quienModifico } = req.body;
 
     try {
 
@@ -352,6 +349,8 @@ const putContrasena = async (req = request, res = response) => {
         
         await historialContrasena.save();
 
+        // ----------------- DEFINIR ESTADO --------------------
+
         // Traer el número de preguntas configuradas del usuario
         const countPreguntasUser = await PreguntaUsuario.count({where: {
             ID_USUARIO: id_usuario
@@ -374,6 +373,7 @@ const putContrasena = async (req = request, res = response) => {
             }
         }
 
+        // Asignar contraseña encryptada y reiniciar intentos
         usuario.CONTRASENA = contrasena;
         usuario.INTENTOS = 0;
 
@@ -384,11 +384,15 @@ const putContrasena = async (req = request, res = response) => {
             }
         });
 
+        // ------------------- Actualizar fecha de vencimiento ------------------
         // Calcular fecha de vencimiento
         const fechaActual = new Date();
         const fechaVencimiento = (modificarDias(fechaActual, parseInt(diasVigencias.VALOR,10)));
 
-        usuario.FECHA_VENCIMIENTO = fechaVencimiento
+        // Actualizar modificado por:
+        usuario.MODIFICADO_POR = quienModifico;
+
+        usuario.FECHA_VENCIMIENTO = fechaVencimiento;
         await usuario.save();
 
         res.json({

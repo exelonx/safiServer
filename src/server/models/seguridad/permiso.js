@@ -34,7 +34,7 @@ const Permiso = db.define(`TBL_MS_PERMISO`, {
     }
 }, {
     tableName: 'TBL_MS_PERMISO',
-    timestamps: false,
+    timestamps: true,
     createdAt: 'FECHA_CREACION',
     updatedAt: 'FECHA_MODIFICACION'
 })

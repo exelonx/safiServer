@@ -14,6 +14,10 @@ const login = async(req = request, res = response) => {
         // Confirmar existencia del usuario
         const dbUser = await Usuario.findOne({where: { USUARIO: usuario }})
         const intentosParametro = await Parametro.findOne({where: { PARAMETRO: 'ADMIN_INTENTOS' }})
+        // Parametros del mailer
+        const correoSMTP = await Parametro.findOne({where: { PARAMETRO: 'SMTP_CORREO' }});
+        const nombreEmpresaSMTP = await Parametro.findOne({where: { PARAMETRO: 'SMTP_NOMBRE_EMPRESA' }});
+        const transporte = await crearTransporteSMTP(); // Transportador
 
         if( !dbUser ) {
             return res.status(404).json({
@@ -35,10 +39,6 @@ const login = async(req = request, res = response) => {
                 dbUser.ESTADO_USUARIO = 'BLOQUEADO';
                 
                 // Notificar por correo
-                const transporte = await crearTransporteSMTP(); // Transportador
-                // Parametros del mailer
-                const correoSMTP = await Parametro.findOne({where: { PARAMETRO: 'SMTP_CORREO' }});
-                const nombreEmpresaSMTP = await Parametro.findOne({where: { PARAMETRO: 'SMTP_NOMBRE_EMPRESA' }});
                 await transporte.sendMail({
                     from: `"${nombreEmpresaSMTP.VALOR} 🍔" <${correoSMTP.VALOR}>`, // Datos de emisor
                     to: dbUser.CORREO_ELECTRONICO, // Receptop
@@ -83,6 +83,13 @@ const login = async(req = request, res = response) => {
 
         // Válidar tener un rol
         if( !dbUser.ID_ROL ) {
+            // Notificar por correo
+            await transporte.sendMail({
+                from: `"${nombreEmpresaSMTP.VALOR} 🍔" <${correoSMTP.VALOR}>`, // Datos de emisor
+                to: dbUser.CORREO_ELECTRONICO, // Receptop
+                subject: "Acceso no válido 🍔", // Asunto
+                html: `<b>Su cuenta no tiene los accesos válidos, hable con el administrador</b>`
+            })
             return res.status(401).json({
                 ok: false,
                 msg: 'El usuario no tiene acceso válido, hable con el administrador'
@@ -113,6 +120,7 @@ const login = async(req = request, res = response) => {
             id_usuario : dbUser.ID_USUARIO,
             id_rol: dbUser.ID_ROL,
             estado: dbUser.ESTADO_USUARIO,
+            nombre: dbUser.NOMBRE_USUARIO,
             token
         });
 
@@ -151,6 +159,7 @@ const revalidarToken = async(req = request, res = response) => {
         id_usuario: uid,
         id_rol: usuario.ID_ROL,
         estado: usuario.ESTADO_USUARIO,
+        nombre: usuario.NOMBRE_USUARIO,
         token
     });
 }
@@ -180,10 +189,11 @@ const generarCorreoRecuperacion = async(req = request, res = response) => {
     const correoSMTP = await Parametro.findOne({where: { PARAMETRO: 'SMTP_CORREO' }});
     const nombreEmpresaSMTP = await Parametro.findOne({where: { PARAMETRO: 'SMTP_NOMBRE_EMPRESA' }});
     await transporte.sendMail({
-        from: `"${nombreEmpresaSMTP.VALOR} 🍔" <${correoSMTP.VALOR.VALOR}>`, // Datos de emisor
+        from: `"${nombreEmpresaSMTP.VALOR} 🍔" <${correoSMTP.VALOR}>`, // Datos de emisor
 		to: usuarioSinPass.CORREO_ELECTRONICO, // Receptor
-		subject: "Recuperación de contraseña 🍔👌", // Subject line
-		html: `<b>haga clic en el siguiente enlace o péguelo en su navegador para completar el proceso de recuperación: </b><a href=http://localhost:4200/auth/cambio-contrasena/${token}>Recuperar contraseña</a><br>`,
+		subject: "Recuperación de contraseña 🍔👌", // Asunto
+		html: `<b>haga clic en el siguiente enlace o péguelo en su navegador para completar el proceso de recuperación: </b>
+        <a href=http://localhost:4200/auth/cambio-contrasena/${token}>Recuperar contraseña</a><br>`,
 	});
     // Respuesta
     return res.json({

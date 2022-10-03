@@ -5,7 +5,8 @@ const { getRoles, getRol, postRol, putRol, DeleteRol } = require('../../controll
 const {validarCampos,
        existenciaRolParaPut,
        existeRol,
-       noExisteRolPorId} = require('../../middlewares')
+       noExisteRolPorId,
+       noExisteUsuario} = require('../../middlewares')
 
 const router = Router();
 
@@ -14,6 +15,9 @@ router.get('/', getRoles);
 router.get('/:id_rol', getRol);
 
 router.post('/', [
+    // Validar usuario quien lo creo
+    check('id_usuario', 'El id es obligatorio').not().isEmpty(),
+    noExisteUsuario,
     // Validaciones de Rol
     check('rol', 'El Rol es obligatorio').not().isEmpty(),
     check('rol', 'Rol debe estar en mayúscula').isUppercase(),

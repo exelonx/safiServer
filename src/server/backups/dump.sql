@@ -1,0 +1,2122 @@
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+# ------------------------------------------------------------
+# SCHEMA DUMP FOR TABLE: TBL_MS_BITACORA
+# ------------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS `TBL_MS_BITACORA` (
+  `ID_BITACORA` int NOT NULL AUTO_INCREMENT,
+  `FECHA` datetime NOT NULL,
+  `ID_USUARIO` int NOT NULL,
+  `ID_OBJETO` int NOT NULL,
+  `ACCION` varchar(20) NOT NULL,
+  `DESCRIPCION` varchar(100) DEFAULT NULL,
+  PRIMARY KEY (`ID_BITACORA`),
+  KEY `ID_OBJETO_idx` (`ID_OBJETO`),
+  KEY `ID_USUARIO_idx` (`ID_USUARIO`),
+  CONSTRAINT `ID_OBJETO` FOREIGN KEY (`ID_OBJETO`) REFERENCES `TBL_MS_OBJETO` (`ID_OBJETO`),
+  CONSTRAINT `ID_USUARIO` FOREIGN KEY (`ID_USUARIO`) REFERENCES `TBL_MS_USUARIO` (`ID_USUARIO`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
+
+# ------------------------------------------------------------
+# SCHEMA DUMP FOR TABLE: TBL_MS_HIST_CONTRASENA
+# ------------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS `TBL_MS_HIST_CONTRASENA` (
+  `ID_HIST` int NOT NULL AUTO_INCREMENT,
+  `ID_USUARIO` int NOT NULL,
+  `CONTRASENA` text,
+  PRIMARY KEY (`ID_HIST`),
+  KEY `FK_ID_USUARIO_idx` (`ID_USUARIO`),
+  CONSTRAINT `FK_ID_USUARIO` FOREIGN KEY (`ID_USUARIO`) REFERENCES `TBL_MS_USUARIO` (`ID_USUARIO`)
+) ENGINE = InnoDB AUTO_INCREMENT = 165 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
+
+# ------------------------------------------------------------
+# SCHEMA DUMP FOR TABLE: TBL_MS_OBJETO
+# ------------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS `TBL_MS_OBJETO` (
+  `ID_OBJETO` int NOT NULL AUTO_INCREMENT,
+  `OBJETO` varchar(100) DEFAULT NULL,
+  `DESCRIPCION` varchar(100) DEFAULT NULL,
+  `TIPO_OBJETO` varchar(15) DEFAULT NULL,
+  PRIMARY KEY (`ID_OBJETO`)
+) ENGINE = InnoDB AUTO_INCREMENT = 4 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
+
+# ------------------------------------------------------------
+# SCHEMA DUMP FOR TABLE: TBL_MS_PARAMETRO
+# ------------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS `TBL_MS_PARAMETRO` (
+  `ID_PARAMETRO` int NOT NULL,
+  `PARAMETRO` varchar(50) NOT NULL,
+  `VALOR` varchar(100) NOT NULL,
+  `CREADO_POR` int DEFAULT NULL,
+  `FECHA_CREACION` varchar(45) DEFAULT NULL,
+  `MODIFICADO_POR` int DEFAULT NULL,
+  `FECHA_MODIFICACION` varchar(45) DEFAULT NULL,
+  PRIMARY KEY (`ID_PARAMETRO`),
+  KEY `fk_user_param_creado_idx` (`CREADO_POR`),
+  KEY `fk_user_param_modif_idx` (`MODIFICADO_POR`),
+  CONSTRAINT `fk_user_param_creado` FOREIGN KEY (`CREADO_POR`) REFERENCES `TBL_MS_USUARIO` (`ID_USUARIO`),
+  CONSTRAINT `fk_user_param_modif` FOREIGN KEY (`MODIFICADO_POR`) REFERENCES `TBL_MS_USUARIO` (`ID_USUARIO`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
+
+# ------------------------------------------------------------
+# SCHEMA DUMP FOR TABLE: TBL_MS_PERMISO
+# ------------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS `TBL_MS_PERMISO` (
+  `ID_PERMISO` int NOT NULL AUTO_INCREMENT,
+  `ID_ROL` int DEFAULT NULL,
+  `ID_OBJETO` int DEFAULT NULL,
+  `PERMISO_INSERCION` tinyint(1) NOT NULL DEFAULT '0',
+  `PERMISO_ELIMINACION` tinyint(1) NOT NULL DEFAULT '0',
+  `PERMISO_ACTUALIZACION` tinyint(1) NOT NULL DEFAULT '0',
+  `PERMISO_CONSULTAR` tinyint(1) NOT NULL DEFAULT '0',
+  `CREADO_POR` int DEFAULT NULL,
+  `FECHA_CREACION` datetime DEFAULT NULL,
+  `MODIFICADO_POR` int DEFAULT NULL,
+  `FECHA_MODIFICACION` datetime DEFAULT NULL,
+  PRIMARY KEY (`ID_PERMISO`),
+  KEY `FK_ROL_PERMISO_idx` (`ID_ROL`),
+  KEY `FK_OBJETO_PERMISO_idx` (`ID_OBJETO`),
+  KEY `fk_permiso_user_creado_idx` (`CREADO_POR`),
+  KEY `fk_permiso_user_modif_idx` (`MODIFICADO_POR`),
+  CONSTRAINT `FK_OBJETO_PERMISO` FOREIGN KEY (`ID_OBJETO`) REFERENCES `TBL_MS_OBJETO` (`ID_OBJETO`),
+  CONSTRAINT `fk_permiso_user_creado` FOREIGN KEY (`CREADO_POR`) REFERENCES `TBL_MS_USUARIO` (`ID_USUARIO`),
+  CONSTRAINT `fk_permiso_user_modif` FOREIGN KEY (`MODIFICADO_POR`) REFERENCES `TBL_MS_USUARIO` (`ID_USUARIO`),
+  CONSTRAINT `FK_ROL_PERMISO` FOREIGN KEY (`ID_ROL`) REFERENCES `TBL_MS_ROL` (`ID_ROL`)
+) ENGINE = InnoDB AUTO_INCREMENT = 4 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
+
+# ------------------------------------------------------------
+# SCHEMA DUMP FOR TABLE: TBL_MS_PREGUNTA
+# ------------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS `TBL_MS_PREGUNTA` (
+  `ID_PREGUNTA` int NOT NULL AUTO_INCREMENT,
+  `PREGUNTA` varchar(100) NOT NULL,
+  PRIMARY KEY (`ID_PREGUNTA`)
+) ENGINE = InnoDB AUTO_INCREMENT = 11 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
+
+# ------------------------------------------------------------
+# SCHEMA DUMP FOR TABLE: TBL_MS_PREGUNTA_USUARIO
+# ------------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS `TBL_MS_PREGUNTA_USUARIO` (
+  `ID` int NOT NULL AUTO_INCREMENT,
+  `ID_PREGUNTA` int NOT NULL,
+  `ID_USUARIO` int NOT NULL,
+  `RESPUESTA` varchar(100) NOT NULL,
+  PRIMARY KEY (`ID`),
+  KEY `FK_ID_PREG_PREGUSER_idx` (`ID_PREGUNTA`),
+  KEY `FK_ID_USER_PREGUSER_idx` (`ID_USUARIO`),
+  CONSTRAINT `FK_ID_PREG_PREGUSER` FOREIGN KEY (`ID_PREGUNTA`) REFERENCES `TBL_MS_PREGUNTA` (`ID_PREGUNTA`),
+  CONSTRAINT `FK_ID_USER_PREGUSER` FOREIGN KEY (`ID_USUARIO`) REFERENCES `TBL_MS_USUARIO` (`ID_USUARIO`)
+) ENGINE = InnoDB AUTO_INCREMENT = 31 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
+
+# ------------------------------------------------------------
+# SCHEMA DUMP FOR TABLE: TBL_MS_ROL
+# ------------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS `TBL_MS_ROL` (
+  `ID_ROL` int NOT NULL AUTO_INCREMENT,
+  `ROL` varchar(30) NOT NULL,
+  `DESCRIPCION` varchar(100) NOT NULL,
+  `CREADO_POR` int DEFAULT NULL,
+  `FECHA_CREACION` datetime DEFAULT NULL,
+  `MODIFICADO_POR` int DEFAULT NULL,
+  `FECHA_MODIFICACION` datetime DEFAULT NULL,
+  PRIMARY KEY (`ID_ROL`),
+  KEY `FK_USUARIO_CREAD_POR_idx` (`CREADO_POR`)
+  /*!80000 INVISIBLE */,
+  KEY `FK_USUARIO_MODIFICADO_POR_idx` (`MODIFICADO_POR`)
+  /*!80000 INVISIBLE */,
+  CONSTRAINT `FK_USUARIO_CREAD_POR` FOREIGN KEY (`CREADO_POR`) REFERENCES `TBL_MS_USUARIO` (`ID_USUARIO`),
+  CONSTRAINT `FK_USUARIO_MODIFICADO_POR` FOREIGN KEY (`MODIFICADO_POR`) REFERENCES `TBL_MS_USUARIO` (`ID_USUARIO`)
+) ENGINE = InnoDB AUTO_INCREMENT = 8 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
+
+# ------------------------------------------------------------
+# SCHEMA DUMP FOR TABLE: TBL_MS_USUARIO
+# ------------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS `TBL_MS_USUARIO` (
+  `ID_USUARIO` int NOT NULL AUTO_INCREMENT,
+  `USUARIO` varchar(15) DEFAULT NULL,
+  `NOMBRE_USUARIO` varchar(100) DEFAULT NULL,
+  `ESTADO_USUARIO` varchar(100) DEFAULT 'NUEVO',
+  `CONTRASENA` text,
+  `ID_ROL` int DEFAULT NULL,
+  `FECHA_ULTIMA_CONEXION` datetime DEFAULT NULL,
+  `PREGUNTAS_CONTESTADAS` int DEFAULT '0',
+  `PRIMER_INGRESO` int DEFAULT '0',
+  `FECHA_VENCIMIENTO` datetime DEFAULT NULL,
+  `CORREO_ELECTRONICO` varchar(50) DEFAULT NULL,
+  `INTENTOS` int DEFAULT '0',
+  `CREADO_POR` int DEFAULT NULL,
+  `FECHA_CREACION` datetime DEFAULT NULL,
+  `MODIFICADO_POR` int DEFAULT NULL,
+  `FECHA_MODIFICACION` datetime DEFAULT NULL,
+  PRIMARY KEY (`ID_USUARIO`),
+  KEY `ID_ROL_idx` (`ID_ROL`),
+  KEY `FK_ID_USER_CREADO_idx` (`CREADO_POR`),
+  KEY `FK_ID_USER_MODIF_idx` (`MODIFICADO_POR`),
+  CONSTRAINT `FK_ID_ROL_USUARIO` FOREIGN KEY (`ID_ROL`) REFERENCES `TBL_MS_ROL` (`ID_ROL`),
+  CONSTRAINT `FK_ID_USER_CREADO` FOREIGN KEY (`CREADO_POR`) REFERENCES `TBL_MS_USUARIO` (`ID_USUARIO`),
+  CONSTRAINT `FK_ID_USER_MODIF` FOREIGN KEY (`MODIFICADO_POR`) REFERENCES `TBL_MS_USUARIO` (`ID_USUARIO`)
+) ENGINE = InnoDB AUTO_INCREMENT = 54 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
+
+# ------------------------------------------------------------
+# SCHEMA DUMP FOR TABLE: VIEW_MS_PARAMETRO
+# ------------------------------------------------------------
+
+CREATE OR REPLACE VIEW `VIEW_MS_PARAMETRO` AS
+select
+  `P`.`ID_PARAMETRO` AS `ID_PARAMETRO`,
+  `P`.`PARAMETRO` AS `PARAMETRO`,
+  `P`.`VALOR` AS `VALOR`,
+  `P`.`CREADO_POR` AS `ID_CREADO_POR`,
+  `C`.`USUARIO` AS `CREADO_POR`,
+  `P`.`FECHA_CREACION` AS `FECHA_CREACION`,
+  `P`.`MODIFICADO_POR` AS `ID_MODIFICADO_POR`,
+  `M`.`USUARIO` AS `MODIFICADO_POR`,
+  `P`.`FECHA_MODIFICACION` AS `FECHA_MODIFICACION`
+from
+  (
+  (
+    `TBL_MS_PARAMETRO` `P`
+    join `TBL_MS_USUARIO` `C`
+  )
+  join `TBL_MS_USUARIO` `M`
+  )
+where
+  (
+  (`P`.`CREADO_POR` = `C`.`ID_USUARIO`)
+  and (`P`.`MODIFICADO_POR` = `M`.`ID_USUARIO`)
+  );
+
+# ------------------------------------------------------------
+# SCHEMA DUMP FOR TABLE: VIEW_MS_PERMISO
+# ------------------------------------------------------------
+
+CREATE OR REPLACE VIEW `VIEW_MS_PERMISO` AS
+select
+  `P`.`ID_PERMISO` AS `ID_PERMISO`,
+  `R`.`ID_ROL` AS `ID_ROL`,
+  `R`.`ROL` AS `ROL`,
+  `O`.`ID_OBJETO` AS `ID_OBJETO`,
+  `O`.`OBJETO` AS `OBJETO`,
+  `P`.`PERMISO_INSERCION` AS `PERMISO_INSERCION`,
+  `P`.`PERMISO_ELIMINACION` AS `PERMISO_ELIMINACION`,
+  `P`.`PERMISO_ACTUALIZACION` AS `PERMISO_ACTUALIZACION`,
+  `P`.`PERMISO_CONSULTAR` AS `PERMISO_CONSULTAR`,
+  `P`.`CREADO_POR` AS `ID_CREADO_POR`,
+  `C`.`USUARIO` AS `CREADO_POR`,
+  `P`.`FECHA_CREACION` AS `FECHA_CREACION`,
+  `P`.`MODIFICADO_POR` AS `ID_MODIFICADO_POR`,
+  `M`.`USUARIO` AS `MODIFICADO_POR`,
+  `P`.`FECHA_MODIFICACION` AS `FECHA_MODIFICACION`
+from
+  (
+  (
+    (
+    (
+      `TBL_MS_ROL` `R`
+      join `TBL_MS_OBJETO` `O`
+    )
+    join `TBL_MS_PERMISO` `P`
+    )
+    join `TBL_MS_USUARIO` `C`
+  )
+  join `TBL_MS_USUARIO` `M`
+  )
+where
+  (
+  (`R`.`ID_ROL` = `P`.`ID_ROL`)
+  and (`O`.`ID_OBJETO` = `P`.`ID_OBJETO`)
+  and (`P`.`CREADO_POR` = `C`.`ID_USUARIO`)
+  and (`P`.`MODIFICADO_POR` = `M`.`ID_USUARIO`)
+  );
+
+# ------------------------------------------------------------
+# SCHEMA DUMP FOR TABLE: VIEW_MS_PREGUNTA_USUARIO
+# ------------------------------------------------------------
+
+CREATE OR REPLACE VIEW `VIEW_MS_PREGUNTA_USUARIO` AS
+select
+  `PU`.`ID` AS `ID`,
+  `U`.`ID_USUARIO` AS `ID_USUARIO`,
+  `U`.`USUARIO` AS `USUARIO`,
+  `P`.`ID_PREGUNTA` AS `ID_PREGUNTA`,
+  `P`.`PREGUNTA` AS `PREGUNTA`,
+  `PU`.`RESPUESTA` AS `RESPUESTA`
+from
+  (
+  (
+    `TBL_MS_USUARIO` `U`
+    join `TBL_MS_PREGUNTA` `P`
+  )
+  join `TBL_MS_PREGUNTA_USUARIO` `PU`
+  )
+where
+  (
+  (`U`.`ID_USUARIO` = `PU`.`ID_USUARIO`)
+  and (`P`.`ID_PREGUNTA` = `PU`.`ID_PREGUNTA`)
+  );
+
+# ------------------------------------------------------------
+# SCHEMA DUMP FOR TABLE: VIEW_MS_ROL
+# ------------------------------------------------------------
+
+CREATE OR REPLACE VIEW `VIEW_MS_ROL` AS
+select
+  `R`.`ID_ROL` AS `ID_ROL`,
+  `R`.`ROL` AS `ROL`,
+  `R`.`DESCRIPCION` AS `DESCRIPCION`,
+  `R`.`CREADO_POR` AS `ID_CREADO_POR`,
+  `C`.`USUARIO` AS `CREADO_POR`,
+  `R`.`FECHA_CREACION` AS `FECHA_CREACION`,
+  `R`.`MODIFICADO_POR` AS `ID_MODIFICADO_POR`,
+  `M`.`USUARIO` AS `MODIFICADO_POR`,
+  `R`.`FECHA_MODIFICACION` AS `FECHA_MODIFICACION`
+from
+  (
+  (
+    `TBL_MS_ROL` `R`
+    join `TBL_MS_USUARIO` `C` on((`R`.`CREADO_POR` = `C`.`ID_USUARIO`))
+  )
+  join `TBL_MS_USUARIO` `M` on((`R`.`MODIFICADO_POR` = `M`.`ID_USUARIO`))
+  );
+
+# ------------------------------------------------------------
+# SCHEMA DUMP FOR TABLE: VIEW_MS_USUARIO
+# ------------------------------------------------------------
+
+CREATE OR REPLACE VIEW `VIEW_MS_USUARIO` AS
+select
+  `U`.`ID_USUARIO` AS `ID_USUARIO`,
+  `U`.`USUARIO` AS `USUARIO`,
+  `U`.`NOMBRE_USUARIO` AS `NOMBRE_USUARIO`,
+  `U`.`ESTADO_USUARIO` AS `ESTADO_USUARIO`,
+  `U`.`CONTRASENA` AS `CONTRASENA`,
+  `U`.`ID_ROL` AS `ID_ROL`,
+  `R`.`ROL` AS `ROL`,
+  `U`.`FECHA_ULTIMA_CONEXION` AS `FECHA_ULTIMA_CONEXION`,
+  `U`.`PREGUNTAS_CONTESTADAS` AS `PREGUNTAS_CONTESTADAS`,
+  `U`.`PRIMER_INGRESO` AS `PRIMER_INGRESO`,
+  `U`.`INTENTOS` AS `INTENTOS`,
+  `U`.`FECHA_VENCIMIENTO` AS `FECHA_VENCIMIENTO`,
+  `U`.`CORREO_ELECTRONICO` AS `CORREO_ELECTRONICO`,
+  `U`.`CREADO_POR` AS `ID_CREADO_POR`,
+  `C`.`USUARIO` AS `CREADO_POR`,
+  `U`.`FECHA_CREACION` AS `FECHA_CREACION`,
+  `U`.`MODIFICADO_POR` AS `ID_MODIFICADO_POR`,
+  `M`.`USUARIO` AS `MODIFICACION_POR`,
+  `U`.`FECHA_MODIFICACION` AS `FECHA_MODIFICACION`
+from
+  (
+  (
+    (
+    `TBL_MS_USUARIO` `U`
+    left join `TBL_MS_ROL` `R` on((`R`.`ID_ROL` = `U`.`ID_ROL`))
+    )
+    join `TBL_MS_USUARIO` `C` on((`U`.`CREADO_POR` = `C`.`ID_USUARIO`))
+  )
+  join `TBL_MS_USUARIO` `M` on((`U`.`MODIFICADO_POR` = `M`.`ID_USUARIO`))
+  );
+
+# ------------------------------------------------------------
+# DATA DUMP FOR TABLE: TBL_MS_BITACORA
+# ------------------------------------------------------------
+
+
+# ------------------------------------------------------------
+# DATA DUMP FOR TABLE: TBL_MS_HIST_CONTRASENA
+# ------------------------------------------------------------
+
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    101,
+    3,
+    '$2a$10$nMbxQVlXo0fBkrY9rKKYQeMoQXqz7uqUz/kP7fAeyZtr0Zgb4Ayie'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    102,
+    3,
+    '$2a$10$Gg9j/slMA0KdukgN.yud..Yo5YY2LEnlx6ROluyg0GMnyfF/ERUzi'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    103,
+    2,
+    '$2a$10$PFyQUeSEUguE5m42a4Vvd.WD./5dVlKk5KGUnF5g4xluJ8RYDZKGa'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    104,
+    37,
+    '$2a$10$O6FYK./AAYTlXEFbIORv3u1r2kow6SzKUspl9x4AjvnHT54NhANaS'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    105,
+    5,
+    '$2a$10$7ynXiJ1SaRuZTMR7Bd9puu3yuz/i5dsc5v7cqbAuxQ2StJoZ2S.Fq'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    106,
+    5,
+    '$2a$10$rgR8S6I6oVhupY86LQeBVO3qRPjYM4bh0VqbkSzJUmvLkiDzo0bie'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    107,
+    37,
+    '$2a$10$LNt5jkcoGmM1NC8CE8XyVOu4GVEc2tLxjkFoig58eaMQC1ea4Ta/m'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    108,
+    5,
+    '$2a$10$xP5dqSSQHnIZYinJWhHuT.dA7O4M11dGOzC2Zu7ttlpgo4iu8EehC'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    109,
+    37,
+    '$2a$10$NhXJkRPcBPJrYU70DHnlE.p.ls.Mv9lgYcQDPGs2Z2riSiyV9iR/y'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    110,
+    35,
+    '$2a$10$7v8Y9KmSq.NiV1GPeLVNV.mIOLv7h3kx5a7r8K0YvQvG49b/txvH2'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    111,
+    35,
+    '$2a$10$pquaAVHOUcnEamfql3w2HempITYsbGTmxx68wqF04ATrL/KazKWZe'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    112,
+    35,
+    '$2a$10$k0jAMxC8u.sChkD9913ie./6SmMAmqxe1tVdfcoUvOLutLHCXopma'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    113,
+    37,
+    '$2a$10$kdCODddFbZItNoe3D2ZGm.7V5N0RGNQjkSCYWnjMVjijAIFfI92bm'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    114,
+    38,
+    '$2a$10$Z1QaG1gGsGK9hvli11sFuurD2qHDQ5gBdBl1S9FGccRgTFIJ/yjIq'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    115,
+    38,
+    '$2a$10$wh2yKpc.TyHFFGvUGd1yy..1xnl81SwGF8889NvTF4aEPM.RkZlaa'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    116,
+    38,
+    '$2a$10$m0DosXGpwnFmUiZRJYGJBe3Cd6I3.bJAzHZGIVblei2pwyZZt79Ty'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    117,
+    38,
+    '$2a$10$nK2yrm4AlP0KPF/1t6O/TeHZAL4D.YqTcdB.pFJNgaxyuG9KsuI5a'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    118,
+    38,
+    '$2a$10$Jrc4PDjes3eYD032En7qWO70HLcfYjndP9dJIoXtGo8NuMUTuqBce'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    119,
+    37,
+    '$2a$10$Rnh0VWNR7juc4ROCGaEjnOZN3JohcHUn8gL4yGx9hqsTeQRBhwtre'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    120,
+    37,
+    '$2a$10$4RbOcE4sLxcyXMRmzgo2v.d6o4T.tMCqAKVQwyyz0iCTT4fR65mS6'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    121,
+    38,
+    '$2a$10$H/bBv917RpZ4Yg55bEwNw./Lg3RiSlqtI8XNyGhSuEIsMtod5VU8O'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    122,
+    37,
+    '$2a$10$MSyRzV9/EGmppWFOpb0fHup8mtiWJeOnz.HhLnbHakwZmW.VewFKK'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    123,
+    37,
+    '$2a$10$/sNdrPd725xrbjIAtEdmrOMrdMFisWIuHLoMfcurOzDwa9XZg.F.G'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    124,
+    37,
+    '$2a$10$PZr89XVApU8z1AyXdCTf7OumRQvQXfKWDBg428LwS7BCXvm8rlnUe'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    125,
+    37,
+    '$2a$10$mgPONPeYNs4B3AoQSIt9p.GCH4ULS8M36a2U3eNndnySv.uzfG4Vy'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    126,
+    37,
+    '$2a$10$wnZza4fWYlahGwhzs6ZHIuqid0vvXatvA5SmiCG/kFUoLjhRVXfVa'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    127,
+    2,
+    '$2a$10$PX5YhNNX.l5KoEcJj9bYC.6OitgoQHNo.Ztux5CLt1FvsP2O5MSeK'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    128,
+    38,
+    '$2a$10$jXzbGjSXd3.JJhKpjy.IPO5HjIXWD3Ifg5pX/Msf.qE1IvZrcWh9u'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    129,
+    2,
+    '$2a$10$ae0tPOgW9PvhFgx4c2PJF.j45Zc2o9e/7BtqbSYh7T93409BfOwsK'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    130,
+    2,
+    '$2a$10$vlbY.jK14bw0ne7YuKfbA.28ytFC9c3ur8o0RZ51ERmthPAqH5UMm'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    131,
+    2,
+    '$2a$10$nHF52INnF4Ms/7HJu2JtJ.iZ04dgT1WksakGIzgIDkat8399/DpYi'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    132,
+    2,
+    '$2a$10$5cf8z1vGbjTJigkyu2GN4eG4pWiXuTdxTcWs7Yry425GYz1kU49sy'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    133,
+    2,
+    '$2a$10$7CRnSI5wrL5FHkmwVWQEGO2JAU.7UUlnaoRNgupawKmIew.TpekBq'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    134,
+    2,
+    '$2a$10$YF9kLISXR/YPJeLCLPM4puQZO.NiQYIBDJlHJ3j346oH3cUJVuWDS'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    135,
+    2,
+    '$2a$10$weFXXgG9dif2hTcT7MIWVueToQlTG2Szsxz9gnUc7rLQLzTBm3Qie'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    136,
+    2,
+    '$2a$10$QaqbRuuIiz/73iYMyiAnBOEvxCB6VnnBg3AvCdRr6sFtOqRYybn.S'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    137,
+    2,
+    '$2a$10$ShvtmkqIuZh5cycoaEA2XeOtsNHnny6z0IeU/cF6RYlNgRN/3/.me'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    138,
+    2,
+    '$2a$10$NmZf3acU1GfmqF67BAG6BO2KrdkMmUYHD41fUm04rdEKP2rgOzZOu'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    139,
+    2,
+    '$2a$10$cXopBu6tOpCuyE4xE0s8YOhqlSQiinNuEemspvtXOiuxYu1P0OFtO'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    140,
+    2,
+    '$2a$10$uO/EtECVICipyWxwHk/xneC7ETG8oNDemaH9UVSeERS9NhxNtYfJW'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    141,
+    37,
+    '$2a$10$gUz4nSt3MiojMDR1Uk0wzeGvdBf1G.22gKFA9wbnY6QkYYcK0oZWm'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    142,
+    2,
+    '$2a$10$9xzGwu3lBOcsFIPvVWREy.ov2aR/U9GzcelxGzbIcrsO9EMkH5SvK'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    143,
+    2,
+    '$2a$10$uilVQ293TKXZumuCfQcI3uNezj/.czg4.KKIx9ZcqdwIuj5GbVuKm'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    144,
+    2,
+    '$2a$10$LBk5HYzQbTfRN4EGzNhrFOyEHZ4XcuOx1xyTHm8OBk7crlNVR.9Uu'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    145,
+    42,
+    '$2a$10$b/iNzQh0nCmHxrd5CBnNdu3v9fhJY/HebQdi.4kgrsAxKMHvJQWSW'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    146,
+    43,
+    '$2a$10$m9xgzUxKxjMUXUS6v8FUW.LuN.IiuWe2lPyzzI5XIne9RcWZN6gaO'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    147,
+    44,
+    '$2a$10$vNTWfLjyJknIy3XpWcdEY.BGPtxJWS0RjA6lB08qT9O2POlT8m/2i'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    148,
+    46,
+    '$2a$10$6UZIbGnoBk4l8gAkgKNeT.XCcAIAsR8zDAdVoClmQEgvXr2Vub1ly'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    149,
+    47,
+    '$2a$10$tKuwj0ndRukGVQuPxWs0gui6.9Wvw3SZO4G.dyhtRV25jQqBc/OeW'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    150,
+    38,
+    '$2a$10$Tsaze36atygUyKdU/tYVyuFq./Uob0rGLPj1eWMjHN7Ybp6wnA9C.'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    151,
+    51,
+    '$2a$10$2jWyLGbmm9znV5w5rNNBF.Pek.lVz/m8pyW9zp0SGlsGq2xWNTPry'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    152,
+    52,
+    '$2a$10$bzvaVkoeipWgAgbbzjTwGu9JuFbtsQ7z.lHjgbzHsISzjnBHUAFwm'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    153,
+    53,
+    '$2a$10$VdP3orZvngnMzIN086Ej7ed6PeX6jlGcY9dbDXRka4P8CjqoctiAa'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    154,
+    2,
+    '$2a$10$xmSiwYwCNNAhsd6MZ/e3a.elyQuDx2JbD797vYzKrtGSavNYGlVZe'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    155,
+    37,
+    '$2a$10$rBqJo8P5.B8N9x9uL01fsONrPmWAftml02PiDo/ZI.jgVaBvHmNy.'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    156,
+    3,
+    '$2a$10$1PpQiUtjRGJhOK9Ylnzd6.B89u18Mf0OOfwHlxCXP6mhRzPpF6e/y'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    157,
+    4,
+    '$2a$10$9YBvB1tljb0kNT1RDa4NW.iknDIPB9Ay/u3gsnrYmOv7Mqxj6bBnG'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    158,
+    37,
+    '$2a$10$6DQj.Qa0EuSjJ8l22mRzTOtK8HUlLiaFo9gR/krgbX3A/HQWdOdRi'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    159,
+    4,
+    '$2a$10$d57qnMVpbGuDK7oHNkL4g.cyzSKs91kdPZpXoxHCJuV4GvFIDVWBS'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    160,
+    6,
+    '$2a$10$9ydp0umFfpn.mnelNYT5Du4r3.kLPzkKkLFiqJXZ1TwgosrTvWGV.'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    161,
+    6,
+    '$2a$10$/tQ.Dem2yezRJxb4lMs2sOxHf20XumCbxkgJQhjfqvG4JqNbavp0e'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    162,
+    37,
+    '$2a$10$AMQ7ImaLy9IkFsetZcqF4eTND5Tkz4woKjpGRnYrVHmzKvYyh.Gzq'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    163,
+    7,
+    '$2a$10$r53Rf9Ja5V5zCifpwW5B0uyGCjD3n8tpkLixjkuQiRm4vjx9z2n06'
+  );
+INSERT INTO
+  `TBL_MS_HIST_CONTRASENA` (`ID_HIST`, `ID_USUARIO`, `CONTRASENA`)
+VALUES
+  (
+    164,
+    37,
+    '$2a$10$Cexdj3K33.vJHDeq7Bjk4Og29VBbew/ty2ATy6C6AQvVXEhNdVaXG'
+  );
+
+# ------------------------------------------------------------
+# DATA DUMP FOR TABLE: TBL_MS_OBJETO
+# ------------------------------------------------------------
+
+INSERT INTO
+  `TBL_MS_OBJETO` (`ID_OBJETO`, `OBJETO`, `DESCRIPCION`, `TIPO_OBJETO`)
+VALUES
+  (
+    1,
+    'PREGUNTAS DE USUARIO',
+    'PANTALLA PARA GESTIONAR LAS PREGUNTAS DE USUARIO',
+    'HOLA'
+  );
+INSERT INTO
+  `TBL_MS_OBJETO` (`ID_OBJETO`, `OBJETO`, `DESCRIPCION`, `TIPO_OBJETO`)
+VALUES
+  (
+    2,
+    'CERTIFICADOS DE REGALO',
+    'PANTALLA PARA GESTIONAR LOS CERTIFICADOS DE REGALO',
+    'HOLE'
+  );
+INSERT INTO
+  `TBL_MS_OBJETO` (`ID_OBJETO`, `OBJETO`, `DESCRIPCION`, `TIPO_OBJETO`)
+VALUES
+  (
+    3,
+    'USUARIO',
+    'PANTALLA PARA GESTIONAR LOS USUARIOS',
+    'HOLI'
+  );
+
+# ------------------------------------------------------------
+# DATA DUMP FOR TABLE: TBL_MS_PARAMETRO
+# ------------------------------------------------------------
+
+INSERT INTO
+  `TBL_MS_PARAMETRO` (
+    `ID_PARAMETRO`,
+    `PARAMETRO`,
+    `VALOR`,
+    `CREADO_POR`,
+    `FECHA_CREACION`,
+    `MODIFICADO_POR`,
+    `FECHA_MODIFICACION`
+  )
+VALUES
+  (
+    1,
+    'ADMIN_INTENTOS',
+    '3',
+    2,
+    NULL,
+    2,
+    '2022-09-27 05:14:41'
+  );
+INSERT INTO
+  `TBL_MS_PARAMETRO` (
+    `ID_PARAMETRO`,
+    `PARAMETRO`,
+    `VALOR`,
+    `CREADO_POR`,
+    `FECHA_CREACION`,
+    `MODIFICADO_POR`,
+    `FECHA_MODIFICACION`
+  )
+VALUES
+  (
+    2,
+    'ADMIN_PREGUNTAS',
+    '3',
+    2,
+    NULL,
+    2,
+    '2022-09-27 05:15:18'
+  );
+INSERT INTO
+  `TBL_MS_PARAMETRO` (
+    `ID_PARAMETRO`,
+    `PARAMETRO`,
+    `VALOR`,
+    `CREADO_POR`,
+    `FECHA_CREACION`,
+    `MODIFICADO_POR`,
+    `FECHA_MODIFICACION`
+  )
+VALUES
+  (3, 'ADMIN_CPUERTO', '465', 2, NULL, 2, NULL);
+INSERT INTO
+  `TBL_MS_PARAMETRO` (
+    `ID_PARAMETRO`,
+    `PARAMETRO`,
+    `VALOR`,
+    `CREADO_POR`,
+    `FECHA_CREACION`,
+    `MODIFICADO_POR`,
+    `FECHA_MODIFICACION`
+  )
+VALUES
+  (4, 'ADMIN_CUSER', 'EXELON', 2, NULL, 2, NULL);
+INSERT INTO
+  `TBL_MS_PARAMETRO` (
+    `ID_PARAMETRO`,
+    `PARAMETRO`,
+    `VALOR`,
+    `CREADO_POR`,
+    `FECHA_CREACION`,
+    `MODIFICADO_POR`,
+    `FECHA_MODIFICACION`
+  )
+VALUES
+  (5, 'ADMIN_CPASS', 'as@3dDsd', 2, NULL, 2, NULL);
+INSERT INTO
+  `TBL_MS_PARAMETRO` (
+    `ID_PARAMETRO`,
+    `PARAMETRO`,
+    `VALOR`,
+    `CREADO_POR`,
+    `FECHA_CREACION`,
+    `MODIFICADO_POR`,
+    `FECHA_MODIFICACION`
+  )
+VALUES
+  (6, 'ADMIN_DIAS_VIGENCIA', '360', 2, NULL, 2, NULL);
+INSERT INTO
+  `TBL_MS_PARAMETRO` (
+    `ID_PARAMETRO`,
+    `PARAMETRO`,
+    `VALOR`,
+    `CREADO_POR`,
+    `FECHA_CREACION`,
+    `MODIFICADO_POR`,
+    `FECHA_MODIFICACION`
+  )
+VALUES
+  (7, 'MAX_CONTRASEÑA', '10', 2, NULL, 2, NULL);
+INSERT INTO
+  `TBL_MS_PARAMETRO` (
+    `ID_PARAMETRO`,
+    `PARAMETRO`,
+    `VALOR`,
+    `CREADO_POR`,
+    `FECHA_CREACION`,
+    `MODIFICADO_POR`,
+    `FECHA_MODIFICACION`
+  )
+VALUES
+  (8, 'SYS_NOMBRE', 'SAFI', 2, NULL, 2, NULL);
+INSERT INTO
+  `TBL_MS_PARAMETRO` (
+    `ID_PARAMETRO`,
+    `PARAMETRO`,
+    `VALOR`,
+    `CREADO_POR`,
+    `FECHA_CREACION`,
+    `MODIFICADO_POR`,
+    `FECHA_MODIFICACION`
+  )
+VALUES
+  (
+    9,
+    'ADMIN_CORREO',
+    'drburger.safi.mailer@gmail.com',
+    2,
+    NULL,
+    2,
+    NULL
+  );
+INSERT INTO
+  `TBL_MS_PARAMETRO` (
+    `ID_PARAMETRO`,
+    `PARAMETRO`,
+    `VALOR`,
+    `CREADO_POR`,
+    `FECHA_CREACION`,
+    `MODIFICADO_POR`,
+    `FECHA_MODIFICACION`
+  )
+VALUES
+  (10, 'MIN_CONTRASEÑA', '5', 2, NULL, 2, NULL);
+INSERT INTO
+  `TBL_MS_PARAMETRO` (
+    `ID_PARAMETRO`,
+    `PARAMETRO`,
+    `VALOR`,
+    `CREADO_POR`,
+    `FECHA_CREACION`,
+    `MODIFICADO_POR`,
+    `FECHA_MODIFICACION`
+  )
+VALUES
+  (11, 'CORREO_VIGENCIA_PASS', '24', 2, NULL, 2, NULL);
+INSERT INTO
+  `TBL_MS_PARAMETRO` (
+    `ID_PARAMETRO`,
+    `PARAMETRO`,
+    `VALOR`,
+    `CREADO_POR`,
+    `FECHA_CREACION`,
+    `MODIFICADO_POR`,
+    `FECHA_MODIFICACION`
+  )
+VALUES
+  (
+    12,
+    'SMTP_CORREO',
+    'drburger.safi.mailer@gmail.com',
+    2,
+    NULL,
+    2,
+    NULL
+  );
+INSERT INTO
+  `TBL_MS_PARAMETRO` (
+    `ID_PARAMETRO`,
+    `PARAMETRO`,
+    `VALOR`,
+    `CREADO_POR`,
+    `FECHA_CREACION`,
+    `MODIFICADO_POR`,
+    `FECHA_MODIFICACION`
+  )
+VALUES
+  (
+    13,
+    'SMTP_NOMBRE_EMPRESA',
+    'Dr. Burger',
+    2,
+    NULL,
+    2,
+    NULL
+  );
+INSERT INTO
+  `TBL_MS_PARAMETRO` (
+    `ID_PARAMETRO`,
+    `PARAMETRO`,
+    `VALOR`,
+    `CREADO_POR`,
+    `FECHA_CREACION`,
+    `MODIFICADO_POR`,
+    `FECHA_MODIFICACION`
+  )
+VALUES
+  (14, 'SESION_TOKEN_DURACION', '1h', 2, NULL, 2, NULL);
+INSERT INTO
+  `TBL_MS_PARAMETRO` (
+    `ID_PARAMETRO`,
+    `PARAMETRO`,
+    `VALOR`,
+    `CREADO_POR`,
+    `FECHA_CREACION`,
+    `MODIFICADO_POR`,
+    `FECHA_MODIFICACION`
+  )
+VALUES
+  (
+    15,
+    'CORREO_RECUPERACION_DURACION',
+    '24h',
+    2,
+    NULL,
+    2,
+    NULL
+  );
+
+# ------------------------------------------------------------
+# DATA DUMP FOR TABLE: TBL_MS_PERMISO
+# ------------------------------------------------------------
+
+INSERT INTO
+  `TBL_MS_PERMISO` (
+    `ID_PERMISO`,
+    `ID_ROL`,
+    `ID_OBJETO`,
+    `PERMISO_INSERCION`,
+    `PERMISO_ELIMINACION`,
+    `PERMISO_ACTUALIZACION`,
+    `PERMISO_CONSULTAR`,
+    `CREADO_POR`,
+    `FECHA_CREACION`,
+    `MODIFICADO_POR`,
+    `FECHA_MODIFICACION`
+  )
+VALUES
+  (1, 2, 1, 0, 1, 1, 1, 2, NULL, 3, NULL);
+INSERT INTO
+  `TBL_MS_PERMISO` (
+    `ID_PERMISO`,
+    `ID_ROL`,
+    `ID_OBJETO`,
+    `PERMISO_INSERCION`,
+    `PERMISO_ELIMINACION`,
+    `PERMISO_ACTUALIZACION`,
+    `PERMISO_CONSULTAR`,
+    `CREADO_POR`,
+    `FECHA_CREACION`,
+    `MODIFICADO_POR`,
+    `FECHA_MODIFICACION`
+  )
+VALUES
+  (2, 2, 2, 0, 0, 0, 0, 2, NULL, 2, NULL);
+INSERT INTO
+  `TBL_MS_PERMISO` (
+    `ID_PERMISO`,
+    `ID_ROL`,
+    `ID_OBJETO`,
+    `PERMISO_INSERCION`,
+    `PERMISO_ELIMINACION`,
+    `PERMISO_ACTUALIZACION`,
+    `PERMISO_CONSULTAR`,
+    `CREADO_POR`,
+    `FECHA_CREACION`,
+    `MODIFICADO_POR`,
+    `FECHA_MODIFICACION`
+  )
+VALUES
+  (3, 3, 3, 1, 0, 0, 0, 2, NULL, 2, NULL);
+
+# ------------------------------------------------------------
+# DATA DUMP FOR TABLE: TBL_MS_PREGUNTA
+# ------------------------------------------------------------
+
+INSERT INTO
+  `TBL_MS_PREGUNTA` (`ID_PREGUNTA`, `PREGUNTA`)
+VALUES
+  (1, '¿CUAL ES EL NOMBRE DE TU PRIMERA MASCOTA?');
+INSERT INTO
+  `TBL_MS_PREGUNTA` (`ID_PREGUNTA`, `PREGUNTA`)
+VALUES
+  (2, '¿TIENES NOVIA/O?');
+INSERT INTO
+  `TBL_MS_PREGUNTA` (`ID_PREGUNTA`, `PREGUNTA`)
+VALUES
+  (3, '¿ESCUELA DONDE ESTUDIASTES?');
+
+# ------------------------------------------------------------
+# DATA DUMP FOR TABLE: TBL_MS_PREGUNTA_USUARIO
+# ------------------------------------------------------------
+
+INSERT INTO
+  `TBL_MS_PREGUNTA_USUARIO` (`ID`, `ID_PREGUNTA`, `ID_USUARIO`, `RESPUESTA`)
+VALUES
+  (
+    1,
+    1,
+    2,
+    '$2a$10$9I2umsr31bx./Ph445DgIOx7KA/b4qzi9Ge4fKyeWw9ZxqtrEjD56'
+  );
+INSERT INTO
+  `TBL_MS_PREGUNTA_USUARIO` (`ID`, `ID_PREGUNTA`, `ID_USUARIO`, `RESPUESTA`)
+VALUES
+  (
+    2,
+    2,
+    2,
+    '$2a$10$zd46XcqvN7xLYWNsl77Nk.1aGbdP9RgVfiAP1J0b03ygXAPwrOgLy'
+  );
+INSERT INTO
+  `TBL_MS_PREGUNTA_USUARIO` (`ID`, `ID_PREGUNTA`, `ID_USUARIO`, `RESPUESTA`)
+VALUES
+  (
+    3,
+    3,
+    2,
+    '$2a$10$dXIx/1q6494lZROAM7lLIuJagSTlGWycB8uOpQo3k2T8snF78wJvq'
+  );
+INSERT INTO
+  `TBL_MS_PREGUNTA_USUARIO` (`ID`, `ID_PREGUNTA`, `ID_USUARIO`, `RESPUESTA`)
+VALUES
+  (
+    4,
+    2,
+    3,
+    '$2a$10$QePiOMrvvoAFYIremaiVPunAAZouBWWcBDkzSORJaoDktZ1S6YnR2'
+  );
+INSERT INTO
+  `TBL_MS_PREGUNTA_USUARIO` (`ID`, `ID_PREGUNTA`, `ID_USUARIO`, `RESPUESTA`)
+VALUES
+  (
+    5,
+    1,
+    3,
+    '$2a$10$QePiOMrvvoAFYIremaiVPuQEk41RyhtO3bSY7kFgVbT5smiz8wNZG'
+  );
+INSERT INTO
+  `TBL_MS_PREGUNTA_USUARIO` (`ID`, `ID_PREGUNTA`, `ID_USUARIO`, `RESPUESTA`)
+VALUES
+  (
+    6,
+    3,
+    3,
+    '$2a$10$QePiOMrvvoAFYIremaiVPu7CL2ZlZJGhn4Fs6uyNRU.glhubSYKt2'
+  );
+INSERT INTO
+  `TBL_MS_PREGUNTA_USUARIO` (`ID`, `ID_PREGUNTA`, `ID_USUARIO`, `RESPUESTA`)
+VALUES
+  (
+    7,
+    1,
+    37,
+    '$2a$10$aclovGG0A4kvMBc2ac/9lOkl4gpRkZ/m.igHsbwiORu1KZLO2hbry'
+  );
+INSERT INTO
+  `TBL_MS_PREGUNTA_USUARIO` (`ID`, `ID_PREGUNTA`, `ID_USUARIO`, `RESPUESTA`)
+VALUES
+  (
+    8,
+    2,
+    37,
+    '$2a$10$aclovGG0A4kvMBc2ac/9lOVB/6Md94lPH998O.7oV3ycn21hkT3Ai'
+  );
+INSERT INTO
+  `TBL_MS_PREGUNTA_USUARIO` (`ID`, `ID_PREGUNTA`, `ID_USUARIO`, `RESPUESTA`)
+VALUES
+  (
+    9,
+    3,
+    37,
+    '$2a$10$aclovGG0A4kvMBc2ac/9lOFAiscrXu06rh7kYjdxfkYN.q4OOQPC2'
+  );
+INSERT INTO
+  `TBL_MS_PREGUNTA_USUARIO` (`ID`, `ID_PREGUNTA`, `ID_USUARIO`, `RESPUESTA`)
+VALUES
+  (
+    25,
+    1,
+    4,
+    '$2a$10$aD67E1Djm09uNMx91TANI.9O/t2KhyVe.g3/xsW3kF8QDP7DYVaUW'
+  );
+INSERT INTO
+  `TBL_MS_PREGUNTA_USUARIO` (`ID`, `ID_PREGUNTA`, `ID_USUARIO`, `RESPUESTA`)
+VALUES
+  (
+    26,
+    2,
+    4,
+    '$2a$10$aD67E1Djm09uNMx91TANI.MGYb6i8qKDrtlNL4Y3av5TDftpnBLp2'
+  );
+INSERT INTO
+  `TBL_MS_PREGUNTA_USUARIO` (`ID`, `ID_PREGUNTA`, `ID_USUARIO`, `RESPUESTA`)
+VALUES
+  (
+    27,
+    3,
+    4,
+    '$2a$10$aD67E1Djm09uNMx91TANI.V5S1sd3arfpzgfnSgUDI2mDUTjoEGoO'
+  );
+INSERT INTO
+  `TBL_MS_PREGUNTA_USUARIO` (`ID`, `ID_PREGUNTA`, `ID_USUARIO`, `RESPUESTA`)
+VALUES
+  (
+    28,
+    1,
+    6,
+    '$2a$10$EvP05gvOrnt3SrExE8VHMeo/6PpSHgn48PXDR9j.LhvBnJftH6rNa'
+  );
+INSERT INTO
+  `TBL_MS_PREGUNTA_USUARIO` (`ID`, `ID_PREGUNTA`, `ID_USUARIO`, `RESPUESTA`)
+VALUES
+  (
+    29,
+    3,
+    6,
+    '$2a$10$EvP05gvOrnt3SrExE8VHMeQ4hvcCypeIA7a7JJCjYHPaTTVqmbpBm'
+  );
+INSERT INTO
+  `TBL_MS_PREGUNTA_USUARIO` (`ID`, `ID_PREGUNTA`, `ID_USUARIO`, `RESPUESTA`)
+VALUES
+  (
+    30,
+    2,
+    6,
+    '$2a$10$EvP05gvOrnt3SrExE8VHMeruq8rQJ3vMeTRmsFJLANfI/Odhn0GtG'
+  );
+
+# ------------------------------------------------------------
+# DATA DUMP FOR TABLE: TBL_MS_ROL
+# ------------------------------------------------------------
+
+INSERT INTO
+  `TBL_MS_ROL` (
+    `ID_ROL`,
+    `ROL`,
+    `DESCRIPCION`,
+    `CREADO_POR`,
+    `FECHA_CREACION`,
+    `MODIFICADO_POR`,
+    `FECHA_MODIFICACION`
+  )
+VALUES
+  (
+    1,
+    'ADMINISTRADOR',
+    'ROL CON EL MAXIMO PRIVILEGIO',
+    2,
+    NULL,
+    2,
+    NULL
+  );
+INSERT INTO
+  `TBL_MS_ROL` (
+    `ID_ROL`,
+    `ROL`,
+    `DESCRIPCION`,
+    `CREADO_POR`,
+    `FECHA_CREACION`,
+    `MODIFICADO_POR`,
+    `FECHA_MODIFICACION`
+  )
+VALUES
+  (
+    2,
+    'CAJERO',
+    'ROL ENCARGADO DE LA CAJA',
+    2,
+    NULL,
+    2,
+    NULL
+  );
+INSERT INTO
+  `TBL_MS_ROL` (
+    `ID_ROL`,
+    `ROL`,
+    `DESCRIPCION`,
+    `CREADO_POR`,
+    `FECHA_CREACION`,
+    `MODIFICADO_POR`,
+    `FECHA_MODIFICACION`
+  )
+VALUES
+  (
+    3,
+    'COCINERO',
+    'ROL PARA GESTIONAR LA COCINA',
+    2,
+    NULL,
+    2,
+    NULL
+  );
+INSERT INTO
+  `TBL_MS_ROL` (
+    `ID_ROL`,
+    `ROL`,
+    `DESCRIPCION`,
+    `CREADO_POR`,
+    `FECHA_CREACION`,
+    `MODIFICADO_POR`,
+    `FECHA_MODIFICACION`
+  )
+VALUES
+  (4, 'SIN ROL2', 'DETALLES', 2, NULL, 2, NULL);
+INSERT INTO
+  `TBL_MS_ROL` (
+    `ID_ROL`,
+    `ROL`,
+    `DESCRIPCION`,
+    `CREADO_POR`,
+    `FECHA_CREACION`,
+    `MODIFICADO_POR`,
+    `FECHA_MODIFICACION`
+  )
+VALUES
+  (
+    7,
+    'ASEADOR',
+    'DETALLES2',
+    37,
+    '2022-10-02 18:16:35',
+    2,
+    '2022-10-02 18:18:09'
+  );
+
+# ------------------------------------------------------------
+# DATA DUMP FOR TABLE: TBL_MS_USUARIO
+# ------------------------------------------------------------
+
+INSERT INTO
+  `TBL_MS_USUARIO` (
+    `ID_USUARIO`,
+    `USUARIO`,
+    `NOMBRE_USUARIO`,
+    `ESTADO_USUARIO`,
+    `CONTRASENA`,
+    `ID_ROL`,
+    `FECHA_ULTIMA_CONEXION`,
+    `PREGUNTAS_CONTESTADAS`,
+    `PRIMER_INGRESO`,
+    `FECHA_VENCIMIENTO`,
+    `CORREO_ELECTRONICO`,
+    `INTENTOS`,
+    `CREADO_POR`,
+    `FECHA_CREACION`,
+    `MODIFICADO_POR`,
+    `FECHA_MODIFICACION`
+  )
+VALUES
+  (
+    2,
+    'MARIA23',
+    'MARIA MOLINA',
+    'BLOQUEADO',
+    '$2a$10$xmSiwYwCNNAhsd6MZ/e3a.elyQuDx2JbD797vYzKrtGSavNYGlVZe',
+    1,
+    '2022-10-01 02:33:52',
+    2,
+    65,
+    '2023-09-01 02:22:42',
+    'maria@unah.hn',
+    3,
+    2,
+    NULL,
+    2,
+    NULL
+  );
+INSERT INTO
+  `TBL_MS_USUARIO` (
+    `ID_USUARIO`,
+    `USUARIO`,
+    `NOMBRE_USUARIO`,
+    `ESTADO_USUARIO`,
+    `CONTRASENA`,
+    `ID_ROL`,
+    `FECHA_ULTIMA_CONEXION`,
+    `PREGUNTAS_CONTESTADAS`,
+    `PRIMER_INGRESO`,
+    `FECHA_VENCIMIENTO`,
+    `CORREO_ELECTRONICO`,
+    `INTENTOS`,
+    `CREADO_POR`,
+    `FECHA_CREACION`,
+    `MODIFICADO_POR`,
+    `FECHA_MODIFICACION`
+  )
+VALUES
+  (
+    3,
+    'JUAN23',
+    'JUAN ESTRADA',
+    'ACTIVO',
+    '$2a$10$1PpQiUtjRGJhOK9Ylnzd6.B89u18Mf0OOfwHlxCXP6mhRzPpF6e/y',
+    1,
+    '0000-00-00 00:00:00',
+    1,
+    2,
+    '2023-09-01 03:32:51',
+    'estrada@gmail.com',
+    0,
+    2,
+    NULL,
+    2,
+    NULL
+  );
+INSERT INTO
+  `TBL_MS_USUARIO` (
+    `ID_USUARIO`,
+    `USUARIO`,
+    `NOMBRE_USUARIO`,
+    `ESTADO_USUARIO`,
+    `CONTRASENA`,
+    `ID_ROL`,
+    `FECHA_ULTIMA_CONEXION`,
+    `PREGUNTAS_CONTESTADAS`,
+    `PRIMER_INGRESO`,
+    `FECHA_VENCIMIENTO`,
+    `CORREO_ELECTRONICO`,
+    `INTENTOS`,
+    `CREADO_POR`,
+    `FECHA_CREACION`,
+    `MODIFICADO_POR`,
+    `FECHA_MODIFICACION`
+  )
+VALUES
+  (
+    4,
+    'ANA',
+    'ANA PAZ',
+    'ACTIVO',
+    '$2a$10$d57qnMVpbGuDK7oHNkL4g.cyzSKs91kdPZpXoxHCJuV4GvFIDVWBS',
+    2,
+    '2022-10-01 05:48:51',
+    3,
+    23,
+    '2023-09-01 05:50:25',
+    'ana@unah.hn',
+    0,
+    2,
+    NULL,
+    2,
+    NULL
+  );
+INSERT INTO
+  `TBL_MS_USUARIO` (
+    `ID_USUARIO`,
+    `USUARIO`,
+    `NOMBRE_USUARIO`,
+    `ESTADO_USUARIO`,
+    `CONTRASENA`,
+    `ID_ROL`,
+    `FECHA_ULTIMA_CONEXION`,
+    `PREGUNTAS_CONTESTADAS`,
+    `PRIMER_INGRESO`,
+    `FECHA_VENCIMIENTO`,
+    `CORREO_ELECTRONICO`,
+    `INTENTOS`,
+    `CREADO_POR`,
+    `FECHA_CREACION`,
+    `MODIFICADO_POR`,
+    `FECHA_MODIFICACION`
+  )
+VALUES
+  (
+    5,
+    'KARLA34',
+    'KARLA PEREZ',
+    'INACTIVO',
+    '$2a$10$xP5dqSSQHnIZYinJWhHuT.dA7O4M11dGOzC2Zu7ttlpgo4iu8EehC',
+    2,
+    '2022-09-15 06:29:56',
+    3,
+    2,
+    '2022-09-15 06:29:56',
+    'karla@unah.hn',
+    0,
+    2,
+    NULL,
+    2,
+    NULL
+  );
+INSERT INTO
+  `TBL_MS_USUARIO` (
+    `ID_USUARIO`,
+    `USUARIO`,
+    `NOMBRE_USUARIO`,
+    `ESTADO_USUARIO`,
+    `CONTRASENA`,
+    `ID_ROL`,
+    `FECHA_ULTIMA_CONEXION`,
+    `PREGUNTAS_CONTESTADAS`,
+    `PRIMER_INGRESO`,
+    `FECHA_VENCIMIENTO`,
+    `CORREO_ELECTRONICO`,
+    `INTENTOS`,
+    `CREADO_POR`,
+    `FECHA_CREACION`,
+    `MODIFICADO_POR`,
+    `FECHA_MODIFICACION`
+  )
+VALUES
+  (
+    6,
+    'CARLOS20',
+    'CARLOS HERNANDEZ',
+    'ACTIVO',
+    '$2a$10$/tQ.Dem2yezRJxb4lMs2sOxHf20XumCbxkgJQhjfqvG4JqNbavp0e',
+    3,
+    '2022-10-01 23:55:05',
+    3,
+    3,
+    '2023-10-02 00:12:20',
+    'carlos@gmail.com',
+    0,
+    2,
+    NULL,
+    2,
+    NULL
+  );
+INSERT INTO
+  `TBL_MS_USUARIO` (
+    `ID_USUARIO`,
+    `USUARIO`,
+    `NOMBRE_USUARIO`,
+    `ESTADO_USUARIO`,
+    `CONTRASENA`,
+    `ID_ROL`,
+    `FECHA_ULTIMA_CONEXION`,
+    `PREGUNTAS_CONTESTADAS`,
+    `PRIMER_INGRESO`,
+    `FECHA_VENCIMIENTO`,
+    `CORREO_ELECTRONICO`,
+    `INTENTOS`,
+    `CREADO_POR`,
+    `FECHA_CREACION`,
+    `MODIFICADO_POR`,
+    `FECHA_MODIFICACION`
+  )
+VALUES
+  (
+    7,
+    'LUQUE',
+    'ISAAC LUQUE',
+    'NUEVO',
+    '$2a$10$r53Rf9Ja5V5zCifpwW5B0uyGCjD3n8tpkLixjkuQiRm4vjx9z2n06',
+    1,
+    '2022-10-02 20:20:10',
+    0,
+    2,
+    '2023-09-25 17:23:35',
+    'isaac@gmail.com',
+    0,
+    2,
+    NULL,
+    2,
+    '2022-10-02 20:20:10'
+  );
+INSERT INTO
+  `TBL_MS_USUARIO` (
+    `ID_USUARIO`,
+    `USUARIO`,
+    `NOMBRE_USUARIO`,
+    `ESTADO_USUARIO`,
+    `CONTRASENA`,
+    `ID_ROL`,
+    `FECHA_ULTIMA_CONEXION`,
+    `PREGUNTAS_CONTESTADAS`,
+    `PRIMER_INGRESO`,
+    `FECHA_VENCIMIENTO`,
+    `CORREO_ELECTRONICO`,
+    `INTENTOS`,
+    `CREADO_POR`,
+    `FECHA_CREACION`,
+    `MODIFICADO_POR`,
+    `FECHA_MODIFICACION`
+  )
+VALUES
+  (
+    8,
+    'PABLITO',
+    'PABLITO LUQUE',
+    'VACACIONES',
+    '$2a$10$wK7oPVhaIiniDH44Ia5GrOZubGpPACdK/FDRaTJQWP538VR1dG2BG',
+    NULL,
+    NULL,
+    0,
+    0,
+    '2023-09-01 06:25:05',
+    'pablito@gmail.com',
+    0,
+    2,
+    NULL,
+    2,
+    NULL
+  );
+INSERT INTO
+  `TBL_MS_USUARIO` (
+    `ID_USUARIO`,
+    `USUARIO`,
+    `NOMBRE_USUARIO`,
+    `ESTADO_USUARIO`,
+    `CONTRASENA`,
+    `ID_ROL`,
+    `FECHA_ULTIMA_CONEXION`,
+    `PREGUNTAS_CONTESTADAS`,
+    `PRIMER_INGRESO`,
+    `FECHA_VENCIMIENTO`,
+    `CORREO_ELECTRONICO`,
+    `INTENTOS`,
+    `CREADO_POR`,
+    `FECHA_CREACION`,
+    `MODIFICADO_POR`,
+    `FECHA_MODIFICACION`
+  )
+VALUES
+  (
+    35,
+    'UYUYUI',
+    'CRISTINA REYES',
+    'ACTIVO',
+    '$2a$10$k0jAMxC8u.sChkD9913ie./6SmMAmqxe1tVdfcoUvOLutLHCXopma',
+    2,
+    '2022-09-21 23:32:03',
+    0,
+    3,
+    '2023-08-30 00:00:02',
+    'mispolainas@gmail.com',
+    1,
+    2,
+    NULL,
+    2,
+    NULL
+  );
+INSERT INTO
+  `TBL_MS_USUARIO` (
+    `ID_USUARIO`,
+    `USUARIO`,
+    `NOMBRE_USUARIO`,
+    `ESTADO_USUARIO`,
+    `CONTRASENA`,
+    `ID_ROL`,
+    `FECHA_ULTIMA_CONEXION`,
+    `PREGUNTAS_CONTESTADAS`,
+    `PRIMER_INGRESO`,
+    `FECHA_VENCIMIENTO`,
+    `CORREO_ELECTRONICO`,
+    `INTENTOS`,
+    `CREADO_POR`,
+    `FECHA_CREACION`,
+    `MODIFICADO_POR`,
+    `FECHA_MODIFICACION`
+  )
+VALUES
+  (
+    37,
+    'EXELON',
+    'KEVIN CUBAS',
+    'ACTIVO',
+    '$2a$10$Cexdj3K33.vJHDeq7Bjk4Og29VBbew/ty2ATy6C6AQvVXEhNdVaXG',
+    1,
+    '2022-10-02 20:23:01',
+    0,
+    36,
+    '2023-09-25 20:22:40',
+    'kevin.cubas.hn@outlook.com',
+    0,
+    2,
+    NULL,
+    2,
+    '2022-10-02 20:23:01'
+  );
+INSERT INTO
+  `TBL_MS_USUARIO` (
+    `ID_USUARIO`,
+    `USUARIO`,
+    `NOMBRE_USUARIO`,
+    `ESTADO_USUARIO`,
+    `CONTRASENA`,
+    `ID_ROL`,
+    `FECHA_ULTIMA_CONEXION`,
+    `PREGUNTAS_CONTESTADAS`,
+    `PRIMER_INGRESO`,
+    `FECHA_VENCIMIENTO`,
+    `CORREO_ELECTRONICO`,
+    `INTENTOS`,
+    `CREADO_POR`,
+    `FECHA_CREACION`,
+    `MODIFICADO_POR`,
+    `FECHA_MODIFICACION`
+  )
+VALUES
+  (
+    38,
+    'SCARLETH',
+    'SCARLETH BAQUEDANO',
+    'NUEVO',
+    '$2a$10$Tsaze36atygUyKdU/tYVyuFq./Uob0rGLPj1eWMjHN7Ybp6wnA9C.',
+    1,
+    '2022-09-30 01:53:16',
+    0,
+    17,
+    '2023-08-31 01:51:22',
+    'abigailb643@gmail.com',
+    0,
+    2,
+    NULL,
+    37,
+    '2022-10-02 22:19:16'
+  );
+INSERT INTO
+  `TBL_MS_USUARIO` (
+    `ID_USUARIO`,
+    `USUARIO`,
+    `NOMBRE_USUARIO`,
+    `ESTADO_USUARIO`,
+    `CONTRASENA`,
+    `ID_ROL`,
+    `FECHA_ULTIMA_CONEXION`,
+    `PREGUNTAS_CONTESTADAS`,
+    `PRIMER_INGRESO`,
+    `FECHA_VENCIMIENTO`,
+    `CORREO_ELECTRONICO`,
+    `INTENTOS`,
+    `CREADO_POR`,
+    `FECHA_CREACION`,
+    `MODIFICADO_POR`,
+    `FECHA_MODIFICACION`
+  )
+VALUES
+  (
+    42,
+    'DONNA',
+    'DONNAPOOLSEN',
+    'NUEVO',
+    '$2a$10$b/iNzQh0nCmHxrd5CBnNdu3v9fhJY/HebQdi.4kgrsAxKMHvJQWSW',
+    1,
+    '2022-09-30 01:54:40',
+    0,
+    1,
+    '2023-08-31 01:41:57',
+    'Donna@gmail.com',
+    0,
+    2,
+    NULL,
+    2,
+    NULL
+  );
+INSERT INTO
+  `TBL_MS_USUARIO` (
+    `ID_USUARIO`,
+    `USUARIO`,
+    `NOMBRE_USUARIO`,
+    `ESTADO_USUARIO`,
+    `CONTRASENA`,
+    `ID_ROL`,
+    `FECHA_ULTIMA_CONEXION`,
+    `PREGUNTAS_CONTESTADAS`,
+    `PRIMER_INGRESO`,
+    `FECHA_VENCIMIENTO`,
+    `CORREO_ELECTRONICO`,
+    `INTENTOS`,
+    `CREADO_POR`,
+    `FECHA_CREACION`,
+    `MODIFICADO_POR`,
+    `FECHA_MODIFICACION`
+  )
+VALUES
+  (
+    43,
+    'UYUYUIUYUYUIUI',
+    'JOSE VALLECILLO',
+    'NUEVO',
+    '$2a$10$m9xgzUxKxjMUXUS6v8FUW.LuN.IiuWe2lPyzzI5XIne9RcWZN6gaO',
+    2,
+    '0000-00-00 00:00:00',
+    0,
+    0,
+    '2023-08-31 01:41:21',
+    'mispolainas2@gmail.com',
+    0,
+    2,
+    NULL,
+    2,
+    NULL
+  );
+INSERT INTO
+  `TBL_MS_USUARIO` (
+    `ID_USUARIO`,
+    `USUARIO`,
+    `NOMBRE_USUARIO`,
+    `ESTADO_USUARIO`,
+    `CONTRASENA`,
+    `ID_ROL`,
+    `FECHA_ULTIMA_CONEXION`,
+    `PREGUNTAS_CONTESTADAS`,
+    `PRIMER_INGRESO`,
+    `FECHA_VENCIMIENTO`,
+    `CORREO_ELECTRONICO`,
+    `INTENTOS`,
+    `CREADO_POR`,
+    `FECHA_CREACION`,
+    `MODIFICADO_POR`,
+    `FECHA_MODIFICACION`
+  )
+VALUES
+  (
+    44,
+    'CARLITOS',
+    'JOSECANO',
+    'NUEVO',
+    '$2a$10$vNTWfLjyJknIy3XpWcdEY.BGPtxJWS0RjA6lB08qT9O2POlT8m/2i',
+    2,
+    NULL,
+    0,
+    0,
+    '2023-08-31 01:42:43',
+    'mispolainas3@gmail.com',
+    0,
+    2,
+    NULL,
+    2,
+    NULL
+  );
+INSERT INTO
+  `TBL_MS_USUARIO` (
+    `ID_USUARIO`,
+    `USUARIO`,
+    `NOMBRE_USUARIO`,
+    `ESTADO_USUARIO`,
+    `CONTRASENA`,
+    `ID_ROL`,
+    `FECHA_ULTIMA_CONEXION`,
+    `PREGUNTAS_CONTESTADAS`,
+    `PRIMER_INGRESO`,
+    `FECHA_VENCIMIENTO`,
+    `CORREO_ELECTRONICO`,
+    `INTENTOS`,
+    `CREADO_POR`,
+    `FECHA_CREACION`,
+    `MODIFICADO_POR`,
+    `FECHA_MODIFICACION`
+  )
+VALUES
+  (
+    46,
+    'ANTHONY',
+    'AVILANTHONY',
+    'NUEVO',
+    '$2a$10$6UZIbGnoBk4l8gAkgKNeT.XCcAIAsR8zDAdVoClmQEgvXr2Vub1ly',
+    2,
+    '2022-09-30 01:53:07',
+    0,
+    2,
+    '2023-08-31 01:45:59',
+    'anthony1@gmail.com',
+    0,
+    2,
+    NULL,
+    2,
+    NULL
+  );
+INSERT INTO
+  `TBL_MS_USUARIO` (
+    `ID_USUARIO`,
+    `USUARIO`,
+    `NOMBRE_USUARIO`,
+    `ESTADO_USUARIO`,
+    `CONTRASENA`,
+    `ID_ROL`,
+    `FECHA_ULTIMA_CONEXION`,
+    `PREGUNTAS_CONTESTADAS`,
+    `PRIMER_INGRESO`,
+    `FECHA_VENCIMIENTO`,
+    `CORREO_ELECTRONICO`,
+    `INTENTOS`,
+    `CREADO_POR`,
+    `FECHA_CREACION`,
+    `MODIFICADO_POR`,
+    `FECHA_MODIFICACION`
+  )
+VALUES
+  (
+    47,
+    'DONITOPICIOSO',
+    'DONI_GARCÍA',
+    'NUEVO',
+    '$2a$10$tKuwj0ndRukGVQuPxWs0gui6.9Wvw3SZO4G.dyhtRV25jQqBc/OeW',
+    2,
+    '2022-09-30 02:59:09',
+    0,
+    4,
+    '2023-08-31 01:47:06',
+    'donito@gmail.com',
+    0,
+    2,
+    NULL,
+    2,
+    NULL
+  );
+INSERT INTO
+  `TBL_MS_USUARIO` (
+    `ID_USUARIO`,
+    `USUARIO`,
+    `NOMBRE_USUARIO`,
+    `ESTADO_USUARIO`,
+    `CONTRASENA`,
+    `ID_ROL`,
+    `FECHA_ULTIMA_CONEXION`,
+    `PREGUNTAS_CONTESTADAS`,
+    `PRIMER_INGRESO`,
+    `FECHA_VENCIMIENTO`,
+    `CORREO_ELECTRONICO`,
+    `INTENTOS`,
+    `CREADO_POR`,
+    `FECHA_CREACION`,
+    `MODIFICADO_POR`,
+    `FECHA_MODIFICACION`
+  )
+VALUES
+  (
+    51,
+    'CARLITOS2',
+    'CARLINO',
+    'NUEVO',
+    '$2a$10$2jWyLGbmm9znV5w5rNNBF.Pek.lVz/m8pyW9zp0SGlsGq2xWNTPry',
+    1,
+    NULL,
+    0,
+    0,
+    '2023-08-31 02:38:51',
+    'mispolainas5@gmail.com',
+    0,
+    2,
+    NULL,
+    2,
+    NULL
+  );
+INSERT INTO
+  `TBL_MS_USUARIO` (
+    `ID_USUARIO`,
+    `USUARIO`,
+    `NOMBRE_USUARIO`,
+    `ESTADO_USUARIO`,
+    `CONTRASENA`,
+    `ID_ROL`,
+    `FECHA_ULTIMA_CONEXION`,
+    `PREGUNTAS_CONTESTADAS`,
+    `PRIMER_INGRESO`,
+    `FECHA_VENCIMIENTO`,
+    `CORREO_ELECTRONICO`,
+    `INTENTOS`,
+    `CREADO_POR`,
+    `FECHA_CREACION`,
+    `MODIFICADO_POR`,
+    `FECHA_MODIFICACION`
+  )
+VALUES
+  (
+    52,
+    'DONITO',
+    'DONI',
+    'NUEVO',
+    '$2a$10$bzvaVkoeipWgAgbbzjTwGu9JuFbtsQ7z.lHjgbzHsISzjnBHUAFwm',
+    2,
+    NULL,
+    0,
+    0,
+    '2023-08-31 03:15:52',
+    'donito1@gmail.com',
+    0,
+    2,
+    NULL,
+    2,
+    NULL
+  );
+INSERT INTO
+  `TBL_MS_USUARIO` (
+    `ID_USUARIO`,
+    `USUARIO`,
+    `NOMBRE_USUARIO`,
+    `ESTADO_USUARIO`,
+    `CONTRASENA`,
+    `ID_ROL`,
+    `FECHA_ULTIMA_CONEXION`,
+    `PREGUNTAS_CONTESTADAS`,
+    `PRIMER_INGRESO`,
+    `FECHA_VENCIMIENTO`,
+    `CORREO_ELECTRONICO`,
+    `INTENTOS`,
+    `CREADO_POR`,
+    `FECHA_CREACION`,
+    `MODIFICADO_POR`,
+    `FECHA_MODIFICACION`
+  )
+VALUES
+  (
+    53,
+    'CARLITOS3',
+    'CARLINO3',
+    'NUEVO',
+    '$2a$10$VdP3orZvngnMzIN086Ej7ed6PeX6jlGcY9dbDXRka4P8CjqoctiAa',
+    1,
+    NULL,
+    0,
+    0,
+    '2023-08-31 03:29:22',
+    'mispolainas6@gmail.com',
+    0,
+    2,
+    NULL,
+    2,
+    NULL
+  );
+
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;

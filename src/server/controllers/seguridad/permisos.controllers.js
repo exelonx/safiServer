@@ -19,6 +19,10 @@ const getPermisos = async(req = request, res = response) => {
                     ROL: {[Op.like]: `%${buscar.toUpperCase()}%`}
                 }, {
                     OBJETO: {[Op.like]: `%${buscar.toUpperCase()}%`}
+                }, {
+                    CREADO_POR: { [Op.like]: `%${buscar.toUpperCase()}%`}
+                }, {
+                    MODIFICADO_POR: { [Op.like]: `%${buscar.toUpperCase()}%`}
                 }]
             }
         });
@@ -61,14 +65,15 @@ const getPermiso = async(req = request, res = response) => {
 const putPermisos = async(req = request, res = response) =>{
 
     const {id_permiso} = req.params;
-    const {permiso_insercion = "", permiso_eliminacion = "", permiso_actualizacion = "", permiso_consultar = ""} = req.body;
+    const {permiso_insercion = "", permiso_eliminacion = "", permiso_actualizacion = "", permiso_consultar = "", id_usuario = ""} = req.body;
 
     try {
         await Permisos.update({
             PERMISO_INSERCION: permiso_insercion !== "" ? permiso_insercion : Permisos.PERMISO_INSERCION,
             PERMISO_ELIMINACION: permiso_eliminacion !== "" ? permiso_eliminacion : Permisos.PERMISO_ELIMINACION,
             PERMISO_ACTUALIZACION: permiso_actualizacion !== "" ? permiso_actualizacion : Permisos.PERMISO_ACTUALIZACION,
-            PERMISO_CONSULTAR: permiso_consultar !== "" ? permiso_consultar : Permisos.PERMISO_CONSULTAR
+            PERMISO_CONSULTAR: permiso_consultar !== "" ? permiso_consultar : Permisos.PERMISO_CONSULTAR,
+            MODIFICADO_POR: id_usuario
         }, {
             where:{
                 ID_PERMISO: id_permiso

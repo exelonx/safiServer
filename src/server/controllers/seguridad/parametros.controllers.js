@@ -5,12 +5,14 @@ const ViewParametro = require('../../models/seguridad/parametro');
 
 // Llamar todas los parametros
 const getParametros = async (req = request, res = response) => {
-    
+    let { limite = 10, desde = 0 } = req.query
     const { buscar = "" } = req.body;
 
     try {
 
         const parametros = await ViewParametro.findAll({
+            limit: parseInt(limite, 10),
+            offset: parseInt(desde, 10),
             where: {
                 // WHERE COLUMNA1 LIKE %${BUSCAR}% OR COLUMNA2 LIKE %${BUSCAR}%
                 [Op.or]: [{

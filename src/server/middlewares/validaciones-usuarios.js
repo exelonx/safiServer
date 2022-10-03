@@ -61,8 +61,26 @@ const existeUsuarioUpdated = async( req = request, res = response, next ) => {
     next()
 }
 
+const noExisteUsuario = async( req = request, res = response, next ) => {
+
+    const { id_usuario } = req.body;
+
+    // Verificar el usuario
+    let user = await Usuario.findByPk( id_usuario );
+
+    if ( !user ) {
+        return res.status(400).json({
+            ok: false,
+            msg: 'No existe un usuario con el ID: '+id_usuario
+        })
+    }
+
+    next()
+}
+
 module.exports = {
     existeEmail,
     existeUsuario,
     existeUsuarioUpdated,
+    noExisteUsuario
 }

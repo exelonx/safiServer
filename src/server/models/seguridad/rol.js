@@ -22,7 +22,7 @@ const Roles = db.define(`TBL_MS_ROL`, {
     }
 }, {
     tableName: 'TBL_MS_ROL',
-    timestamps: false,
+    timestamps: true,
     createdAt: 'FECHA_CREACION',
     updatedAt: 'FECHA_MODIFICACION'
 })

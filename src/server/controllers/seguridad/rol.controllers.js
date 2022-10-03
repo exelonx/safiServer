@@ -1,27 +1,38 @@
 const { request, response } = require('express');
 const { Op } = require('sequelize');
 const Rol = require('../../models/seguridad/rol');
-const Server = require('../../models/server');
+const ViewRol = require('../../models/seguridad/sql-vistas/view_rol');
 
 // Llamar todos los roles paginados
 const getRoles = async (req = request, res = response) => {
     
-    let { limite = 10, desde = 0 } = req.query
+    let { limite = 10, desde = 0 } = req.query;
+    let { buscar = "" } = req.body;
 
-    await console.log( await Server.parametros)
     try {
 
         // Paginación
-        const roles = await Rol.findAll({
+        const roles = await ViewRol.findAll({
             limit: parseInt(limite, 10),
-            offset: parseInt(desde, 10)
+            offset: parseInt(desde, 10),
+            where: {
+                [Op.or]: [{
+                    ROL: { [Op.like]: `%${buscar.toUpperCase() }%`}
+                }, {
+                    DESCRIPCION: { [Op.like]: `%${buscar.toUpperCase()}%`}
+                }, {
+                    CREADO_POR: { [Op.like]: `%${buscar.toUpperCase()}%`}
+                }, {
+                    MODIFICADO_POR: { [Op.like]: `%${buscar.toUpperCase()}%`}
+                }]
+            }
         });
         
         // Contar resultados total
-        const countRoles = await Rol.count()
+        const countRoles = await Rol.count();
 
         // Respuesta
-        res.json( { roles, countRoles} )
+        res.json( { roles, countRoles} );
 
     } catch (error) {
         console.log(error);
@@ -38,7 +49,7 @@ const getRol = async (req = request, res = response) => {
 
     try {
         
-        const rol = await Rol.findByPk( id_rol );
+        const rol = await ViewRol.findByPk( id_rol );
 
         // Validar Existencia
         if( !rol ){
@@ -60,22 +71,23 @@ const getRol = async (req = request, res = response) => {
 
 const postRol = async (req = request, res = response) => {
     //body
-    const { rol, descripcion } = req.body;
+    const { rol, descripcion, id_usuario } = req.body;
     
     try {
 
+        console.log('hola')
         // Construir modelo
         const nuevoRol = await Rol.build({
             ROL: rol,
             DESCRIPCION: descripcion,
+            CREADO_POR: id_usuario,
+            MODIFICADO_POR: id_usuario
         });
-
         // Insertar a DB
         await nuevoRol.save();   
 
         // Responder
-        const { ROL, DESCRIPCION, ...resto } = nuevoRol
-        res.json( {ROL, DESCRIPCION} );
+        res.json( nuevoRol );
 
     } catch (error) {
         console.log(error);
@@ -87,14 +99,15 @@ const postRol = async (req = request, res = response) => {
 
 const putRol = async (req = request, res = response) => {
     const { id_rol } = req.params
-    const { rol = "", descripcion = "" } = req.body;
+    const { rol = "", descripcion = "", id_usuario = "" } = req.body;
 
     try {
 
         // Actualizar db Rol
         await Rol.update({
             ROL: rol !== "" ? rol : Rol.ROL,
-            DESCRIPCION: descripcion !== "" ? descripcion : Rol.DESCRIPCION
+            DESCRIPCION: descripcion !== "" ? descripcion : Rol.DESCRIPCION,
+            MODIFICADO_POR: id_usuario
         }, {
             where: {
                 ID_ROL: id_rol

@@ -50,7 +50,7 @@ const Usuarios = db.define(`TBL_MS_USUARIO`, {
     }
 }, {
     tableName: 'TBL_MS_USUARIO',
-    timestamps: false,
+    timestamps: true,
     createdAt: 'FECHA_CREACION',
     updatedAt: 'FECHA_MODIFICACION'
 })

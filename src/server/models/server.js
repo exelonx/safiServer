@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const fileUpload = require('express-fileupload')
 require('dotenv').config();
 const colors = require('colors/safe');
 
@@ -15,6 +16,7 @@ const routerPregunta = require('../routes/seguridad/pregunta.routes');
 const routerPregUser = require('../routes/seguridad/pregunta-usuario.routes');
 const routerParametro = require('../routes/seguridad/parametro.routes');
 const routerPermiso = require('../routes/seguridad/permiso.routes');
+const routerBackup = require('../routes/administracion/backup.routes');
 
 class Server {
     constructor () {
@@ -31,13 +33,16 @@ class Server {
 
         // rutas
         this.apiPath = {
+            // SEGURIDAD
             auth:             '/api/auth',
             usuario:          '/api/usuario',
             rol:              '/api/rol',
             pregunta:         '/api/pregunta',
             preguntaUsuarios: '/api/pregunta-usuario',
             parametro:        '/api/parametro',
-            permiso:          '/api/permiso'
+            permiso:          '/api/permiso',
+            // ADMINISTRACION
+            dbBackup:         '/api/db-backup'
         }
 
         // middlewares
@@ -62,11 +67,17 @@ class Server {
     }
 
     middlewares () {
-        //Cors para express
+        // Cors para express
         this.app.use(cors());
 
-        //Lectura del body
+        // Lectura del body
         this.app.use(express.json());
+
+        // Carga de archivos
+        this.app.use(fileUpload({
+            useTempFiles : true,
+            tempFileDir : '/tmp/'
+        }));
     }
 
     routes () {
@@ -78,6 +89,8 @@ class Server {
         this.app.use(this.apiPath.preguntaUsuarios, routerPregUser);   // Preguntas de los usuarios (Respuestas)
         this.app.use(this.apiPath.parametro, routerParametro);         // Parametros del sistema
         this.app.use(this.apiPath.permiso, routerPermiso);             // Permisos
+        // Administracion
+        this.app.use(this.apiPath.dbBackup, routerBackup)
     }
 
     async listen () {
