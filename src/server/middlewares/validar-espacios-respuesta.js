@@ -1,5 +1,4 @@
 const { response, request } = require("express");
-const { and } = require("sequelize");
 
 const validarEspaciosRespuesta = (req = request, res = response, next) => {
 

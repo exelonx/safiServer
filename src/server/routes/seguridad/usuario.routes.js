@@ -8,6 +8,7 @@ const { validarCampos,
     validarEspacio,
     existeUsuarioUpdated,
     existeIDUsuario,
+    validarEspaciosUsuario
     
 } = require('../../middlewares');
     
@@ -28,6 +29,7 @@ router.post('/registro', [
     // Validaciones de nombre de usuario
     check('nombre_usuario', 'El nombre de usuario es obligatorio').not().isEmpty(),
     check('nombre_usuario', 'El nombre de usuario debe estar en mayúscula').isUppercase(),
+    check('nombre_usuario', 'Solo se permite un espacio entre palabras.').custom(validarEspaciosUsuario),
     // validaciones de correo
     check('correo', 'El correo es obligatorio').not().isEmpty(),
     check('correo', 'El correo no es valido').isEmail(),

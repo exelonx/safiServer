@@ -78,9 +78,18 @@ const noExisteUsuario = async( req = request, res = response, next ) => {
     next()
 }
 
+const validarEspaciosUsuario = async (nombre_usuario = '') => {
+
+    if ( nombre_usuario.includes('  ') ) {
+        throw new Error()
+    }
+
+}
+
 module.exports = {
     existeEmail,
     existeUsuario,
     existeUsuarioUpdated,
-    noExisteUsuario
+    noExisteUsuario,
+    validarEspaciosUsuario
 }
