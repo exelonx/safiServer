@@ -22,6 +22,7 @@
     "jsonwebtoken": "^8.5.1",
     "mysql2": "^2.3.3",
     "mysqldump": "^3.2.0",
+    "node-cron": "^3.0.2",
     "nodemailer": "^6.7.8",
     "password-validator": "^5.3.0",
     "sequelize": "^6.21.6",

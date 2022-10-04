@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const fileUpload = require('express-fileupload')
+const cron = require('node-cron');
 require('dotenv').config();
 const colors = require('colors/safe');
 
@@ -17,6 +18,7 @@ const routerPregUser = require('../routes/seguridad/pregunta-usuario.routes');
 const routerParametro = require('../routes/seguridad/parametro.routes');
 const routerPermiso = require('../routes/seguridad/permiso.routes');
 const routerBackup = require('../routes/administracion/backup.routes');
+const { depurarBitacora } = require('../helpers/depuradorBitacora');
 
 class Server {
     constructor () {
@@ -50,6 +52,9 @@ class Server {
         this.middlewares();
         this.routes();
         this.websocket();
+
+        // Tareas programadas
+        this.tareaDepurarBitacora();
     }
 
     // ---------------Métodos---------------
@@ -100,14 +105,26 @@ class Server {
         })
     }
 
+    
     websocket() {
         this.io.on('connection', (cliente) => {
             console.log('Cliente conectado')
-
+            
             //eliminar
             socket.eliminar(cliente);
         })
     }
+
+    //Métodos de Tareas Programadas
+    tareaDepurarBitacora() {
+
+        // Cada día, revisar registros de bitacora
+        cron.schedule('0 0 * * * *', async () => {
+            await depurarBitacora();
+        });
+
+    }
+
 
 }
 

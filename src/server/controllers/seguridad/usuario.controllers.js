@@ -7,7 +7,7 @@ const { Op, where } = require("sequelize");
 const ViewUsuarios = require("../../models/seguridad/sql-vistas/view_usuario");
 const Usuarios = require("../../models/seguridad/usuario");
 const HistorialContrasena = require('../../models/seguridad/historial-contrena');
-const { crearTransporteSMTP } = require("../../configs/nodemailer");
+const { crearTransporteSMTP } = require("../../helpers/nodemailer");
 const PreguntaUsuario = require("../../models/seguridad/pregunta-usuario");
 
 
@@ -87,17 +87,19 @@ const registrar = async(req = request, res = response) => {
         const correoSMTP = await Parametro.findOne({where: { PARAMETRO: 'SMTP_CORREO' }});
         const correoAdmin = await Parametro.findOne({where: { PARAMETRO: 'ADMIN_CORREO'}});
         const nombreEmpresaSMTP = await Parametro.findOne({where: { PARAMETRO: 'SMTP_NOMBRE_EMPRESA' }});
-        console.log( correoAdmin)
+
         // Al usuario
-        await transporte.sendMail({
+        transporte.sendMail({
             from: `"${nombreEmpresaSMTP.VALOR} 🍔" <${correoSMTP.VALOR}>`, // Datos de emisor
 	    	to: correo, // Receptor
 	    	subject: "¡Cuenta creada! 🍔👌", // Asunto
 	    	html: `<b>Bienvenido a Dr. Buger, su cuenta ha sido creada, contacte con el administrador para activar su cuenta</b>`
-	    });
+	    }, (err) => {
+            if(err) { console.log( err ) };
+        });
 
         // Al administrador
-        await transporte.sendMail({
+        transporte.sendMail({
             from: `"${nombreEmpresaSMTP.VALOR} 🍔" <${correoSMTP.VALOR}>`, // Datos de emisor
 	    	to: correoAdmin.VALOR, // Receptor
 	    	subject: "¡Nuevo usuario creado! 🍔👌", // Asunto
@@ -107,6 +109,8 @@ const registrar = async(req = request, res = response) => {
             <b>Nombre del usuario: <strong>${nombre_usuario}</strong></b>
             <br>
             `
+        }, (err) => {
+            if(err) { console.log( err ) };
         })
 
         // Generar respuesta exitosa
@@ -230,12 +234,14 @@ const bloquearUsuario = async (req = request, res = response) => {
         const nombreEmpresaSMTP = await Parametro.findOne({where: { PARAMETRO: 'SMTP_NOMBRE_EMPRESA' }});
 
         // Notificar Al usuario por correo
-        await transporte.sendMail({
+        transporte.sendMail({
             from: `"${nombreEmpresaSMTP.VALOR} 🍔" <${correoSMTP.VALOR.VALOR}>`, // Datos de emisor
 	    	to: usuario.CORREO_ELECTRONICO, // Receptor
 	    	subject: "Cuenta desactivada 🍔", // Asunto
 	    	html: `<b>Su cuenta ha sido desactivada por el administrador</b><br>`
-	    });
+	    }, (err) => {
+            if(err) { console.log( err ) };
+        });
 
         res.json( usuario )
 

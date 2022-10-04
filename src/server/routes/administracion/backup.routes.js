@@ -1,6 +1,7 @@
 const { Router } = require('express');
 const { check } = require('express-validator');
-const { generarBackup } = require('../../configs/db-backup');
+const { generarBackup } = require('../../helpers/db-backup');
+
 
 const router = Router();
 

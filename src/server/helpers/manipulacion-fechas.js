@@ -1,7 +1,8 @@
 
 
 function modificarDias (fecha, dias){
-    fecha.setDate(fecha.getDay() + dias);
+    
+    fecha.setDate(fecha.getDate() + dias);
 
     return fecha;
 }

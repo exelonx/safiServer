@@ -3,7 +3,7 @@ const { DataTypes } = require('sequelize')
 const { db } = require('../../database/db-conexion')
 
 
-const PreguntaUsuario = db.define(`TBL_MS_BITACORA`, {
+const BitacoraSistema = db.define(`TBL_MS_BITACORA`, {
     ID_BITACORA: {
         type: DataTypes.INTEGER,
         primaryKey: true
@@ -28,4 +28,4 @@ const PreguntaUsuario = db.define(`TBL_MS_BITACORA`, {
     timestamps: false,
 })
 
-module.exports = PreguntaUsuario;
+module.exports = BitacoraSistema;

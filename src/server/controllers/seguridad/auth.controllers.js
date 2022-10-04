@@ -3,7 +3,7 @@ const Usuario = require("../../models/seguridad/usuario");
 const bcrypt = require('bcryptjs');
 const { generarJWT } = require("../../helpers/jwt");
 const Parametro = require("../../models/seguridad/parametro");
-const { crearTransporteSMTP } = require("../../configs/nodemailer");
+const { crearTransporteSMTP } = require("../../helpers/nodemailer");
 const PreguntaUsuario = require("../../models/seguridad/pregunta-usuario");
 
 const login = async(req = request, res = response) => {
@@ -39,12 +39,14 @@ const login = async(req = request, res = response) => {
                 dbUser.ESTADO_USUARIO = 'BLOQUEADO';
                 
                 // Notificar por correo
-                await transporte.sendMail({
+                transporte.sendMail({
                     from: `"${nombreEmpresaSMTP.VALOR} 🍔" <${correoSMTP.VALOR}>`, // Datos de emisor
                     to: dbUser.CORREO_ELECTRONICO, // Receptop
                     subject: "Cuenta bloqueada 🍔", // Asunto
                     html: `<b>Su cuenta ha superado los intentos permitidos y ha sido bloqueada, 
                     cambie la contraseña o comuniquese con el administrador</b>`
+                }, (err) => {
+                    if(err) { console.log( err ) };
                 })
 
                 // Guardar cambios del usuario
@@ -84,12 +86,15 @@ const login = async(req = request, res = response) => {
         // Válidar tener un rol
         if( !dbUser.ID_ROL ) {
             // Notificar por correo
-            await transporte.sendMail({
+            transporte.sendMail({
                 from: `"${nombreEmpresaSMTP.VALOR} 🍔" <${correoSMTP.VALOR}>`, // Datos de emisor
                 to: dbUser.CORREO_ELECTRONICO, // Receptop
                 subject: "Acceso no válido 🍔", // Asunto
                 html: `<b>Su cuenta no tiene los accesos válidos, hable con el administrador</b>`
+            }, (err) => {
+                if(err) { console.log( err ) };
             })
+
             return res.status(401).json({
                 ok: false,
                 msg: 'El usuario no tiene acceso válido, hable con el administrador'
@@ -188,13 +193,15 @@ const generarCorreoRecuperacion = async(req = request, res = response) => {
     // Parametros del mailer
     const correoSMTP = await Parametro.findOne({where: { PARAMETRO: 'SMTP_CORREO' }});
     const nombreEmpresaSMTP = await Parametro.findOne({where: { PARAMETRO: 'SMTP_NOMBRE_EMPRESA' }});
-    await transporte.sendMail({
+    transporte.sendMail({
         from: `"${nombreEmpresaSMTP.VALOR} 🍔" <${correoSMTP.VALOR}>`, // Datos de emisor
 		to: usuarioSinPass.CORREO_ELECTRONICO, // Receptor
 		subject: "Recuperación de contraseña 🍔👌", // Asunto
 		html: `<b>haga clic en el siguiente enlace o péguelo en su navegador para completar el proceso de recuperación: </b>
         <a href=http://localhost:4200/auth/cambio-contrasena/${token}>Recuperar contraseña</a><br>`,
-	});
+	}, (err) => {
+        if(err) { console.log( err ) };
+    });
     // Respuesta
     return res.json({
         ok: true,
