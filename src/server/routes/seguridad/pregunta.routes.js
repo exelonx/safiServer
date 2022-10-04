@@ -3,7 +3,8 @@ const { check } = require('express-validator');
 const { getPreguntas, getPregunta, postPregunta, putPregunta, deletePregunta } = require('../../controllers/seguridad/pregunta.controllers');
 
 const { noExistePregunta,
-        validarCampos } = require('../../middlewares');
+        validarCampos, 
+        noEsPregunta} = require('../../middlewares');
 
 // const { noExistePregunta } = require('../../middlewares/validaciones-pregunta');
 // const { validarCampos } = require('../../middlewares/validar-campos');
@@ -18,6 +19,7 @@ router.get('/:id_pregunta', getPregunta);
 router.post('/', [
     check('pregunta', 'La pregunta es obligatoria').not().isEmpty(),
     check('pregunta', 'La pregunta debe estar en Mayúsculas').isUppercase(),
+    check('pregunta').custom(noEsPregunta),
     validarCampos
 ], postPregunta);
 

@@ -11,6 +11,17 @@ const noExistePregunta = async( pregunta_id ) => {
 
 }
 
+const noEsPregunta = async (pregunta = '') =>{
+    if(pregunta.charAt(0) !== '¿'){
+        throw new Error(`${ pregunta }, hace falta el signo ¿`);
+    }
+
+    if(pregunta.charAt(pregunta.length - 1) !== '?'){
+        throw new Error(`${ pregunta }, hace falta el signo ?`);
+    }
+}
+
 module.exports = {
-    noExistePregunta
+    noExistePregunta,
+    noEsPregunta
 }
