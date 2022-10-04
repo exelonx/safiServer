@@ -75,7 +75,6 @@ const postRol = async (req = request, res = response) => {
     
     try {
 
-        console.log('hola')
         // Construir modelo
         const nuevoRol = await Rol.build({
             ROL: rol,

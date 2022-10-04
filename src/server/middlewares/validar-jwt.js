@@ -103,8 +103,7 @@ const validarPreguntaJWT = (req = request, res = response, next) => {
 
         // Usa semilla de correo
         const { uid } = jwt.verify( token, process.env.SEMILLA_SECRETA_JWT_PREGUNTA );
-        const algo = jwt.verify( token, process.env.SEMILLA_SECRETA_JWT_PREGUNTA );
-        console.log(algo)
+
         req.uid = uid;
         
     } catch (error) {

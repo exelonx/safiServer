@@ -186,21 +186,11 @@ const compararPregunta = async (req = request, res = response) => {
 
         // Responder éxito
         const usuario = await Usuarios.findByPk(pregunta.ID_USUARIO);
-        if(usuario.ESTADO_USUARIO !== 'BLOQUEADO'){
-            if(validarRespuesta){
-                usuario.PREGUNTAS_CONTESTADAS++
-                usuario.save()
-                return res.json({
-                    ok: true
-                });
-            }
-        }else{
-            return res.status(400).json({
-                msg: `Usuario ${usuario.USUARIO} esta bloqueado`
-            })
-        }
-        
-        
+        usuario.PREGUNTAS_CONTESTADAS++
+        usuario.save()
+        return res.json({
+            ok: true
+        });
 
     } catch (error) {
         console.log(error);
@@ -271,13 +261,8 @@ const postMultiplesRespuestas = async (req = request, res = response) => {
         }
 
         // Insertar en la base de datos
-        const preguntaUsuario = await PreguntaUsuario.bulkCreate(arregloRespuestas);
+        await PreguntaUsuario.bulkCreate(arregloRespuestas);
 
-        // Actualizar usuario
-        const usuario = await Usuarios.findByPk(preguntaUsuario[0].ID_USUARIO)
-        // usuario.ESTADO_USUARIO = "ACTIVO"
-
-        console.log(preguntaUsuario)
         // Respuesta éxitosa
         res.json({
             ok: true,

@@ -243,14 +243,6 @@ const usuarioPorUsernameRecovery = async (req = request, res = response) => {
             })
         }
 
-        // Validar si esta bloqueado
-        if( dbUsuario.ESTADO_USUARIO !== 'NUEVO' && dbUsuario.ESTADO_USUARIO !== 'ACTIVO' ) {
-            return res.status(404).json({
-                ok: false,
-                msg: 'El usuario esta bloqueado'
-            })
-        }
-
         // Validar que tenga configuradas las preguntas
         // Contar las preguntas usuario
         const preguntaUsuario = await PreguntaUsuario.count({

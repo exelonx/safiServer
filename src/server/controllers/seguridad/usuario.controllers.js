@@ -17,8 +17,6 @@ const registrar = async(req = request, res = response) => {
 
     try {
 
-        console.log()
-
         // Validar que hagan match la confirmación de contraseña
         if( contrasena !== confirmContrasena ) {
             return res.status(401).json({
