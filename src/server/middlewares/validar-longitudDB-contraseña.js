@@ -8,8 +8,8 @@ const validarLongitudDBContra = async(req = request, res = response, next) => {
     const parametros = await Parametro.findAll({
         where: {
             [Op.or]: [
-                { PARAMETRO: 'MAX_CONTRASEÑA' },
-                { PARAMETRO: 'MIN_CONTRASEÑA' }
+                { PARAMETRO: 'MAX_CONTRASENA' },
+                { PARAMETRO: 'MIN_CONTRASENA' }
             ]
         }
     })
@@ -19,7 +19,7 @@ const validarLongitudDBContra = async(req = request, res = response, next) => {
 
     // Asignar datos para facilitar lectura
     let maximo, minimo = "";
-    if ( parametros[0].PARAMETRO = 'MAX_CONTRASEÑA' ) {
+    if ( parametros[0].PARAMETRO = 'MAX_CONTRASENA' ) {
         maximo = parametros[0].VALOR;
         minimo = parametros[1].VALOR;
     } else {    // parametros[1] es MAX_CONTRASEÑA

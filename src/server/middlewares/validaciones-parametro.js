@@ -18,7 +18,7 @@ const validarCamposYExistenciaParametros = async(req = request, res = response, 
 
     // Validar que sean números
     if ( parametro.PARAMETRO == 'ADMIN_CPUERTO' || parametro.PARAMETRO == 'ADMIN_DIAS_VIGENCIA' 
-         || parametro.PARAMETRO == 'MAX_CONTRASEÑA' || parametro.PARAMETRO == 'MIN_CONTRASEÑA'
+         || parametro.PARAMETRO == 'MAX_CONTRASENA' || parametro.PARAMETRO == 'MIN_CONTRASENA'
          || parametro.PARAMETRO == 'ADMIN_INTENTOS' || parametro.PARAMETRO == 'ADMIN_PREGUNTAS') {
         if (!validator.isNumeric(valor)) {
             return res.status(400).json({
@@ -28,7 +28,7 @@ const validarCamposYExistenciaParametros = async(req = request, res = response, 
     }
 
     // Validar que la máximo de contraseña no sea inferior al mínimo
-    if ( parametro.PARAMETRO == 'MAX_CONTRASEÑA') {
+    if ( parametro.PARAMETRO == 'MAX_CONTRASENA') {
         const minContraseña = await Parametro.findOne({ where: {PARAMETRO: 'MIN_CONTRASEÑA'}})
         if ( valor <= minContraseña.VALOR ) {
             return res.status(400).json({
@@ -38,7 +38,7 @@ const validarCamposYExistenciaParametros = async(req = request, res = response, 
     }
 
     // Validar que el mínimo de la contraseña no sea superior al máximo
-    if ( parametro.PARAMETRO == 'MIN_CONTRASEÑA') {
+    if ( parametro.PARAMETRO == 'MIN_CONTRASENA') {
         const maxContraseña = await Parametro.findOne({ where: {PARAMETRO: 'MAX_CONTRASEÑA'}})
         if ( valor >= maxContraseña.VALOR ) {
             return res.status(400).json({
