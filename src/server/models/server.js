@@ -111,7 +111,7 @@ class Server {
             console.log('Cliente conectado')
             
             //eliminar
-            socket.eliminar(cliente);
+            // socket.eliminar(cliente);
         })
     }
 
@@ -119,7 +119,7 @@ class Server {
     tareaDepurarBitacora() {
 
         // Cada día, revisar registros de bitacora
-        cron.schedule('0 0 * * * *', async () => {
+        cron.schedule('0 0 * * *', async () => {
             await depurarBitacora();
         });
 
