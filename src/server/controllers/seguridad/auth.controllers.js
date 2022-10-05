@@ -5,6 +5,7 @@ const { generarJWT } = require("../../helpers/jwt");
 const Parametro = require("../../models/seguridad/parametro");
 const { crearTransporteSMTP } = require("../../helpers/nodemailer");
 const PreguntaUsuario = require("../../models/seguridad/pregunta-usuario");
+const { eventBitacora } = require("../../helpers/event-bitacora");
 
 const login = async(req = request, res = response) => {
 
@@ -32,6 +33,9 @@ const login = async(req = request, res = response) => {
 
             // Incrementa en 1 los intentos usados
             dbUser.INTENTOS++;
+
+            // Guardar evento
+            eventBitacora(new Date, dbUser.ID_USUARIO, 2, 'Login', 'Intento de inicio de sesión sin éxito');
 
             // Bloquear usuario si los intentos se acaban
             if(dbUser.INTENTOS === parseInt( intentosParametro.VALOR, 10 )) {
