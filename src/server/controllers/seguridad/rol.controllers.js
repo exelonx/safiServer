@@ -7,7 +7,7 @@ const ViewRol = require('../../models/seguridad/sql-vistas/view_rol');
 const getRoles = async (req = request, res = response) => {
     
     let { limite = 10, desde = 0 } = req.query;
-    let { buscar = "" } = req.body;
+    let { buscar = "", id_usuario } = req.body;
 
     try {
 
@@ -33,7 +33,7 @@ const getRoles = async (req = request, res = response) => {
 
         // Guardar evento
         if( buscar !== "" ) {
-            eventBitacora(new Date, quienModifico, 8, 'CONSULTA', `SE BUSCO EL ROL CON EL TERMINO ${buscar}`);
+            eventBitacora(new Date, id_usuario, 8, 'CONSULTA', `SE BUSCO EL ROL CON EL TERMINO ${buscar}`);
         }
 
         // Respuesta
@@ -91,7 +91,7 @@ const postRol = async (req = request, res = response) => {
         await nuevoRol.save();   
         
         // Guardar evento
-        eventBitacora(new Date, quienModifico, 8, 'NUEVO', `SE CREO EL ROL ${nuevoRol.ROL}`);
+        eventBitacora(new Date, id_usuario, 8, 'NUEVO', `SE CREO EL ROL ${nuevoRol.ROL}`);
 
         // Responder
         res.json( nuevoRol );
@@ -124,7 +124,7 @@ const putRol = async (req = request, res = response) => {
         })
 
         // Guardar evento
-        eventBitacora(new Date, quienModifico, 8, 'ACTUALIZACION', `SE ACTUALIZO EL ROL ${rolAnterior.ROL}`);
+        eventBitacora(new Date, id_usuario, 8, 'ACTUALIZACION', `SE ACTUALIZO EL ROL ${rolAnterior.ROL}`);
 
         res.json({ id_rol, rol, descripcion });
 

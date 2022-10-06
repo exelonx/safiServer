@@ -1,12 +1,13 @@
 const { request, response } = require('express');
 const { Op } = require('sequelize');
 
+const Parametro = require('../../models/seguridad/parametro');
 const ViewParametro = require('../../models/seguridad/parametro');
 
 // Llamar todas los parametros
 const getParametros = async (req = request, res = response) => {
     let { limite = 10, desde = 0 } = req.query
-    const { buscar = "" } = req.body;
+    const { buscar = "", id_usuario } = req.body;
 
     try {
 
@@ -26,6 +27,11 @@ const getParametros = async (req = request, res = response) => {
                 }]
             }
         });
+
+        // Guardar evento
+        if( buscar !== "" ) {
+            eventBitacora(new Date, id_usuario, 8, 'CONSULTA', `SE BUSCO EL PARAMETRO CON EL TERMINO ${buscar}`);
+        }
 
         // Respuesta
         res.json( parametros );
@@ -72,6 +78,8 @@ const putParametro = async (req = request, res = response) => {
 
     try {
 
+        const parametro = await Parametro.findByPk( id_parametro )
+
         // Actualizar db Parametro
         await Parametro.update({
             MODIFICADO_POR: id_usuario,
@@ -81,6 +89,9 @@ const putParametro = async (req = request, res = response) => {
                 ID_PARAMETRO: id_parametro
             }
         })
+
+        // Guardar evento
+        eventBitacora(new Date, id_usuario, 10, 'ACTUALIZACION', `SE ACTUALIZO EL PARAMETRO: ${parametro.PARAMETRO}`);
 
         res.json({ id_parametro, valor, id_usuario });
 

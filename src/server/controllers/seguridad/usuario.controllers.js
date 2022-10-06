@@ -113,7 +113,7 @@ const registrar = async(req = request, res = response) => {
         })
 
         // Guardar evento
-        eventBitacora(new Date, user.ID_USUARIO, 4, 'CREACION', 'SE REGISTRO UN NUEVO USUARIO');
+        eventBitacora(new Date, user.ID_USUARIO, 4, 'NUEVO', 'SE REGISTRO EL USUARIO '+usuario);
 
         // Generar respuesta exitosa
         return res.status(201).json({
