@@ -31,7 +31,10 @@ const getRoles = async (req = request, res = response) => {
         // Contar resultados total
         const countRoles = await Rol.count();
 
-        
+        // Guardar evento
+        if( buscar !== "" ) {
+            eventBitacora(new Date, quienModifico, 8, 'CONSULTA', `SE BUSCO EL ROL CON EL TERMINO ${buscar}`);
+        }
 
         // Respuesta
         res.json( { roles, countRoles} );
@@ -76,7 +79,7 @@ const postRol = async (req = request, res = response) => {
     const { rol, descripcion, id_usuario } = req.body;
     
     try {
-
+ 
         // Construir modelo
         const nuevoRol = await Rol.build({
             ROL: rol,
@@ -86,6 +89,9 @@ const postRol = async (req = request, res = response) => {
         });
         // Insertar a DB
         await nuevoRol.save();   
+        
+        // Guardar evento
+        eventBitacora(new Date, quienModifico, 8, 'NUEVO', `SE CREO EL ROL ${nuevoRol.ROL}`);
 
         // Responder
         res.json( nuevoRol );
@@ -104,6 +110,8 @@ const putRol = async (req = request, res = response) => {
 
     try {
 
+        const rolAnterior = await Rol.findByPk(id_rol);
+
         // Actualizar db Rol
         await Rol.update({
             ROL: rol !== "" ? rol : Rol.ROL,
@@ -114,6 +122,9 @@ const putRol = async (req = request, res = response) => {
                 ID_ROL: id_rol
             }
         })
+
+        // Guardar evento
+        eventBitacora(new Date, quienModifico, 8, 'ACTUALIZACION', `SE ACTUALIZO EL ROL ${rolAnterior.ROL}`);
 
         res.json({ id_rol, rol, descripcion });
 
@@ -138,6 +149,9 @@ const DeleteRol = async (req = request, res = response) => {
 
         // Borrar Rol
         await rol.destroy();
+
+        // Guardar evento
+        eventBitacora(new Date, quienModifico, 8, 'BORRADO', `SE ELIMINO EL ROL ${ROL}`);
 
         res.json({
             msg: `El rol: ${ROL} ha sido eliminado`
