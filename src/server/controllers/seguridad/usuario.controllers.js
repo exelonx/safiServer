@@ -315,7 +315,7 @@ const putContrasena = async (req = request, res = response) => {
         // Validar usuario inactivo
         const estado = await Usuario.findOne({where: {ID_USUARIO: id_usuario}})
         if(estado.ESTADO_USUARIO === 'INACTIVO'){
-            eventBitacora(new Date, quienModifico, 6, 'ACTUALIZACION', 'ACTUALIZACION DE CONTRASEÑA NO PERMITIDA');
+            eventBitacora(new Date, quienModifico, 12, 'ACTUALIZACION', 'ACTUALIZACION DE CONTRASEÑA NO PERMITIDA');
             return res.status(401).json({
                 ok: false,
                 msg: `El usuario ${estado.USUARIO}, no tiene permisos de cambiar la contraseña`
@@ -407,7 +407,7 @@ const putContrasena = async (req = request, res = response) => {
         usuario.FECHA_VENCIMIENTO = fechaVencimiento;
         await usuario.save();
 
-        eventBitacora(new Date, quienModifico, 2, 'ACTUALIZACION', 'ACTUALIZACION DE CONTRASEÑA EXITOSA');
+        eventBitacora(new Date, quienModifico, 12, 'ACTUALIZACION', 'ACTUALIZACION DE CONTRASEÑA EXITOSA');
 
         res.json({
             ok: true,
