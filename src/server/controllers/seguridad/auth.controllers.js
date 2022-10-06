@@ -35,13 +35,20 @@ const login = async(req = request, res = response) => {
             dbUser.INTENTOS++;
 
             // Guardar evento
-            eventBitacora(new Date, dbUser.ID_USUARIO, 2, 'Login', 'Intento de inicio de sesión sin éxito');
+            eventBitacora(new Date, dbUser.ID_USUARIO, 3, 'INGRESO', `INTENTO #${dbUser.INTENTOS} DE INICIO DE SESIÓN SIN ÉXITO`);
 
             // Bloquear usuario si los intentos se acaban
             if(dbUser.INTENTOS === parseInt( intentosParametro.VALOR, 10 )) {
 
                 dbUser.ESTADO_USUARIO = 'BLOQUEADO';
-                
+
+                // Guardar evento
+                if( parseInt( intentosParametro.VALOR, 10 ) === 1 ) {
+                    eventBitacora(new Date, dbUser.ID_USUARIO, 3, 'INGRESO', `USUARIO BLOQUEADO POR INICIO DE SESIÓN SIN ÉXITO`);
+                } else {
+                    eventBitacora(new Date, dbUser.ID_USUARIO, 3, 'INGRESO', `USUARIO BLOQUEADO POR SUPERAR LOS ${intentosParametro.VALOR} INTENTOS DE INICIO DE SESIÓN`);
+                }
+
                 // Notificar por correo
                 transporte.sendMail({
                     from: `"${nombreEmpresaSMTP.VALOR} 🍔" <${correoSMTP.VALOR}>`, // Datos de emisor
@@ -65,6 +72,7 @@ const login = async(req = request, res = response) => {
 
             // Guardar cambios del usuario
             await dbUser.save();
+            
             // Retornar que no coincide la contraseña
             return res.status(404).json({
                 ok: false,
@@ -74,17 +82,27 @@ const login = async(req = request, res = response) => {
 
         // Confirmar acceso válido
         if( !(dbUser.ESTADO_USUARIO === 'NUEVO' || dbUser.ESTADO_USUARIO === 'ACTIVO') ) {
-            if(dbUser === 'BLOQUEADO') {
+
+            if(dbUser.ESTADO_USUARIO === 'BLOQUEADO') {
+
+                // Guardar evento
+                eventBitacora(new Date, dbUser.ID_USUARIO, 3, 'INGRESO', `INTENTO DE INICIO DE SESIÓN CON USUARIO BLOQUEADO`);
+
                 return res.status(401).json({
                     ok: false,
                     msg: `El usuario esta bloqueado, hable con el administrador o reinicie la contraseña`
                 })
             };
+
+            // Guardar evento
+            eventBitacora(new Date, dbUser.ID_USUARIO, 3, 'INGRESO', `INTENTO DE INICIO DE SESIÓN CON USUARIO ${dbUser.ESTADO_USUARIO.charAt(dbUser.ESTADO_USUARIO.length-1) === 'O' ? ''.trim() : 'EN '}${dbUser.ESTADO_USUARIO}`);
+
             // Si el estado no es nuevo o activo
             return res.status(401).json({
                 ok: false,
                 msg: `El usuario esta ${dbUser.ESTADO_USUARIO.charAt(dbUser.ESTADO_USUARIO.length-1) === 'O' ? ''.trim() : 'en '}${dbUser.ESTADO_USUARIO.toLowerCase()}, hable con el administrador`
             });
+
         };
 
         // Válidar tener un rol
@@ -99,6 +117,9 @@ const login = async(req = request, res = response) => {
                 if(err) { console.log( err ) };
             })
 
+            // Guardar evento
+            eventBitacora(new Date, dbUser.ID_USUARIO, 3, 'INGRESO', `INTENTO DE INICIO DE SESIÓN SIN ACCESO VÁLIDO`);
+
             return res.status(401).json({
                 ok: false,
                 msg: 'El usuario no tiene acceso válido, hable con el administrador'
@@ -107,6 +128,10 @@ const login = async(req = request, res = response) => {
 
         // Validar fecha de contraseña siga siendo válida
         if (dbUser.FECHA_VENCIMIENTO < new Date()){
+            
+            // Guardar evento
+            eventBitacora(new Date, dbUser.ID_USUARIO, 3, 'INGRESO', `INTENTO DE INICIO DE SESIÓN CON CONTRASEÑA CADUCADA`);
+
             return res.status(401).json({
                 ok: false,
                 msg: 'Contraseña del usuario ha caducado, cambie la contraseña'
@@ -122,6 +147,9 @@ const login = async(req = request, res = response) => {
         dbUser.PRIMER_INGRESO++                     // Aumentar contador de ingresos
         dbUser.FECHA_ULTIMA_CONEXION = new Date();  // Registrar última conexión
         await dbUser.save();
+
+        // Guardar evento
+        eventBitacora(new Date, dbUser.ID_USUARIO, 3, 'INGRESO', `USUARIO INICIO SESIÓN`);
 
         //Respuesta del servicio
         return res.json({
@@ -192,6 +220,9 @@ const generarCorreoRecuperacion = async(req = request, res = response) => {
     // Generar JWT
     const token = await generarJWT( usuarioSinPass.ID_USUARIO, duracionTokenPass.VALOR, process.env.SEMILLA_SECRETA_JWT_CORREO );
 
+    // Guardar evento
+    eventBitacora(new Date, usuarioSinPass.ID_USUARIO, 6, 'SOLICITUD', `SOLICITUD DE CORREO DE RECUPERACIÓN DE CONTRASEÑA`);
+
     // TODO: ENVIAR CORREO
     const transporte = await crearTransporteSMTP(); // Transportador
     // Parametros del mailer
@@ -247,7 +278,7 @@ const usuarioPorUsernameRecovery = async (req = request, res = response) => {
             })
         }
 
-        // Validar que tenga configuradas las preguntas
+        // -------------- Validar que tenga configuradas las preguntas ---------------
         // Contar las preguntas usuario
         const preguntaUsuario = await PreguntaUsuario.count({
             where: {
@@ -271,6 +302,9 @@ const usuarioPorUsernameRecovery = async (req = request, res = response) => {
 
         // Generar JWT 
         const token = await generarJWT( dbUsuario.ID_USUARIO, '10m', process.env.SEMILLA_SECRETA_JWT_PREGUNTA );
+
+        // Guardar evento
+        eventBitacora(new Date, dbUsuario.ID_USUARIO, 6, 'INGRESO', `INGRESO A CAMBIO DE CONTRASEÑA POR PREGUNTA SECRETA`);
 
         // Retornar el ID del usuario
         res.json({
