@@ -118,9 +118,19 @@ class Server {
     //Métodos de Tareas Programadas
     tareaDepurarBitacora() {
 
-        // Cada día, revisar registros de bitacora
+        // Cada día 12 AM, revisar registros de bitacora
         cron.schedule('0 0 * * *', async () => {
             await depurarBitacora();
+        });
+
+    }
+
+    tareaGenerarBackup() {
+
+        // Cada día 12 AM, crear backup de la base de datos
+        cron.schedule('0 0 * * *', async () => {
+            await generarBackup()
+                .catch(err => console.log(err));
         });
 
     }
