@@ -31,6 +31,8 @@ const getRoles = async (req = request, res = response) => {
         // Contar resultados total
         const countRoles = await Rol.count();
 
+        
+
         // Respuesta
         res.json( { roles, countRoles} );
 

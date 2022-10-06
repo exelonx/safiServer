@@ -158,6 +158,8 @@ const login = async(req = request, res = response) => {
             id_rol: dbUser.ID_ROL,
             estado: dbUser.ESTADO_USUARIO,
             nombre: dbUser.NOMBRE_USUARIO,
+            correo: dbUser.CORREO_ELECTRONICO,
+            fecha_vencimiento: dbUser.FECHA_VENCIMIENTO,
             token
         });
 
@@ -197,6 +199,8 @@ const revalidarToken = async(req = request, res = response) => {
         id_rol: usuario.ID_ROL,
         estado: usuario.ESTADO_USUARIO,
         nombre: usuario.NOMBRE_USUARIO,
+        correo: usuario.CORREO_ELECTRONICO,
+        fecha_vencimiento: usuario.FECHA_VENCIMIENTO,
         token
     });
 }
