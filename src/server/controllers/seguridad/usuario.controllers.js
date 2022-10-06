@@ -9,6 +9,7 @@ const Usuarios = require("../../models/seguridad/usuario");
 const HistorialContrasena = require('../../models/seguridad/historial-contrena');
 const { crearTransporteSMTP } = require("../../helpers/nodemailer");
 const PreguntaUsuario = require("../../models/seguridad/pregunta-usuario");
+const { eventBitacora } = require("../../helpers/event-bitacora");
 
 
 const registrar = async(req = request, res = response) => {
@@ -110,6 +111,9 @@ const registrar = async(req = request, res = response) => {
         }, (err) => {
             if(err) { console.log( err ) };
         })
+
+        // Guardar evento
+        eventBitacora(new Date, user.ID_USUARIO, 4, 'CREACION', 'SE REGISTRO UN NUEVO USUARIO');
 
         // Generar respuesta exitosa
         return res.status(201).json({
@@ -241,6 +245,8 @@ const bloquearUsuario = async (req = request, res = response) => {
             if(err) { console.log( err ) };
         });
 
+        eventBitacora(new Date, usuario.ID_USUARIO, 6, 'BLOQUEO', 'BLOQUEO DE USUARIO');
+
         res.json( usuario )
 
     } catch (error) {
@@ -261,6 +267,7 @@ const putUsuario = async (req = request, res = response) => {
         // Validar existencia
         const usuarioModelo = await Usuarios.findByPk( id_usuario );
         if( !usuarioModelo ){
+            eventBitacora(new Date, quienModifico, 2, 'ACTUALIZACION', 'ACTUALIZACION DE DATOS SIN EXITO');
             return res.status(404).json({
                 msg: 'No existe un usuario con el id ' + id_usuario
             })
@@ -280,7 +287,7 @@ const putUsuario = async (req = request, res = response) => {
                 ID_USUARIO: id_usuario
             }
         })
-
+        eventBitacora(new Date, quienModifico, 2, 'ACTUALIZACION', 'ACTUALIZACION DE DATOS EXITOSO');
         res.json(usuarioModelo);
 
     } catch (error) {
@@ -308,6 +315,7 @@ const putContrasena = async (req = request, res = response) => {
         // Validar usuario inactivo
         const estado = await Usuario.findOne({where: {ID_USUARIO: id_usuario}})
         if(estado.ESTADO_USUARIO === 'INACTIVO'){
+            eventBitacora(new Date, quienModifico, 6, 'ACTUALIZACION', 'ACTUALIZACION DE CONTRASEÑA NO PERMITIDA');
             return res.status(401).json({
                 ok: false,
                 msg: `El usuario ${estado.USUARIO}, no tiene permisos de cambiar la contraseña`
@@ -398,6 +406,8 @@ const putContrasena = async (req = request, res = response) => {
 
         usuario.FECHA_VENCIMIENTO = fechaVencimiento;
         await usuario.save();
+
+        eventBitacora(new Date, quienModifico, 2, 'ACTUALIZACION', 'ACTUALIZACION DE CONTRASEÑA EXITOSA');
 
         res.json({
             ok: true,
