@@ -19,6 +19,7 @@ const routerParametro = require('../routes/seguridad/parametro.routes');
 const routerPermiso = require('../routes/seguridad/permiso.routes');
 const routerBackup = require('../routes/administracion/backup.routes');
 const { depurarBitacora } = require('../helpers/depuradorBitacora');
+const { generarBackup } = require('../helpers/db-backup');
 
 class Server {
     constructor () {
@@ -55,6 +56,7 @@ class Server {
 
         // Tareas programadas
         this.tareaDepurarBitacora();
+        this.tareaGenerarBackup()
     }
 
     // ---------------Métodos---------------

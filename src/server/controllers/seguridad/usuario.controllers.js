@@ -133,7 +133,7 @@ const registrar = async(req = request, res = response) => {
 const getUsuarios = async(req = request, res = response) => {
     let { limite = 10, desde = 0 } = req.query
 
-    const { buscar = "" } = req.body;
+    const { buscar = "", quienBusco } = req.body;
 
     try {
 
@@ -159,6 +159,11 @@ const getUsuarios = async(req = request, res = response) => {
         
         // Contar resultados total
         const countUsuarios = await ViewUsuarios.count()
+
+        // Guardar evento
+        if( buscar !== "" ) {
+            eventBitacora(new Date, quienBusco, 2, 'CONSULTA', `SE BUSCO LOS USUARIOS CON EL TERMINO ${buscar}`);
+        }
 
         // Respuesta
         res.json( { usuarios, countUsuarios} )
@@ -245,7 +250,7 @@ const bloquearUsuario = async (req = request, res = response) => {
             if(err) { console.log( err ) };
         });
 
-        eventBitacora(new Date, usuario.ID_USUARIO, 6, 'BLOQUEO', 'BLOQUEO DE USUARIO');
+        eventBitacora(new Date, usuario.ID_USUARIO, 2, 'BLOQUEO', 'BLOQUEO DE USUARIO');
 
         res.json( usuario )
 
@@ -313,12 +318,12 @@ const putContrasena = async (req = request, res = response) => {
         }
 
         // Validar usuario inactivo
-        const estado = await Usuario.findOne({where: {ID_USUARIO: id_usuario}})
-        if(estado.ESTADO_USUARIO === 'INACTIVO'){
+        const estadoUsuario = await Usuario.findOne({where: {ID_USUARIO: id_usuario}})
+        if(estadoUsuario.ESTADO_USUARIO === 'INACTIVO'){
             eventBitacora(new Date, quienModifico, 12, 'ACTUALIZACION', 'ACTUALIZACION DE CONTRASEÑA NO PERMITIDA');
             return res.status(401).json({
                 ok: false,
-                msg: `El usuario ${estado.USUARIO}, no tiene permisos de cambiar la contraseña`
+                msg: `El usuario ${estadoUsuario.USUARIO}, no tiene permisos de cambiar la contraseña`
             })
         }
 
@@ -339,8 +344,7 @@ const putContrasena = async (req = request, res = response) => {
         contrasena = bcrypt.hashSync(contrasena, salt);
 
         // Validar existencia
-        const usuario = await Usuarios.findByPk( id_usuario );
-        if( !usuario ){
+        if( !estadoUsuario ){
             return res.status(404).json({
                 ok: false,
                 msg: 'No existe un usuario con el id ' + id_usuario
@@ -377,17 +381,17 @@ const putContrasena = async (req = request, res = response) => {
         
         
         // Si el usuario esta bloqueado, se activara, si tiene otro estado, se mantiene su estado
-        if(usuario.ESTADO_USUARIO === 'BLOQUEADO' || usuario.ESTADO_USUARIO === 'NUEVO') {
+        if(estadoUsuario.ESTADO_USUARIO === 'BLOQUEADO' || estadoUsuario.ESTADO_USUARIO === 'NUEVO') {
             if(countPreguntasUser >= parametroNumPreguntas.VALOR) {
-                usuario.ESTADO_USUARIO = 'ACTIVO'
+                estadoUsuario.ESTADO_USUARIO = 'ACTIVO'
             } else {
-                usuario.ESTADO_USUARIO = 'NUEVO'
+                estadoUsuario.ESTADO_USUARIO = 'NUEVO'
             }
         }
 
         // Asignar contraseña encryptada y reiniciar intentos
-        usuario.CONTRASENA = contrasena;
-        usuario.INTENTOS = 0;
+        estadoUsuario.CONTRASENA = contrasena;
+        estadoUsuario.INTENTOS = 0;
 
         // Traer días de vigencia de parametros
         const diasVigencias = await Parametro.findOne({
@@ -402,11 +406,13 @@ const putContrasena = async (req = request, res = response) => {
         const fechaVencimiento = (modificarDias(fechaActual, parseInt(diasVigencias.VALOR,10)));
 
         // Actualizar modificado por:
-        usuario.MODIFICADO_POR = quienModifico;
+        estadoUsuario.MODIFICADO_POR = quienModifico;
 
-        usuario.FECHA_VENCIMIENTO = fechaVencimiento;
-        await usuario.save();
+        estadoUsuario.FECHA_VENCIMIENTO = fechaVencimiento;
+        await estadoUsuario.save();
 
+        const usuario = estadoUsuario;
+        
         eventBitacora(new Date, quienModifico, 12, 'ACTUALIZACION', 'ACTUALIZACION DE CONTRASEÑA EXITOSA');
 
         res.json({

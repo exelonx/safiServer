@@ -33,7 +33,7 @@ const getRoles = async (req = request, res = response) => {
 
         // Guardar evento
         if( buscar !== "" ) {
-            eventBitacora(new Date, id_usuario, 8, 'CONSULTA', `SE BUSCO EL ROL CON EL TERMINO ${buscar}`);
+            eventBitacora(new Date, id_usuario, 8, 'CONSULTA', `SE BUSCO LOS ROL CON EL TERMINO ${buscar}`);
         }
 
         // Respuesta
