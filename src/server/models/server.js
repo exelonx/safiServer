@@ -18,8 +18,9 @@ const routerPregUser = require('../routes/seguridad/pregunta-usuario.routes');
 const routerParametro = require('../routes/seguridad/parametro.routes');
 const routerPermiso = require('../routes/seguridad/permiso.routes');
 const routerBackup = require('../routes/administracion/backup.routes');
-const { depurarBitacora } = require('../helpers/depuradorBitacora');
-const { generarBackup } = require('../helpers/db-backup');
+
+const { generarBackup } = require('../jobs/db-backup');
+const { depurarBitacora } = require('../jobs/depuradorBitacora');
 
 class Server {
     constructor () {

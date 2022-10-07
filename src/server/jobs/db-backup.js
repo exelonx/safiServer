@@ -9,7 +9,7 @@ const generarBackup = async() => {
                 password: 'DreamTeam',
                 database: 'drburger',
             },
-            dumpToFile: './src/server/backups/dump.sql',
+            dumpToFile: './src/server/backups/db-backup.sql',
         });
 
 }

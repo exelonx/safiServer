@@ -1,6 +1,7 @@
+const modificarDias = require("../helpers/manipulacion-fechas");
 const BitacoraSistema = require("../models/seguridad/bitacora");
 const Parametro = require("../models/seguridad/parametro");
-const modificarDias = require("./manipulacion-fechas");
+
 
 const depurarBitacora = async () => {
     
