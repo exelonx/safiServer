@@ -2,14 +2,24 @@ const { request, response } = require('express');
 const { Op } = require('sequelize');
 const Rol = require('../../models/seguridad/rol');
 const ViewRol = require('../../models/seguridad/sql-vistas/view_rol');
+const Parametro = require('../../models/seguridad/parametro');
 
 // Llamar todos los roles paginados
 const getRoles = async (req = request, res = response) => {
     
-    let { limite = 10, desde = 0 } = req.query;
-    let { buscar = "", id_usuario } = req.body;
+    let { limite, desde = 0, buscar = "", id_usuario } = req.query;
 
     try {
+
+        // Definir el número de objetos a mostrar
+        if(!limite || limite === "") {
+            const { VALOR } = await Parametro.findOne({where: { PARAMETRO: 'ADMIN_NUM_REGISTROS'}})
+            limite = VALOR
+        }
+
+        if(desde === "") {
+            desde = 0
+        }
 
         // Paginación
         const roles = await ViewRol.findAll({
@@ -29,15 +39,25 @@ const getRoles = async (req = request, res = response) => {
         });
         
         // Contar resultados total
-        const countRoles = await Rol.count();
+        const countRoles = await ViewRol.count({where: {
+            [Op.or]: [{
+                ROL: { [Op.like]: `%${buscar.toUpperCase() }%`}
+            }, {
+                DESCRIPCION: { [Op.like]: `%${buscar.toUpperCase()}%`}
+            }, {
+                CREADO_POR: { [Op.like]: `%${buscar.toUpperCase()}%`}
+            }, {
+                MODIFICADO_POR: { [Op.like]: `%${buscar.toUpperCase()}%`}
+            }]
+        }});
 
         // Guardar evento
-        if( buscar !== "" ) {
+        if( buscar !== "" && desde == 0) {
             eventBitacora(new Date, id_usuario, 8, 'CONSULTA', `SE BUSCO LOS ROL CON EL TERMINO ${buscar}`);
         }
 
         // Respuesta
-        res.json( { roles, countRoles} );
+        res.json( { limite, countRoles, roles} );
 
     } catch (error) {
         console.log(error);

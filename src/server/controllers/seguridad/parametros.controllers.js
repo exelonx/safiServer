@@ -6,10 +6,19 @@ const ViewParametro = require('../../models/seguridad/parametro');
 
 // Llamar todas los parametros
 const getParametros = async (req = request, res = response) => {
-    let { limite = 10, desde = 0 } = req.query
-    const { buscar = "", id_usuario } = req.body;
+    let { limite, desde = 0, buscar = "", id_usuario } = req.query
 
     try {
+
+        // Definir el número de objetos a mostrar
+        if(!limite || limite === "") {
+            const { VALOR } = await Parametro.findOne({where: { PARAMETRO: 'ADMIN_NUM_REGISTROS'}})
+            limite = VALOR
+        }
+
+        if(desde === "") {
+            desde = 0
+        }
 
         const parametros = await ViewParametro.findAll({
             limit: parseInt(limite, 10),
@@ -28,13 +37,26 @@ const getParametros = async (req = request, res = response) => {
             }
         });
 
+        const countParametro = await ViewParametro.count({where: {
+            // WHERE COLUMNA1 LIKE %${BUSCAR}% OR COLUMNA2 LIKE %${BUSCAR}%
+            [Op.or]: [{
+                PARAMETRO: { [Op.like]: `%${buscar.toUpperCase()}%`}
+            }, {
+                VALOR: { [Op.like]: `%${buscar.toUpperCase()}%`}
+            }, {
+                CREADO_POR: { [Op.like]: `%${buscar.toUpperCase()}%`}
+            }, {
+                MODIFICADO_POR: { [Op.like]: `%${buscar.toUpperCase()}%`}
+            }]
+        }})
+
         // Guardar evento
-        if( buscar !== "" ) {
+        if( buscar !== "" && desde == 0) {
             eventBitacora(new Date, id_usuario, 10, 'CONSULTA', `SE BUSCO LOS PARAMETRO CON EL TERMINO ${buscar}`);
         }
 
         // Respuesta
-        res.json( parametros );
+        res.json(limite, countParametro, parametros );
 
     } catch (error) {
         console.log(error);

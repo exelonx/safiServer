@@ -36,11 +36,32 @@ const ViewUsuarios = db.define(`VIEW_MS_USUARIO`, {
     PRIMER_INGRESO: {
         type: DataTypes.INTEGER
     },
+    INTENTOS:{
+        type: DataTypes.INTEGER
+    },
     FECHA_VENCIMIENTO: {
         type: DataTypes.DATE
     },
     CORREO_ELECTRONICO: {
         type: DataTypes.STRING
+    },
+    ID_CREADO_POR: {
+        type: DataTypes.INTEGER
+    },
+    CREADO_POR: {
+        type: DataTypes.STRING
+    },
+    FECHA_CREACION: {
+        type: DataTypes.DATE
+    },
+    ID_MODIFICADO_POR: {
+        type: DataTypes.INTEGER
+    },
+    MODIFICACION_POR: {
+        type: DataTypes.STRING
+    },
+    FECHA_MODIFICACION: {
+        type: DataTypes.DATE
     }
 }, {
     tableName: 'VIEW_MS_USUARIO',

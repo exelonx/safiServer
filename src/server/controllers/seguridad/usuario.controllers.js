@@ -131,11 +131,20 @@ const registrar = async(req = request, res = response) => {
 }
 
 const getUsuarios = async(req = request, res = response) => {
-    let { limite = 10, desde = 0 } = req.query
+    let { limite, desde = 0, buscar = ""} = req.query
 
-    const { buscar = "", quienBusco } = req.body;
+    const { quienBusco } = req.body;
 
     try {
+        // Definir el número de objetos a mostrar
+        if(!limite || limite === ""){
+            const { VALOR } = await Parametro.findOne({where: {PARAMETRO: 'ADMIN_NUM_REGISTROS'}})
+            limite = VALOR;
+        }
+
+        if(desde === ""){
+            desde = 0;
+        }
 
         // Paginación
         const usuarios = await ViewUsuarios.findAll({
@@ -158,15 +167,28 @@ const getUsuarios = async(req = request, res = response) => {
         });
         
         // Contar resultados total
-        const countUsuarios = await ViewUsuarios.count()
+        const countUsuarios = await ViewUsuarios.count({where: {
+            // WHERE COLUMNA1 LIKE %${BUSCAR}% OR COLUMNA2 LIKE %${BUSCAR}%
+            [Op.or]: [{
+                USUARIO: { [Op.like]: `%${buscar.toUpperCase() }%`}
+            }, {
+                NOMBRE_USUARIO: { [Op.like]: `%${buscar.toUpperCase()}%`}
+            }, {
+                ESTADO_USUARIO: { [Op.like]: `%${buscar.toUpperCase()}%`}
+            }, {
+                ROL: { [Op.like]: `%${buscar.toUpperCase()}%`}
+            }, {
+                CORREO_ELECTRONICO: { [Op.like]: `%${buscar.toUpperCase()}%`}
+            }]
+        }})
 
         // Guardar evento
-        if( buscar !== "" ) {
+        if( buscar !== "" && desde == 0) {
             eventBitacora(new Date, quienBusco, 2, 'CONSULTA', `SE BUSCO LOS USUARIOS CON EL TERMINO ${buscar}`);
         }
 
         // Respuesta
-        res.json( { usuarios, countUsuarios} )
+        res.json( {limite, countUsuarios, usuarios} )
 
     } catch (error) {
         console.log(error);
@@ -265,7 +287,7 @@ const bloquearUsuario = async (req = request, res = response) => {
 
 const putUsuario = async (req = request, res = response) => {
     const { id_usuario } = req.params
-    const { usuario = "", nombre_usuario = "", correo = "", id_rol = "", estado = "", fechaVencimiento = "", quienModifico, idPantalla } = req.body;
+    const { usuario = "", nombre_usuario = "", correo = "", id_rol = "", estado = "", fechaVencimiento = "", quienModifico } = req.body;
 
     try {
 
@@ -292,8 +314,7 @@ const putUsuario = async (req = request, res = response) => {
                 ID_USUARIO: id_usuario
             }
         })
-        eventBitacora(new Date, quienModifico, idPantalla, 'ACTUALIZACION', `DATOS ACTUALIZADOS: ${usuario !== "" ? 'USUARIO' : ""} ${nombre_usuario !== "" ? 'NOMBRE' : ""}
-         ${estado !== "" ? 'ESTADO' : ""} ${correo !== "" ? 'CORREO' : ""} ${id_rol !== "" ? 'ROL' : ""} ${fechaVencimiento !== "" ? 'VENCIMIENTO' : ""}`);
+        eventBitacora(new Date, quienModifico, 2, 'ACTUALIZACION', 'ACTUALIZACION DE DATOS EXITOSO');
         res.json(usuarioModelo);
 
     } catch (error) {
@@ -414,7 +435,8 @@ const putContrasena = async (req = request, res = response) => {
 
         const usuario = estadoUsuario;
         
-        eventBitacora(new Date, quienModifico, 12, 'ACTUALIZACION', 'ACTUALIZACION DE CONTRASEÑA EXITOSA');
+        eventBitacora(new Date, quienModifico, 12
+            , 'ACTUALIZACION', 'ACTUALIZACION DE CONTRASEÑA EXITOSA');
 
         res.json({
             ok: true,
@@ -532,6 +554,43 @@ const cambioContraseñaPerfil = async (req = request, res = response) => {
         console.log(error);
         res.status(500).json({
             ok: false,
+            msg: error.message
+        })
+    }
+}
+
+const cambioCorreoPerfil = async (req = request, res = response) => { 
+    const { id_usuario } = req.params
+    const { correo = "" } = req.body;
+
+    try {
+
+        // Validar existencia
+        const usuarioModelo = await Usuarios.findByPk( id_usuario );
+        if( !usuarioModelo ){
+            eventBitacora(new Date, quienModifico, 2, 'ACTUALIZACION', 'ACTUALIZACION DE DATOS SIN EXITO');
+            return res.status(404).json({
+                msg: 'No existe un usuario con el id ' + id_usuario
+            })
+        }
+
+        // Actualizar db Usuario
+        await usuarioModelo.update({
+            CORREO_ELECTRONICO: correo !== "" ? correo : Usuario.CORREO_ELECTRONICO,
+            ID_ROL: id_rol !== "" ? id_rol : Usuario.ID_ROL,
+            FECHA_VENCIMIENTO: fechaVencimiento !== "" ? fechaVencimiento : Usuario.FECHA_VENCIMIENTO,
+            MODIFICADO_POR: quienModifico
+        }, {
+            where: {
+                ID_USUARIO: id_usuario
+            }
+        })
+        eventBitacora(new Date, quienModifico, 2, 'ACTUALIZACION', 'ACTUALIZACION DE DATOS EXITOSO');
+        res.json(usuarioModelo);
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
             msg: error.message
         })
     }
