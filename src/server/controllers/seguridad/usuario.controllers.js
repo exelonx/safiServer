@@ -536,6 +536,43 @@ const cambioContraseñaPerfil = async (req = request, res = response) => {
     }
 }
 
+const cambioCorreoPerfil = async (req = request, res = response) => { 
+    const { id_usuario } = req.params
+    const { correo = "" } = req.body;
+
+    try {
+
+        // Validar existencia
+        const usuarioModelo = await Usuarios.findByPk( id_usuario );
+        if( !usuarioModelo ){
+            eventBitacora(new Date, quienModifico, 2, 'ACTUALIZACION', 'ACTUALIZACION DE DATOS SIN EXITO');
+            return res.status(404).json({
+                msg: 'No existe un usuario con el id ' + id_usuario
+            })
+        }
+
+        // Actualizar db Usuario
+        await usuarioModelo.update({
+            CORREO_ELECTRONICO: correo !== "" ? correo : Usuario.CORREO_ELECTRONICO,
+            ID_ROL: id_rol !== "" ? id_rol : Usuario.ID_ROL,
+            FECHA_VENCIMIENTO: fechaVencimiento !== "" ? fechaVencimiento : Usuario.FECHA_VENCIMIENTO,
+            MODIFICADO_POR: quienModifico
+        }, {
+            where: {
+                ID_USUARIO: id_usuario
+            }
+        })
+        eventBitacora(new Date, quienModifico, 2, 'ACTUALIZACION', 'ACTUALIZACION DE DATOS EXITOSO');
+        res.json(usuarioModelo);
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: error.message
+        })
+    }
+}
+
 module.exports = {
     registrar,
     getUsuarios,

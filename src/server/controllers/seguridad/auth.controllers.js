@@ -7,6 +7,7 @@ const { crearTransporteSMTP } = require("../../helpers/nodemailer");
 const PreguntaUsuario = require("../../models/seguridad/pregunta-usuario");
 const { eventBitacora } = require("../../helpers/event-bitacora");
 const Roles = require("../../models/seguridad/rol");
+const ViewUsuarios = require("../../models/seguridad/sql-vistas/view_usuario");
 
 const login = async(req = request, res = response) => {
 
@@ -183,7 +184,7 @@ const revalidarToken = async(req = request, res = response) => {
     const { uid } = req;
 
     // Buscar usuario
-    const usuario = await Usuario.findByPk( uid );
+    const usuario = await ViewUsuarios.findByPk( uid );
 
     // Si se bloquea el usuario sus tokens quedan invalidos
     if( !(usuario.ESTADO_USUARIO === 'NUEVO' || usuario.ESTADO_USUARIO === 'ACTIVO') ) {
@@ -202,6 +203,8 @@ const revalidarToken = async(req = request, res = response) => {
         id_usuario: uid,
         id_rol: usuario.ID_ROL,
         estado: usuario.ESTADO_USUARIO,
+        usuario: usuario.USUARIO,
+        rol: usuario.ROL,
         nombre: usuario.NOMBRE_USUARIO,
         correo: usuario.CORREO_ELECTRONICO,
         fecha_vencimiento: usuario.FECHA_VENCIMIENTO,
