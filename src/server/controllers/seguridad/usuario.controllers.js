@@ -265,7 +265,7 @@ const bloquearUsuario = async (req = request, res = response) => {
 
 const putUsuario = async (req = request, res = response) => {
     const { id_usuario } = req.params
-    const { usuario = "", nombre_usuario = "", correo = "", id_rol = "", estado = "", fechaVencimiento = "", quienModifico } = req.body;
+    const { usuario = "", nombre_usuario = "", correo = "", id_rol = "", estado = "", fechaVencimiento = "", quienModifico, idPantalla } = req.body;
 
     try {
 
@@ -292,7 +292,8 @@ const putUsuario = async (req = request, res = response) => {
                 ID_USUARIO: id_usuario
             }
         })
-        eventBitacora(new Date, quienModifico, 2, 'ACTUALIZACION', 'ACTUALIZACION DE DATOS EXITOSO');
+        eventBitacora(new Date, quienModifico, idPantalla, 'ACTUALIZACION', `DATOS ACTUALIZADOS: ${usuario !== "" ? 'USUARIO' : ""} ${nombre_usuario !== "" ? 'NOMBRE' : ""}
+         ${estado !== "" ? 'ESTADO' : ""} ${correo !== "" ? 'CORREO' : ""} ${id_rol !== "" ? 'ROL' : ""} ${fechaVencimiento !== "" ? 'VENCIMIENTO' : ""}`);
         res.json(usuarioModelo);
 
     } catch (error) {
@@ -531,43 +532,6 @@ const cambioContraseñaPerfil = async (req = request, res = response) => {
         console.log(error);
         res.status(500).json({
             ok: false,
-            msg: error.message
-        })
-    }
-}
-
-const cambioCorreoPerfil = async (req = request, res = response) => { 
-    const { id_usuario } = req.params
-    const { correo = "" } = req.body;
-
-    try {
-
-        // Validar existencia
-        const usuarioModelo = await Usuarios.findByPk( id_usuario );
-        if( !usuarioModelo ){
-            eventBitacora(new Date, quienModifico, 2, 'ACTUALIZACION', 'ACTUALIZACION DE DATOS SIN EXITO');
-            return res.status(404).json({
-                msg: 'No existe un usuario con el id ' + id_usuario
-            })
-        }
-
-        // Actualizar db Usuario
-        await usuarioModelo.update({
-            CORREO_ELECTRONICO: correo !== "" ? correo : Usuario.CORREO_ELECTRONICO,
-            ID_ROL: id_rol !== "" ? id_rol : Usuario.ID_ROL,
-            FECHA_VENCIMIENTO: fechaVencimiento !== "" ? fechaVencimiento : Usuario.FECHA_VENCIMIENTO,
-            MODIFICADO_POR: quienModifico
-        }, {
-            where: {
-                ID_USUARIO: id_usuario
-            }
-        })
-        eventBitacora(new Date, quienModifico, 2, 'ACTUALIZACION', 'ACTUALIZACION DE DATOS EXITOSO');
-        res.json(usuarioModelo);
-
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({
             msg: error.message
         })
     }
