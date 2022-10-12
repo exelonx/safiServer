@@ -6,6 +6,7 @@ const Parametro = require("../../models/seguridad/parametro");
 const { crearTransporteSMTP } = require("../../helpers/nodemailer");
 const PreguntaUsuario = require("../../models/seguridad/pregunta-usuario");
 const { eventBitacora } = require("../../helpers/event-bitacora");
+const Roles = require("../../models/seguridad/rol");
 
 const login = async(req = request, res = response) => {
 
@@ -142,6 +143,7 @@ const login = async(req = request, res = response) => {
         const duracionTokenLogin = await Parametro.findOne({where: {PARAMETRO: 'SESION_TOKEN_DURACION'}});
         const token = await generarJWT( dbUser.ID_USUARIO, duracionTokenLogin.VALOR, process.env.SEMILLA_SECRETA_JWT_LOGIN );
 
+        const nombreROL = await Roles.findByPk(dbUser.ID_ROL);
         
         dbUser.INTENTOS = 0;                        // Reiniciar intentos a 0
         dbUser.PRIMER_INGRESO++                     // Aumentar contador de ingresos
@@ -156,8 +158,10 @@ const login = async(req = request, res = response) => {
             ok: true,
             id_usuario : dbUser.ID_USUARIO,
             id_rol: dbUser.ID_ROL,
+            rol: nombreROL,
             estado: dbUser.ESTADO_USUARIO,
             nombre: dbUser.NOMBRE_USUARIO,
+            usuario: dbUser.USUARIO,
             correo: dbUser.CORREO_ELECTRONICO,
             fecha_vencimiento: dbUser.FECHA_VENCIMIENTO,
             token
