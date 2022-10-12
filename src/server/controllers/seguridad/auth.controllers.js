@@ -152,7 +152,7 @@ const login = async(req = request, res = response) => {
         await dbUser.save();
 
         // Guardar evento
-        eventBitacora(new Date, dbUser.ID_USUARIO, 3, 'INGRESO', `USUARIO INICIO SESIÓN`);
+        eventBitacora(new Date, dbUser.ID_USUARIO, 3, 'INGRESO', `${dbUser.USUARIO} INICIO SESIÓN`);
 
         //Respuesta del servicio
         return res.json({
