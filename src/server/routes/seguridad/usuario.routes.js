@@ -11,7 +11,7 @@ const { validarCampos,
     
 } = require('../../middlewares');
     
-const { registrar, getUsuarios, getUsuario, bloquearUsuario, putContrasena, putUsuario } = require('../../controllers/seguridad/usuario.controllers');
+const { registrar, getUsuarios, getUsuario, bloquearUsuario, putContrasena, putUsuario, cambioContraseñaPerfil } = require('../../controllers/seguridad/usuario.controllers');
 
 const { emailExistente, emailExistenteUpdate } = require('../../helpers/db-validators');
 
@@ -69,5 +69,13 @@ router.put('/actualizar/:id_usuario', [
         existeUsuarioUpdated,
         validarCampos
 ], putUsuario)
+
+router.put('/cambiar-contrasena/perfil/:id_usuario', [
+    // Validar contraseña
+    validarLongitudDBContra,
+    validarContraseña,
+    check('confirmContrasena', "La confirmación es obligatoria").not().isEmpty(),
+    validarCampos
+], cambioContraseñaPerfil)
 
 module.exports = router;

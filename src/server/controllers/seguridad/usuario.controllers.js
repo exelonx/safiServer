@@ -429,11 +429,119 @@ const putContrasena = async (req = request, res = response) => {
     }
 }
 
+const cambioContraseñaPerfil = async (req = request, res = response) => {
+    const { id_usuario } = req.params;
+    let { contrasena, confirmContrasena, confirmContrasenaActual } = req.body;
+
+    try {
+
+        // Validar usuario
+        const Usuario = await Usuarios.findOne({where: {ID_USUARIO: id_usuario}})
+        
+        // Validar existencia
+        if( !Usuario ){
+            return res.status(404).json({
+                ok: false,
+                msg: 'No existe un usuario con el id ' + id_usuario
+            })
+        }
+
+        // Confirmar si el contraseña hace match
+        const validarContraseña = await bcrypt.compareSync( confirmContrasenaActual, Usuario.CONTRASENA )
+        if( !validarContraseña ) {
+
+            eventBitacora(new Date, id_usuario, 13, 'ACTUALIZACION', 'INTENTO DE CAMBIO DE CONTRASEÑA SIN ÉXITO');
+
+            return res.status(404).json({
+                ok: false,
+                msg: 'Contraseña incorrecta'
+            });
+        }
+
+        // Validar que hagan match la confirmación de contraseña
+        if( contrasena !== confirmContrasena ) {
+            return res.status(401).json({
+                ok: false,
+                msg: `Contraseña no coincide`
+            })
+        }
+
+        // Validar si existe la misma contraseña en el historial de contraseñas
+        const buscarContrasena = await HistorialContrasena.findAll({where: {ID_USUARIO: id_usuario}});
+        for await (const contra of buscarContrasena){
+
+            if (await bcrypt.compareSync( contrasena, contra.CONTRASENA )) {
+                return res.status(400).json({
+                    ok: false,
+                    msg: 'La contraseña ya existe en el historial'
+                })
+            }
+        }
+
+        // Hashear contraseña
+        const salt = bcrypt.genSaltSync();
+        contrasena = bcrypt.hashSync(contrasena, salt);
+
+        // Validar numero del historial
+        const countContrasenas = await HistorialContrasena.count({where:{ID_USUARIO: id_usuario}});
+        if (countContrasenas >= 10) {
+            const primeraContrasena = await HistorialContrasena.findOne({order:["ID_HIST"], limit: 1})
+            await primeraContrasena.destroy();
+        }
+
+        const historialContrasena = await HistorialContrasena.build({
+            ID_USUARIO: id_usuario,
+            CONTRASENA: contrasena
+        })
+        
+        await historialContrasena.save();    
+
+        // Asignar contraseña encryptada y reiniciar intentos
+        Usuario.CONTRASENA = contrasena;
+        Usuario.INTENTOS = 0;
+
+        // Traer días de vigencia de parametros
+        const diasVigencias = await Parametro.findOne({
+            where:{
+                PARAMETRO: 'ADMIN_DIAS_VIGENCIA'
+            }
+        });
+
+        // ------------------- Actualizar fecha de vencimiento ------------------
+        // Calcular fecha de vencimiento
+        const fechaActual = new Date();
+        const fechaVencimiento = (modificarDias(fechaActual, parseInt(diasVigencias.VALOR,10)));
+
+        // Actualizar modificado por:
+        Usuario.MODIFICADO_POR = id_usuario;
+
+        Usuario.FECHA_VENCIMIENTO = fechaVencimiento;
+        await Usuario.save();
+
+        const usuario = Usuario;
+        
+        eventBitacora(new Date, id_usuario, 13, 'ACTUALIZACION', 'ACTUALIZACION DE CONTRASEÑA EXITOSA');
+
+        res.json({
+            ok: true,
+            usuario
+        });
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            ok: false,
+            msg: error.message
+        })
+    }
+}
+
 module.exports = {
     registrar,
     getUsuarios,
     getUsuario,
     bloquearUsuario,
     putContrasena,
-    putUsuario
+    putUsuario,
+    cambioContraseñaPerfil
 }
