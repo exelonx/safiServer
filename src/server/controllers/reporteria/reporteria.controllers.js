@@ -10,17 +10,18 @@ const getReporte = async (req = request, res = response) => {
         const buscador = await puppeteer.launch();
         const pagina = await buscador.newPage();
 
-        await pagina.setContent(`<h1>hola</h1>`);
+        await pagina.setContent(tabla);
         await pagina.emulateMediaType('screen')
-        await pagina.pdf({
-            path: './src/server/reports/pdf.pdf',
+        const pdf = await pagina.pdf({
             format: 'A4',
             printBackground: true
         })
 
         await buscador.close()
         console.log('descargar')
-        res.sendFile(`${__dirname}../../../reports/pdf.pdf`)
+
+        res.contentType("application/pdf");
+        res.send(pdf);
     } catch (error) {
         console.log(error);
         res.status(500).json({

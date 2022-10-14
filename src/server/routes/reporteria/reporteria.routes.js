@@ -3,6 +3,6 @@ const { getReporte } = require('../../controllers/reporteria/reporteria.controll
 
 const router = Router();
 
-router.get('/', getReporte);
+router.post('/', getReporte);
 
 module.exports = router
