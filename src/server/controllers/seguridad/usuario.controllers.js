@@ -92,7 +92,10 @@ const registrar = async(req = request, res = response) => {
             from: `"${nombreEmpresaSMTP.VALOR} 🍔" <${correoSMTP.VALOR}>`, // Datos de emisor
 	    	to: correo, // Receptor
 	    	subject: "¡Cuenta creada! 🍔👌", // Asunto
-	    	html: `<b>Bienvenido a Dr. Buger, su cuenta ha sido creada, contacte con el administrador para activar su cuenta</b>`
+	    	html: `<b>Bienvenido a Dr. Buger, su cuenta ha sido creada
+            <hr>Usuario: ${usuario} 
+            <br>Contraseña: ${contrasena} 
+            <hr>contacte con el administrador para activar su cuenta</b>`
 	    }, (err) => {
             if(err) { console.log( err ) };
         });
@@ -285,14 +288,14 @@ const bloquearUsuario = async (req = request, res = response) => {
 
 const putUsuario = async (req = request, res = response) => {
     const { id_usuario } = req.params
-    const { usuario = "", nombre_usuario = "", correo = "", id_rol = "", estado = "", fechaVencimiento = "", quienModifico } = req.body;
+    const { usuario = "", nombre_usuario = "", correo = "", id_rol = "", estado = "", fechaVencimiento = "", quienModifico, idPantalla } = req.body;
 
     try {
 
         // Validar existencia
         const usuarioModelo = await Usuarios.findByPk( id_usuario );
         if( !usuarioModelo ){
-            eventBitacora(new Date, quienModifico, 2, 'ACTUALIZACION', 'ACTUALIZACION DE DATOS SIN EXITO');
+            eventBitacora(new Date, quienModifico, idPantalla, 'ACTUALIZACION', 'ACTUALIZACION DE DATOS SIN EXITO');
             return res.status(404).json({
                 msg: 'No existe un usuario con el id ' + id_usuario
             })
@@ -312,7 +315,8 @@ const putUsuario = async (req = request, res = response) => {
                 ID_USUARIO: id_usuario
             }
         })
-        eventBitacora(new Date, quienModifico, 2, 'ACTUALIZACION', 'ACTUALIZACION DE DATOS EXITOSO');
+        eventBitacora(new Date, quienModifico, idPantalla, 'ACTUALIZACION', `DATOS ACTUALIZADOS: ${usuario !== "" ? 'USUARIO' : ""} ${nombre_usuario !== "" ? 'NOMBRE' : ""}
+         ${estado !== "" ? 'ESTADO' : ""} ${correo !== "" ? 'CORREO' : ""} ${id_rol !== "" ? 'ROL' : ""} ${fechaVencimiento !== "" ? 'VENCIMIENTO' : ""}`);
         res.json(usuarioModelo);
 
     } catch (error) {
