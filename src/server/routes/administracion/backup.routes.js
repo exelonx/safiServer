@@ -11,7 +11,7 @@ router.get('/', async (req, res)=>{
         await generarBackup()
             .catch(err => console.log('error'));
 
-        res.download(`${__dirname}../../../backups/dump.sql`, 'dump.sql')
+        res.download(`${__dirname}../../../backups/db-backup.sql`, 'db-backup.sql')
 
     } catch (error) {
         console.log('error')

@@ -56,7 +56,7 @@ const getParametros = async (req = request, res = response) => {
         }
 
         // Respuesta
-        res.json(limite, countParametro, parametros );
+        res.json( {limite, countParametro, parametros} );
 
     } catch (error) {
         console.log(error);

@@ -7,25 +7,20 @@ const getReporte = async (req = request, res = response) => {
 
     try {
 
-        try {
-            const buscador = await puppeteer.launch();
-            const pagina = await buscador.newPage();
-    
-            await pagina.setContent('<h1>Hola Mundo</h1>');
-            await pagina.emulateMediaType('screen')
-            await pagina.pdf({
-                path: 'mypdf.pdf',
-                format: 'A4',
-                printBackground: true
-            })
-    
-            console.log('listo')
-            await buscador.close()
-            process.exit();
-        } catch (error) {
-            console.log('oh error ', e)
-        }
+        const buscador = await puppeteer.launch();
+        const pagina = await buscador.newPage();
 
+        await pagina.setContent(`<h1>hola</h1>`);
+        await pagina.emulateMediaType('screen')
+        await pagina.pdf({
+            path: './src/server/reports/pdf.pdf',
+            format: 'A4',
+            printBackground: true
+        })
+
+        await buscador.close()
+        console.log('descargar')
+        res.sendFile(`${__dirname}../../../reports/pdf.pdf`)
     } catch (error) {
         console.log(error);
         res.status(500).json({

@@ -131,9 +131,7 @@ const registrar = async(req = request, res = response) => {
 }
 
 const getUsuarios = async(req = request, res = response) => {
-    let { limite, desde = 0, buscar = ""} = req.query
-
-    const { quienBusco } = req.body;
+    let { limite, desde = 0, buscar = "", quienBusco} = req.query
 
     try {
         // Definir el número de objetos a mostrar
