@@ -12,6 +12,7 @@ const validarCamposYExistenciaParametros = async(req = request, res = response, 
     const parametro = await Parametro.findByPk( id_parametro )
     if ( !parametro ) {
         return res.status(400).json({
+            ok: false,
             msg: `El parametro con id ${ id_parametro } no existe`
         })
     }
@@ -22,6 +23,7 @@ const validarCamposYExistenciaParametros = async(req = request, res = response, 
          || parametro.PARAMETRO == 'ADMIN_INTENTOS' || parametro.PARAMETRO == 'ADMIN_PREGUNTAS') {
         if (!validator.isNumeric(valor)) {
             return res.status(400).json({
+                ok: false,
                 msg: 'Este parametro debe ser númerico'
             })
         }
@@ -32,6 +34,7 @@ const validarCamposYExistenciaParametros = async(req = request, res = response, 
         const minContraseña = await Parametro.findOne({ where: {PARAMETRO: 'MIN_CONTRASEÑA'}})
         if ( valor <= minContraseña.VALOR ) {
             return res.status(400).json({
+                ok: false,
                 msg: 'Debe ingresar un valor mayor a la contraseña mínima'
             })
         }   
@@ -42,6 +45,7 @@ const validarCamposYExistenciaParametros = async(req = request, res = response, 
         const maxContraseña = await Parametro.findOne({ where: {PARAMETRO: 'MAX_CONTRASEÑA'}})
         if ( valor >= maxContraseña.VALOR ) {
             return res.status(400).json({
+                ok: false,
                 msg: 'Debe ingresar un valor menor a la contraseña máxima'
             })
         }
@@ -49,6 +53,7 @@ const validarCamposYExistenciaParametros = async(req = request, res = response, 
         // Validar que sea mayor a 0
         if ( valor < 5 ) {
             return res.status(400).json({
+                ok: false,
                 msg: 'Debe ingresar un valor mayor a 4'
             })
         }
@@ -58,6 +63,7 @@ const validarCamposYExistenciaParametros = async(req = request, res = response, 
     if ( parametro.PARAMETRO == 'ADMIN_CORREO' ) {
         if(!validator.isEmail(valor)) {
             return res.status(400).json({
+                ok: false,
                 msg: 'Debe ser un correo válido'
             })
         }
@@ -68,6 +74,7 @@ const validarCamposYExistenciaParametros = async(req = request, res = response, 
         const error = validarContraseñaParametro( valor, res );
         if ( error ) {
             return res.status(400).json({
+                ok: false,
                 msg: error
             })
         }
@@ -77,6 +84,7 @@ const validarCamposYExistenciaParametros = async(req = request, res = response, 
     if ( parametro.PARAMETRO == 'ADMIN_CUSER' || parametro.PARAMETRO == 'SYS_NOMBRE' ) {
         if (!validator.isUppercase(valor)) {
             return res.status(400).json({
+                ok: false,
                 msg: 'Este parametro debe estar en mayúscula'
             })
         }
@@ -86,6 +94,7 @@ const validarCamposYExistenciaParametros = async(req = request, res = response, 
     if ( parametro.PARAMETRO == 'ADMIN_INTENTOS' || parametro.PARAMETRO == 'ADMIN_PREGUNTAS' ) {
         if ( valor < 1 ) {
             return res.status(400).json({
+                ok: false,
                 msg: 'Este parametro debe ser mayor a 0'
             })
         }

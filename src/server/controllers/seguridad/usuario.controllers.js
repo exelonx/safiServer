@@ -288,7 +288,7 @@ const bloquearUsuario = async (req = request, res = response) => {
 
 const putUsuario = async (req = request, res = response) => {
     const { id_usuario } = req.params
-    const { usuario = "", nombre_usuario = "", correo = "", id_rol = "", estado = "", fechaVencimiento = "", quienModifico, idPantalla } = req.body;
+    const { nombre_usuario = "", correo = "", id_rol = "", estado = "", fechaVencimiento = "", quienModifico, idPantalla } = req.body;
 
     try {
 
@@ -301,9 +301,19 @@ const putUsuario = async (req = request, res = response) => {
             })
         }
 
+        // Si llega sin cambios
+        if(!((usuarioModelo.NOMBRE_USUARIO == nombre_usuario || nombre_usuario === "") 
+            && (usuarioModelo.ESTADO_USUARIO == estado || estado === "") 
+            && (usuarioModelo.ID_ROL == id_rol || id_rol === "") 
+            && (usuarioModelo.CORREO_ELECTRONICO == correo || correo === ""))) {
+
+                eventBitacora(new Date, quienModifico, idPantalla, 'ACTUALIZACION', `DATOS ACTUALIZADOS: ${nombre_usuario !== "" ? 'NOMBRE' : ""}
+                 ${estado !== "" ? 'ESTADO' : ""} ${correo !== "" ? 'CORREO' : ""} ${id_rol !== "" ? 'ROL' : ""} ${fechaVencimiento !== "" ? 'VENCIMIENTO' : ""}`);
+
+        }
+
         // Actualizar db Usuario
         await usuarioModelo.update({
-            USUARIO: usuario !== "" ? usuario : Usuario.USUARIO,
             NOMBRE_USUARIO: nombre_usuario !== "" ? nombre_usuario : Usuario.NOMBRE_USUARIO,
             ESTADO_USUARIO: estado !== "" ? estado : Usuario.ESTADO_USUARIO,
             CORREO_ELECTRONICO: correo !== "" ? correo : Usuario.CORREO_ELECTRONICO,
@@ -315,8 +325,7 @@ const putUsuario = async (req = request, res = response) => {
                 ID_USUARIO: id_usuario
             }
         })
-        eventBitacora(new Date, quienModifico, idPantalla, 'ACTUALIZACION', `DATOS ACTUALIZADOS: ${usuario !== "" ? 'USUARIO' : ""} ${nombre_usuario !== "" ? 'NOMBRE' : ""}
-         ${estado !== "" ? 'ESTADO' : ""} ${correo !== "" ? 'CORREO' : ""} ${id_rol !== "" ? 'ROL' : ""} ${fechaVencimiento !== "" ? 'VENCIMIENTO' : ""}`);
+
         res.json(usuarioModelo);
 
     } catch (error) {

@@ -103,6 +103,14 @@ const putParametro = async (req = request, res = response) => {
 
         const parametro = await Parametro.findByPk( id_parametro )
 
+        // Si no hay modificaciones
+        if(!(parametro.VALOR == valor || valor === "")) {
+
+            // Guardar evento
+            eventBitacora(new Date, id_usuario, 10, 'ACTUALIZACION', `SE ACTUALIZO EL PARAMETRO: ${parametro.PARAMETRO}`);
+
+        }
+
         // Actualizar db Parametro
         await Parametro.update({
             MODIFICADO_POR: id_usuario,
@@ -113,10 +121,10 @@ const putParametro = async (req = request, res = response) => {
             }
         })
 
-        // Guardar evento
-        eventBitacora(new Date, id_usuario, 10, 'ACTUALIZACION', `SE ACTUALIZO EL PARAMETRO: ${parametro.PARAMETRO}`);
-
-        res.json({ id_parametro, valor, id_usuario });
+        res.json({ 
+            ok: true,
+            msg: `¡Parametro ${parametro.PARAMETRO} actualizado con éxito!`
+         });
 
     } catch (error) {
         console.log(error);
