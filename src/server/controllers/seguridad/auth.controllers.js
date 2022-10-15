@@ -226,7 +226,7 @@ const generarCorreoRecuperacion = async(req = request, res = response) => {
     };
 
     // Buscar parametros de duración de token de correo
-    const duracionTokenPass = await Parametro.findOne( {where: { PARAMETRO: 'SESION_TOKEN_DURACION' }} );
+    const duracionTokenPass = await Parametro.findOne( {where: { PARAMETRO: 'CORREO_RECUPERACION_DURACION' }} );
 
     // Generar JWT
     const token = await generarJWT( usuarioSinPass.ID_USUARIO, duracionTokenPass.VALOR, process.env.SEMILLA_SECRETA_JWT_CORREO );
@@ -290,26 +290,22 @@ const usuarioPorUsernameRecovery = async (req = request, res = response) => {
         }
 
         // -------------- Validar que tenga configuradas las preguntas ---------------
-        // Contar las preguntas usuario
-        const preguntaUsuario = await PreguntaUsuario.count({
-            where: {
-                ID_USUARIO: dbUsuario.ID_USUARIO
-            }
-        });
-
-        // Traer los parametros de número de preguntas
-        const parametroNumPreguntas = await Parametro.findOne({
-            where: {
-                PARAMETRO: 'ADMIN_PREGUNTAS'
-            }
-        })
-
-        if( preguntaUsuario < parametroNumPreguntas.VALOR ) {
-            return res.status(404).json({
+        if( dbUsuario.ESTADO_USUARIO === 'NUEVO' ) {
+            return res.status(401).json({
                 ok: false,
                 msg: 'Usuario no tiene configuradas las preguntas secretas'
             })
         }
+
+        // Validar que el usuario sea válido
+        if( dbUsuario.ESTADO_USUARIO === 'INACTIVO' ) {
+            return res.status(401).json({
+                ok: false,
+                msg: 'El usuario está inactivo'
+            })
+        }
+
+
 
         // Generar JWT 
         const token = await generarJWT( dbUsuario.ID_USUARIO, '10m', process.env.SEMILLA_SECRETA_JWT_PREGUNTA );
