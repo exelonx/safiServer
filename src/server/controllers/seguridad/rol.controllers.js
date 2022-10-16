@@ -114,11 +114,15 @@ const postRol = async (req = request, res = response) => {
         eventBitacora(new Date, id_usuario, 8, 'NUEVO', `SE CREO EL ROL ${nuevoRol.ROL}`);
 
         // Responder
-        res.json( nuevoRol );
+        res.json( {
+            ok: true,
+            msg: 'Rol: '+ rol + ' ha sido creado con éxito'
+        } );
 
     } catch (error) {
         console.log(error);
         res.status(500).json({
+            ok: false,
             msg: error.message
         })
     }
@@ -146,11 +150,15 @@ const putRol = async (req = request, res = response) => {
         // Guardar evento
         eventBitacora(new Date, id_usuario, 8, 'ACTUALIZACION', `SE ACTUALIZO EL ROL ${rolAnterior.ROL}`);
 
-        res.json({ id_rol, rol, descripcion });
+        res.json({
+            ok: true,
+            msg: 'Rol: '+ rolAnterior.ROL + ' ha sido actualizado con éxito'
+        });
 
     } catch (error) {
         console.log(error);
         res.status(500).json({
+            ok: false,
             msg: error.message
         })
     }
@@ -174,6 +182,7 @@ const DeleteRol = async (req = request, res = response) => {
         eventBitacora(new Date, quienModifico, 8, 'BORRADO', `SE ELIMINO EL ROL ${ROL}`);
 
         res.json({
+            ok: false,
             msg: `El rol: ${ROL} ha sido eliminado`
         });
 

@@ -92,12 +92,12 @@ const validarPreguntaJWT = (req = request, res = response, next) => {
     // Leer token desde los params
     const { token } = req.params;
 
-    // if ( !token ) {
-    //     return res.status(401).json({
-    //         ok: false,
-    //         msg: 'error en el token'
-    //     })
-    // }
+    if ( !token ) {
+        return res.status(401).json({
+            ok: false,
+            msg: 'error en el token'
+        })
+    }
 
     try {
 
@@ -111,16 +111,14 @@ const validarPreguntaJWT = (req = request, res = response, next) => {
         if( error instanceof jwt.TokenExpiredError ) {
             return res.status(401).json({
                 ok: false,
-                msg: 'Su tiempo ha expirado',
-                cod: 'T-401'
+                msg: 'Su tiempo ha expirado'
             })
         }
 
         // Token modificado o no válido
         return res.status(401).json({
             ok: false,
-            msg: 'Token no válido',
-            cod: 'T-400'
+            msg: 'Token no válido'
         })
     }
 

@@ -192,7 +192,7 @@ const getUsuarios = async(req = request, res = response) => {
 
         // Guardar evento
         if( buscar !== "" && desde == 0) {
-            eventBitacora(new Date, quienBusco, 2, 'CONSULTA', `SE BUSCO LOS USUARIOS CON EL TERMINO ${buscar}`);
+            eventBitacora(new Date, quienBusco, 2, 'CONSULTA', `SE BUSCO LOS USUARIOS CON EL TERMINO '${buscar}'`);
         }
 
         // Respuesta
@@ -251,6 +251,13 @@ const bloquearUsuario = async (req = request, res = response) => {
             })
         }
 
+        if( usuario.USUARIO === 'ROOT' ) {
+            res.status(401).json({
+                ok: false,
+                msg: 'El usuario root no puede ser eliminado'
+            })
+        }
+
         // Actualizar db Pregunta
         await usuario.update({
             ESTADO_USUARIO: 'INACTIVO',
@@ -280,14 +287,18 @@ const bloquearUsuario = async (req = request, res = response) => {
             if(err) { console.log( err ) };
         });
 
-        eventBitacora(new Date, usuario.ID_USUARIO, 2, 'BLOQUEO', 'BLOQUEO DE USUARIO');
+        eventBitacora(new Date, usuario.ID_USUARIO, 2, 'ELIMINACIÓN', `USUARIO ${usuario.USUARIO} HA SIDO INACTIVADO`);
 
-        res.json( usuario )
+        res.json( {
+            ok: true,
+            msg: `Usuario ${usuario.USUARIO} ha sido inactivado`
+        } )
 
     } catch (error) {
         console.log(error);
         res.status(500).json({
-            msg: error.message
+            ok: false,
+            msg: error.msg
         })
     }
 
@@ -306,6 +317,34 @@ const putUsuario = async (req = request, res = response) => {
             return res.status(404).json({
                 msg: 'No existe un usuario con el id ' + id_usuario
             })
+        }
+
+        // Evitar modificaciones del nombre, rol y estado del super usuario
+        if(usuarioModelo.USUARIO === 'ROOT' ) {
+            
+            if(nombre_usuario !== "") {
+
+                res.status(500).json({
+                    ok: false,
+                    msg: 'No se puede modificar el nombre del super usuario'
+                })
+
+            }
+
+            if(id_rol !== "") {
+                res.status(500).json({
+                    ok: false,
+                    msg: 'No se puede modificar el rol del super usuario'
+                })
+            }
+
+            if(estado !== "") {
+                res.status(500).json({
+                    ok: false,
+                    msg: 'No se puede modificar el estado del super usuario'
+                })
+            }
+
         }
 
         // Si llega sin cambios

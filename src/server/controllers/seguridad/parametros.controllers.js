@@ -53,7 +53,7 @@ const getParametros = async (req = request, res = response) => {
 
         // Guardar evento
         if( buscar !== "" && desde == 0) {
-            eventBitacora(new Date, id_usuario, 10, 'CONSULTA', `SE BUSCO LOS PARAMETRO CON EL TERMINO ${buscar}`);
+            eventBitacora(new Date, id_usuario, 10, 'CONSULTA', `SE BUSCO LOS PARAMETRO CON EL TERMINO '${buscar}'`);
         }
 
         // Respuesta

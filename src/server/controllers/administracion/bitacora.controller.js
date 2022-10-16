@@ -2,8 +2,10 @@ const { request, response } = require('express');
 const { Op } = require('sequelize');
 const { eventBitacora } = require('../../helpers/event-bitacora');
 const ViewBitacora = require('../../models/administracion/sql-vistas/view_bitacora');
+const Objeto = require('../../models/seguridad/objeto');
 
 const Parametro = require('../../models/seguridad/parametro');
+const Usuarios = require('../../models/seguridad/usuario');
 
 // Llamar todas los parametros
 const getBitacora = async (req = request, res = response) => {
@@ -68,6 +70,38 @@ const getBitacora = async (req = request, res = response) => {
     }
 }
 
+const registrarIngreso = async (req = request, res = response) => {
+
+    const { id_usuario, idPantalla } = req.body;
+
+    try {
+
+        console.log('registrando')
+        // Traer información del usuario y pantalla
+        const usuario = await Usuarios.findByPk(id_usuario);
+        const pantalla = await Objeto.findByPk(idPantalla);
+
+        // Registrar ingreso
+        eventBitacora(new Date, id_usuario, idPantalla, 'INGRESO', `${usuario.USUARIO} INGRESO A LA PANTALLA '${pantalla.OBJETO}'`);
+
+        res.json({
+            ok: true
+        })
+        
+    } catch (error) {
+        
+        console.log(error);
+        res.status(500).json({
+            ok: false,
+            msg: error.message
+        })
+
+    }
+
+
+}
+
 module.exports = {
-    getBitacora
+    getBitacora,
+    registrarIngreso
 }

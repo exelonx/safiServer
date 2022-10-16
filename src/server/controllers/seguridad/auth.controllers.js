@@ -41,7 +41,7 @@ const login = async(req = request, res = response) => {
             eventBitacora(new Date, dbUser.ID_USUARIO, 3, 'INGRESO', `INTENTO #${dbUser.INTENTOS} DE INICIO DE SESIÓN SIN ÉXITO`);
 
             // Bloquear usuario si los intentos se acaban
-            if(dbUser.INTENTOS === parseInt( intentosParametro.VALOR, 10 )) {
+            if(dbUser.INTENTOS === parseInt( intentosParametro.VALOR, 10 ) && !(dbUser.USUARIO === 'ROOT')) {
 
                 dbUser.ESTADO_USUARIO = 'BLOQUEADO';
 

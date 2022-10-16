@@ -164,7 +164,7 @@ const compararPregunta = async (req = request, res = response) => {
             let msgBloqueo = '';
 
             // Validar si ya esta bloqueado
-            if( usuario.ESTADO_USUARIO !== 'BLOQUEADO') {
+            if( usuario.ESTADO_USUARIO !== 'BLOQUEADO' && usuario.USUARIO !== 'ROOT' ) {
 
                 msgBloqueo = ' Usuario bloqueado'
                 usuario.ESTADO_USUARIO = 'BLOQUEADO';
