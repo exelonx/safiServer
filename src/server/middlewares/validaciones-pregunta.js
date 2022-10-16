@@ -1,6 +1,7 @@
+const { response } = require("express");
 const Preguntas = require("../models/seguridad/Pregunta");
 
-const noExistePregunta = async( pregunta_id ) => {
+const noExistePregunta = async( pregunta_id, res = response) => {
 
     // Validar que exista la pregunta
     const pregunta = await Preguntas.findByPk( pregunta_id )
@@ -13,11 +14,17 @@ const noExistePregunta = async( pregunta_id ) => {
 
 const noEsPregunta = async (pregunta = '') =>{
     if(pregunta.charAt(0) !== '¿'){
-        throw new Error(`${ pregunta }, hace falta el signo ¿`);
+        return res.status(400).json({
+            ok: false,
+            msg: `${ pregunta }, hace falta el signo ¿`
+        })
     }
 
     if(pregunta.charAt(pregunta.length - 1) !== '?'){
-        throw new Error(`${ pregunta }, hace falta el signo ?`);
+        return res.status(400).json({
+            ok: false,
+            msg: `${ pregunta }, hace falta el signo ?`
+        })
     }
 }
 

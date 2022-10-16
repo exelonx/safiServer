@@ -10,7 +10,10 @@ const existeRol = async( rol ) => {
     })
 
     if ( rolRepetido ) {
-        throw new Error(`El rol: ${ rol }, ya existe`);
+        return res.status(400).json({
+            ok: false,
+            msg: `El rol: ${ rol }, ya existe`
+        }) 
     }
 
 }
@@ -21,7 +24,10 @@ const noExisteRolPorId = async( rol ) => {
     const rolRepetido = await Rol.findByPk( rol )
 
     if ( !rolRepetido ) {
-        throw new Error(`El rol: ${ rol }, no existe`);
+        return res.status(400).json({
+            ok: false,
+            msg: `El rol: ${ rol }, no existe`
+        }) 
     }
 
 }
