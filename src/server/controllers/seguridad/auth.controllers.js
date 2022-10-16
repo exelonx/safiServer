@@ -1,13 +1,14 @@
 const { response, request } = require("express");
-const Usuario = require("../../models/seguridad/usuario");
 const bcrypt = require('bcryptjs');
-const { generarJWT } = require("../../helpers/jwt");
+
+const Usuario = require("../../models/seguridad/usuario");
 const Parametro = require("../../models/seguridad/parametro");
-const { crearTransporteSMTP } = require("../../helpers/nodemailer");
-const PreguntaUsuario = require("../../models/seguridad/pregunta-usuario");
-const { eventBitacora } = require("../../helpers/event-bitacora");
 const Roles = require("../../models/seguridad/rol");
 const ViewUsuarios = require("../../models/seguridad/sql-vistas/view_usuario");
+
+const { generarJWT } = require("../../helpers/jwt");
+const { crearTransporteSMTP } = require("../../helpers/nodemailer");
+const { eventBitacora } = require("../../helpers/event-bitacora");
 
 const login = async(req = request, res = response) => {
 
@@ -107,8 +108,11 @@ const login = async(req = request, res = response) => {
 
         };
 
-        // Válidar tener un rol
-        if( !dbUser.ID_ROL ) {
+        // Traer el rol default
+        const rolDefault = await Roles.findOne({where: {ROL: 'DEFAULT'}})
+
+        // Válidar tener un rol con acceso
+        if( dbUser.ID_ROL === rolDefault.ID_ROL ) {
             // Notificar por correo
             transporte.sendMail({
                 from: `"${nombreEmpresaSMTP.VALOR} 🍔" <${correoSMTP.VALOR}>`, // Datos de emisor
@@ -124,7 +128,7 @@ const login = async(req = request, res = response) => {
 
             return res.status(401).json({
                 ok: false,
-                msg: 'El usuario no tiene acceso válido, hable con el administrador'
+                msg: 'El usuario no tiene acceso válido, hable con el administrador para solicitar acceso'
             });
         };
 
@@ -305,10 +309,11 @@ const usuarioPorUsernameRecovery = async (req = request, res = response) => {
             })
         }
 
-
+        // Buscar duración del token
+        const vigencia = await Parametro.findOne({where: {PARAMETRO: 'SESION_TOKEN_PREGUNTA_VIGENCIA'}});
 
         // Generar JWT 
-        const token = await generarJWT( dbUsuario.ID_USUARIO, '10m', process.env.SEMILLA_SECRETA_JWT_PREGUNTA );
+        const token = await generarJWT( dbUsuario.ID_USUARIO, vigencia.VALOR, process.env.SEMILLA_SECRETA_JWT_PREGUNTA );
 
         // Guardar evento
         eventBitacora(new Date, dbUsuario.ID_USUARIO, 6, 'INGRESO', `INGRESO A CAMBIO DE CONTRASEÑA POR PREGUNTA SECRETA`);
@@ -332,24 +337,20 @@ const revalidarTokenPregunta = async(req = request, res = response) => {
     const { uid } = req;
 
     // Validar que tenga configuradas las preguntas (PENSAR EN LA PEOR SITUACIÓN ES LO MEJOR)
-    // Contar las preguntas usuario
-    const preguntaUsuario = await PreguntaUsuario.count({
-        where: {
-            ID_USUARIO: uid
-        }
-    });
+    const dbUsuario = await Usuario.findByPk(uid)
 
-    // Traer los parametros de número de preguntas
-    const parametroNumPreguntas = await Parametro.findOne({
-        where: {
-            PARAMETRO: 'ADMIN_PREGUNTAS'
-        }
-    })
-
-    if( preguntaUsuario < parametroNumPreguntas.VALOR ) {
-        return res.status(404).json({
+    if( dbUsuario.ESTADO_USUARIO === 'NUEVO' ) {
+        return res.status(401).json({
             ok: false,
             msg: 'Usuario no tiene configuradas las preguntas secretas'
+        })
+    }
+
+    // Validar que el usuario sea válido
+    if( dbUsuario.ESTADO_USUARIO === 'INACTIVO' ) {
+        return res.status(401).json({
+            ok: false,
+            msg: 'El usuario está inactivo'
         })
     }
 

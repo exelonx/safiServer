@@ -10,6 +10,7 @@ const HistorialContrasena = require('../../models/seguridad/historial-contrena')
 const { crearTransporteSMTP } = require("../../helpers/nodemailer");
 const PreguntaUsuario = require("../../models/seguridad/pregunta-usuario");
 const { eventBitacora } = require("../../helpers/event-bitacora");
+const Roles = require("../../models/seguridad/rol");
 
 
 const registrar = async(req = request, res = response) => {
@@ -37,6 +38,11 @@ const registrar = async(req = request, res = response) => {
         const fechaActual = new Date();
         const fechaVencimiento = (modificarDias(fechaActual, parseInt(diasVigencias.VALOR,10)));  
 
+        // Cargar el id del rol default (Para no Hardcodear)
+        const idRol = await Roles.findOne({where: {
+            ROL: 'DEFAULT'
+        }})
+
         // Crear usuario con el modelo
         DBusuario = await Usuario.build({
             USUARIO: usuario,
@@ -44,6 +50,7 @@ const registrar = async(req = request, res = response) => {
             CONTRASENA :contrasena,
             CORREO_ELECTRONICO: correo,
             FECHA_VENCIMIENTO: fechaVencimiento,
+            ID_ROL: idRol.ID_ROL
         })
 
         // Hashear contraseña

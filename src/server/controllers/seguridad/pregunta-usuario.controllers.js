@@ -7,6 +7,7 @@ const ViewPreguntaUsuario = require('../../models/seguridad/sql-vistas/view-preg
 const Usuarios = require('../../models/seguridad/Usuario');
 const Parametros = require('../../models/seguridad/Parametro');
 const { red } = require('colors');
+const { eventBitacora } = require('../../helpers/event-bitacora');
 
 
 // Llamar todas las preguntas de los usuarios paginadas
@@ -145,25 +146,45 @@ const getPreguntasFaltantes = async (req = request, res = response) => {
 
 const compararPregunta = async (req = request, res = response) => { 
 
-    const { id, respuesta } = req.body;
+    const { id, id_usuario, respuesta } = req.body;
 
     try {
 
         // Buscar la pregunta del usuario
-        const pregunta = await PreguntaUsuario.findByPk(id);
+        const pregunta = await PreguntaUsuario.findOne({where: {
+            ID_PREGUNTA: id,
+            ID_USUARIO: id_usuario
+        }});
 
-        // Validar Existencia
+        // Validar Existencia de la pregunta
         if( !pregunta ) {
-            return res.status(404).json({
+
+            // Bloquear usuario
+            const usuario = await Usuarios.findByPk(id_usuario);
+            let msgBloqueo = '';
+
+            // Validar si ya esta bloqueado
+            if( usuario.ESTADO_USUARIO !== 'BLOQUEADO') {
+
+                msgBloqueo = ' Usuario bloqueado'
+                usuario.ESTADO_USUARIO = 'BLOQUEADO';
+                usuario.save(); // Guardar cambios
+
+            }
+
+            eventBitacora(new Date, id_usuario, 6, 'ACTUALIZACION', `INTENTO FALLIDO CONTESTANDO PREGUNTA SECRETA. ${msgBloqueo.toUpperCase()}`);
+
+            // Respuesta
+            return res.status(401).json({
                 ok: false,
-                msg: 'No se encontro la pregunta seleccionada'
-            })
+                msg: 'Respuesta incorrecta.' + msgBloqueo
+            });
         }
 
         // Confirmar si la respuesta hace match
         const validarRespuesta = await bcrypt.compareSync( respuesta, pregunta.RESPUESTA )
         if( !validarRespuesta ) {
-            
+
             // Bloquear usuario
             const usuario = await Usuarios.findByPk(pregunta.ID_USUARIO);
             let msgBloqueo = '';
@@ -177,8 +198,10 @@ const compararPregunta = async (req = request, res = response) => {
 
             }
 
+            eventBitacora(new Date, id_usuario, 6, 'ACTUALIZACION', `INTENTO FALLIDO CONTESTANDO PREGUNTA SECRETA. ${msgBloqueo.toUpperCase()}`);
+
             // Respuesta
-            return res.status(404).json({
+            return res.status(401).json({
                 ok: false,
                 msg: 'Respuesta incorrecta.' + msgBloqueo
             });
