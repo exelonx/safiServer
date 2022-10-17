@@ -355,8 +355,9 @@ const getUsuario = async (req = request, res = response) => {
 
 // Banear usuario
 const bloquearUsuario = async (req = request, res = response) => {
-     
-    const { id_usuario, quienModifico } = req.params
+
+    const { quienModifico } = req.body 
+    const { id_usuario  } = req.params
 
     try {
         
