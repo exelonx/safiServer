@@ -1,4 +1,5 @@
 const { response, request } = require("express");
+const bcrypt = require('bcryptjs');
 const { Op } = require("sequelize");
 
 const Usuario = require("../models/seguridad/Usuario");
