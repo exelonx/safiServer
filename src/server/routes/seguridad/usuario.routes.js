@@ -7,7 +7,8 @@ const { validarCampos,
         existeUsuario,
         validarEspacio,
         existeUsuarioUpdated,
-        validarEspaciosUsuario } = require('../../middlewares');
+        validarEspaciosUsuario, 
+        validarContrasenaActual} = require('../../middlewares');
     
 const { registrar,
         getUsuarios,
@@ -99,9 +100,10 @@ router.put('/actualizar/:id_usuario', [
 
 router.put('/cambiar-contrasena/perfil/:id_usuario', [
     // Validar contraseña
+    check('confirmContrasena', "La confirmación es obligatoria").not().isEmpty(),
+    validarContrasenaActual,
     validarLongitudDBContra,
     validarContraseña,
-    check('confirmContrasena', "La confirmación es obligatoria").not().isEmpty(),
     validarCampos
 ], cambioContraseñaPerfil)
 

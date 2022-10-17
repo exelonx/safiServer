@@ -667,18 +667,6 @@ const cambioContraseñaPerfil = async (req = request, res = response) => {
             })
         }
 
-        // Confirmar si el contraseña hace match
-        const validarContraseña = await bcrypt.compareSync( confirmContrasenaActual, Usuario.CONTRASENA )
-        if( !validarContraseña ) {
-
-            eventBitacora(new Date, id_usuario, 13, 'ACTUALIZACION', 'INTENTO DE CAMBIO DE CONTRASEÑA SIN ÉXITO');
-
-            return res.status(404).json({
-                ok: false,
-                msg: 'Contraseña incorrecta'
-            });
-        }
-
         // Validar que hagan match la confirmación de contraseña
         if( contrasena !== confirmContrasena ) {
             return res.status(401).json({
