@@ -90,7 +90,7 @@ router.put('/actualizar/:id_usuario', [
         // Validaciones de nombre de usuario
         check('nombre_usuario', 'El nombre de usuario debe estar en mayúscula').isUppercase(),
         // validaciones de correo
-        check('correo', 'El correo no es valido').if(body('correo').exists()).isEmail(),
+        check('correo', 'El correo no es valido').if(body('correo').exists()).if(body('correo').not().equals('')).isEmail(),
         emailExistenteUpdate,
         // Validar contraseña
         existeUsuarioUpdated,
