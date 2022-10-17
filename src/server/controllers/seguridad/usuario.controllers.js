@@ -365,6 +365,7 @@ const bloquearUsuario = async (req = request, res = response) => {
         // Validar Existencia
         if( !usuario ){
             return res.status(404).json({
+                ok: false,
                 msg: 'No existe un usuario con el id ' + id_usuario
             })
         }
