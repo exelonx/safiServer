@@ -493,7 +493,26 @@ const putUsuario = async (req = request, res = response) => {
             }
         })
 
-        res.json(usuarioModelo);
+        if( correo !== "" && (nombre_usuario === "" && estado === "" && id_rol === "")) {
+            
+            return res.json({
+                ok: true,
+                msg: 'El correo ha sido actualizado'
+            });
+
+        }
+
+        if( nombre_usuario !== "" && (correo === "" && estado === "" && id_rol === "")) {
+            return res.json({
+                ok: true,
+                msg: 'El nombre del usuario ha sido actualizado'
+            });
+        }
+
+        return res.json({
+            ok: true,
+            msg: 'Los datos del usuario '+ usuarioModelo.USUARIO.tolowerCase() +' han sido actualizados'
+        });
 
     } catch (error) {
         console.log(error);
