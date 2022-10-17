@@ -1,16 +1,18 @@
 const { response, request } = require("express");
-const Usuario = require("../../models/seguridad/usuario");
-const bcrypt = require('bcryptjs');
-const Parametro = require("../../models/seguridad/parametro");
-const modificarDias = require("../../helpers/manipulacion-fechas");
 const { Op, where } = require("sequelize");
+const bcrypt = require('bcryptjs');
+
+const Usuario = require("../../models/seguridad/usuario");
+const Parametro = require("../../models/seguridad/parametro");
 const ViewUsuarios = require("../../models/seguridad/sql-vistas/view_usuario");
 const Usuarios = require("../../models/seguridad/usuario");
 const HistorialContrasena = require('../../models/seguridad/historial-contrena');
-const { crearTransporteSMTP } = require("../../helpers/nodemailer");
 const PreguntaUsuario = require("../../models/seguridad/pregunta-usuario");
-const { eventBitacora } = require("../../helpers/event-bitacora");
 const Roles = require("../../models/seguridad/rol");
+
+const modificarDias = require("../../helpers/manipulacion-fechas");
+const { crearTransporteSMTP } = require("../../helpers/nodemailer");
+const { eventBitacora } = require("../../helpers/event-bitacora");
 
 
 const registrar = async(req = request, res = response) => {
@@ -121,6 +123,122 @@ const registrar = async(req = request, res = response) => {
         }, (err) => {
             if(err) { console.log( err ) };
         })
+
+        // Guardar evento
+        eventBitacora(new Date, user.ID_USUARIO, 4, 'NUEVO', 'SE REGISTRO EL USUARIO '+usuario);
+
+        // Generar respuesta exitosa
+        return res.status(201).json({
+            ok: true,
+            msg: 'Registro éxitoso'
+        })
+
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            ok: false,
+            msg: 'Por favor hable con el administrador'
+        });
+    }
+}
+
+const registrarConRol = async(req = request, res = response) => {
+
+    const { usuario = "", nombre_usuario = "", contrasena = "", confirmContrasena = "", correo = "", id_rol = ""} = req.body;
+
+    try {
+
+        // Validar que hagan match la confirmación de contraseña
+        if( contrasena !== confirmContrasena ) {
+            return res.status(401).json({
+                ok: false,
+                msg: `Contraseña no coincide`
+            })
+        }
+
+        // Traer días de vigencia de parametros
+        const diasVigencias = await Parametro.findOne({
+            where:{
+                PARAMETRO: 'ADMIN_DIAS_VIGENCIA'
+            }
+        });
+
+        // Calcular fecha de vencimiento
+        const fechaActual = new Date();
+        const fechaVencimiento = (modificarDias(fechaActual, parseInt(diasVigencias.VALOR,10)));  
+
+        
+        const idRol = await Roles.findByPk(id_rol);
+
+        if(!idRol){
+            return res.status(404).json({
+                ok: false,
+                msg: `El rol ${idRol}, no existe`
+            })
+        }
+
+        // Crear usuario con el modelo
+        DBusuario = await Usuario.update({
+            USUARIO: usuario,
+            NOMBRE_USUARIO: nombre_usuario,
+            CONTRASENA :contrasena,
+            CORREO_ELECTRONICO: correo,
+            FECHA_VENCIMIENTO: fechaVencimiento,
+            ID_ROL: idRol
+        })
+
+        // Hashear contraseña
+        const salt = bcrypt.genSaltSync();
+        DBusuario.CONTRASENA = bcrypt.hashSync(contrasena, salt);
+
+        // Crear usuario de DB
+        await DBusuario.save()
+
+        //''''''''''''''''''''''' Guardar contraseña en historial ''''''''''''''''''''''''''
+
+        // Llamar al usuario recien creado
+        const usuarioCreado = await Usuario.findOne({where:{USUARIO: usuario}});
+
+        historialContrasena = await HistorialContrasena.build({
+            ID_USUARIO: usuarioCreado.ID_USUARIO,
+            CONTRASENA: DBusuario.CONTRASENA
+        })
+
+        historialContrasena.save();
+
+        // Traer ID del usuario creado
+        const user = await Usuario.findOne({where:{USUARIO: usuario}});
+        //Actualizar quién lo modifico y creo
+        await Usuario.update({
+            CREADO_POR: user.ID_USUARIO,
+            MODIFICADO_POR: user.ID_USUARIO
+        },{
+            where:{
+                ID_USUARIO: user.ID_USUARIO
+            }
+        })
+
+        // ------------------ Mandar Correos ----------------------
+
+        // Para enviar correos
+        const transporte = await crearTransporteSMTP();
+
+        // Parametros del mailer
+        const correoSMTP = await Parametro.findOne({where: { PARAMETRO: 'SMTP_CORREO' }});
+        const nombreEmpresaSMTP = await Parametro.findOne({where: { PARAMETRO: 'SMTP_NOMBRE_EMPRESA' }});
+
+        // Al usuario
+        transporte.sendMail({
+            from: `"${nombreEmpresaSMTP.VALOR} 🍔" <${correoSMTP.VALOR}>`, // Datos de emisor
+	    	to: correo, // Receptor
+	    	subject: "¡Cuenta creada! 🍔👌", // Asunto
+	    	html: `<b>Bienvenido a Dr. Buger, su cuenta ha sido creada
+            <hr>Usuario: ${usuario} 
+            <br>Contraseña: ${contrasena} 
+            <hr>contacte con el administrador para activar su cuenta</b>`
+	    }, (err) => {
+            if(err) { console.log( err ) };
+        });
 
         // Guardar evento
         eventBitacora(new Date, user.ID_USUARIO, 4, 'NUEVO', 'SE REGISTRO EL USUARIO '+usuario);
@@ -655,6 +773,7 @@ const cambioCorreoPerfil = async (req = request, res = response) => {
 
 module.exports = {
     registrar,
+    registrarConRol,
     getUsuarios,
     getUsuario,
     bloquearUsuario,

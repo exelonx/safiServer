@@ -1,7 +1,12 @@
 const { Router } = require('express');
 const { check } = require("express-validator");
 
-const { login, revalidarToken, generarCorreoRecuperacion, revalidarTokenCorreo, usuarioPorUsernameRecovery, revalidarTokenPregunta } = require('../../controllers/seguridad/auth.controllers');
+const { login, 
+        revalidarToken, 
+        generarCorreoRecuperacion, 
+        revalidarTokenCorreo, 
+        usuarioPorUsernameRecovery, 
+        revalidarTokenPregunta } = require('../../controllers/seguridad/auth.controllers');
 
 const {validarCampos,
        validarJWT,

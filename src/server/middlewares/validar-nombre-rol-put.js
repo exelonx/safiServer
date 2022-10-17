@@ -1,5 +1,6 @@
 const { response, request } = require("express");
 const { Op } = require("sequelize");
+
 const Roles = require("../models/seguridad/rol");
 
 const existenciaRolParaPut = async(req = request, res = response, next) => {

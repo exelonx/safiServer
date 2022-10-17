@@ -2,18 +2,24 @@ const { Router } = require('express');
 const { check, body } = require("express-validator");
 
 const { validarCampos,
-    validarLongitudDBContra,
-    validarContraseña,
-    existeUsuario,
-    validarEspacio,
-    existeUsuarioUpdated,
-    validarEspaciosUsuario
+        validarLongitudDBContra,
+        validarContraseña,
+        existeUsuario,
+        validarEspacio,
+        existeUsuarioUpdated,
+        validarEspaciosUsuario } = require('../../middlewares');
     
-} = require('../../middlewares');
-    
-const { registrar, getUsuarios, getUsuario, bloquearUsuario, putContrasena, putUsuario, cambioContraseñaPerfil } = require('../../controllers/seguridad/usuario.controllers');
+const { registrar,
+        getUsuarios,
+        getUsuario,
+        bloquearUsuario,
+        putContrasena,
+        putUsuario,
+        cambioContraseñaPerfil,
+        registrarConRol } = require('../../controllers/seguridad/usuario.controllers');
 
-const { emailExistente, emailExistenteUpdate } = require('../../helpers/db-validators');
+const { emailExistente,
+        emailExistenteUpdate } = require('../../helpers/db-validators');
 
 const router = Router();
 
@@ -39,6 +45,27 @@ router.post('/registro', [
     validarContraseña,
     validarCampos
 ], registrar)
+
+router.post('/nuevo-usuario', [
+    //Validaciones de usuario
+    check('usuario', 'El usuario es obligatorio').not().isEmpty(),
+    check('usuario', 'El usuario debe estar en mayúscula').isUppercase(),
+    check('usuario', 'El máximo de carácteres son de 15').isLength({max: 15}),
+    check('usuario', 'No se permite espacios en blanco en el usuario').custom(validarEspacio),
+    // Validaciones de nombre de usuario
+    check('nombre_usuario', 'El nombre de usuario es obligatorio').not().isEmpty(),
+    check('nombre_usuario', 'El nombre de usuario debe estar en mayúscula').isUppercase(),
+    check('nombre_usuario', 'Solo se permite un espacio entre palabras.').custom(validarEspaciosUsuario),
+    // validaciones de correo
+    check('correo', 'El correo es obligatorio').not().isEmpty(),
+    check('correo', 'El correo no es valido').isEmail(),
+    check('correo').custom(emailExistente),
+    // Validar contraseña
+    existeUsuario,
+    validarLongitudDBContra,
+    validarContraseña,
+    validarCampos
+], registrarConRol)
 
 router.get('/', getUsuarios);
 
@@ -77,5 +104,7 @@ router.put('/cambiar-contrasena/perfil/:id_usuario', [
     check('confirmContrasena', "La confirmación es obligatoria").not().isEmpty(),
     validarCampos
 ], cambioContraseñaPerfil)
+
+
 
 module.exports = router;

@@ -1,6 +1,11 @@
 const { Router } = require('express');
 const { check } = require('express-validator');
-const { getRoles, getRol, postRol, putRol, DeleteRol } = require('../../controllers/seguridad/rol.controllers');
+
+const { getRoles,
+        getRol,
+        postRol,
+        putRol,
+        DeleteRol } = require('../../controllers/seguridad/rol.controllers');
 
 const {validarCampos,
        existenciaRolParaPut,

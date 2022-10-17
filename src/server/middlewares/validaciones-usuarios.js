@@ -1,5 +1,6 @@
 const { response, request } = require("express");
 const { Op } = require("sequelize");
+
 const Usuario = require("../models/seguridad/Usuario");
 
 const existeEmail = async( req = request, res = response, next ) => {

@@ -1,11 +1,12 @@
 const { request, response } = require('express');
 const { Op } = require('sequelize');
-const { eventBitacora } = require('../../helpers/event-bitacora');
+
 const ViewBitacora = require('../../models/administracion/sql-vistas/view_bitacora');
 const Objeto = require('../../models/seguridad/objeto');
-
 const Parametro = require('../../models/seguridad/parametro');
 const Usuarios = require('../../models/seguridad/usuario');
+
+const { eventBitacora } = require('../../helpers/event-bitacora');
 
 // Llamar todas los parametros
 const getBitacora = async (req = request, res = response) => {

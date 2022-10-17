@@ -1,4 +1,5 @@
 const { response } = require("express");
+
 const Preguntas = require("../models/seguridad/Pregunta");
 
 const noExistePregunta = async( pregunta_id, res = response) => {

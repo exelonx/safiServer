@@ -2,11 +2,13 @@ const { request, response } = require('express');
 const { Op } = require('sequelize');
 const bcrypt = require('bcryptjs');
 
+const { red } = require('colors');
+
 const PreguntaUsuario = require('../../models/seguridad/pregunta-usuario');
 const ViewPreguntaUsuario = require('../../models/seguridad/sql-vistas/view-pregunta-usuario');
 const Usuarios = require('../../models/seguridad/Usuario');
 const Parametros = require('../../models/seguridad/Parametro');
-const { red } = require('colors');
+
 const { eventBitacora } = require('../../helpers/event-bitacora');
 
 

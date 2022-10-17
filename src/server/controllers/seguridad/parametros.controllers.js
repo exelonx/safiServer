@@ -1,5 +1,6 @@
 const { request, response } = require('express');
 const { Op } = require('sequelize');
+
 const { eventBitacora } = require('../../helpers/event-bitacora');
 
 const Parametro = require('../../models/seguridad/parametro');

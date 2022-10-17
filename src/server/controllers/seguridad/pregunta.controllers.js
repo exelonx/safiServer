@@ -1,5 +1,6 @@
 const { request, response } = require('express');
 const { Op } = require('sequelize');
+
 const Pregunta = require('../../models/seguridad/Pregunta');
 
 // Llamar todas las preguntas paginadas
