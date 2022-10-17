@@ -435,6 +435,7 @@ const putUsuario = async (req = request, res = response) => {
         if( !usuarioModelo ){
             eventBitacora(new Date, quienModifico, idPantalla, 'ACTUALIZACION', 'ACTUALIZACION DE DATOS SIN EXITO');
             return res.status(404).json({
+                ok: false,
                 msg: 'No existe un usuario con el id ' + id_usuario
             })
         }
@@ -444,7 +445,7 @@ const putUsuario = async (req = request, res = response) => {
             
             if(nombre_usuario !== "") {
 
-                res.status(500).json({
+                res.status(401).json({
                     ok: false,
                     msg: 'No se puede modificar el nombre del super usuario'
                 })
@@ -452,14 +453,14 @@ const putUsuario = async (req = request, res = response) => {
             }
 
             if(id_rol !== "") {
-                res.status(500).json({
+                res.status(401).json({
                     ok: false,
                     msg: 'No se puede modificar el rol del super usuario'
                 })
             }
 
             if(estado !== "") {
-                res.status(500).json({
+                res.status(401).json({
                     ok: false,
                     msg: 'No se puede modificar el estado del super usuario'
                 })
@@ -497,6 +498,7 @@ const putUsuario = async (req = request, res = response) => {
     } catch (error) {
         console.log(error);
         res.status(500).json({
+            ok: false,
             msg: error.message
         })
     }
