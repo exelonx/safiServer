@@ -136,6 +136,13 @@ const putRol = async (req = request, res = response) => {
 
         const rolAnterior = await Rol.findByPk(id_rol);
 
+        if( rolAnterior.ROL === 'DEFAULT' ) {
+            res.status(401).json({
+                ok: false,
+                msg: 'No se puede modificar el rol DEFAULT'
+            })
+        }
+
         // Actualizar db Rol
         await Rol.update({
             ROL: rol !== "" ? rol : Rol.ROL,
