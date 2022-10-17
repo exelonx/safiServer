@@ -1,6 +1,10 @@
 const { Router } = require('express');
 const { check, body } = require('express-validator');
-const { getPermisos, getPermiso, putPermisos } = require('../../controllers/seguridad/permisos.controllers');
+
+const { getPermisos,
+        getPermiso,
+        putPermisos } = require('../../controllers/seguridad/permisos.controllers');
+
 const { validarCampos } = require('../../middlewares');
 
 const router = Router();

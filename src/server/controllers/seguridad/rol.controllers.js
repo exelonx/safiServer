@@ -1,5 +1,6 @@
 const { request, response } = require('express');
 const { Op } = require('sequelize');
+
 const Rol = require('../../models/seguridad/rol');
 const ViewRol = require('../../models/seguridad/sql-vistas/view_rol');
 const Parametro = require('../../models/seguridad/parametro');
