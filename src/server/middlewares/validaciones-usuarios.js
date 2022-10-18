@@ -81,12 +81,18 @@ const noExisteUsuario = async( req = request, res = response, next ) => {
     next()
 }
 
-const validarEspaciosUsuario = async (nombre_usuario = '') => {
+const validarEspaciosUsuario = ( req = request, res = response, next ) => {
+
+    const { nombre_usuario = "" } = req.body;
 
     if ( nombre_usuario.includes('  ') ) {
-        throw new Error()
+        return res.status(400).json({
+            ok: false,
+            msg: 'No se permite más de 1 espacio en blanco entre palabras'
+        })
     }
 
+    next()
 }
 
 const validarContrasenaActual = async( req = request, res = response, next ) => {

@@ -445,7 +445,7 @@ const putUsuario = async (req = request, res = response) => {
             
             if(nombre_usuario !== "") {
 
-                res.status(401).json({
+                return res.status(401).json({
                     ok: false,
                     msg: 'No se puede modificar el nombre del super usuario'
                 })
@@ -453,14 +453,14 @@ const putUsuario = async (req = request, res = response) => {
             }
 
             if(id_rol !== "") {
-                res.status(401).json({
+                return res.status(401).json({
                     ok: false,
                     msg: 'No se puede modificar el rol del super usuario'
                 })
             }
 
             if(estado !== "") {
-                res.status(401).json({
+                return res.status(401).json({
                     ok: false,
                     msg: 'No se puede modificar el estado del super usuario'
                 })

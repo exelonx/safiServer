@@ -90,6 +90,8 @@ router.put('/actualizar/:id_usuario', [
         check('usuario', 'No se permite espacios en blanco en el usuario').custom(validarEspacio),
         // Validaciones de nombre de usuario
         check('nombre_usuario', 'El nombre de usuario debe estar en mayúscula').isUppercase(),
+        validarEspaciosUsuario,
+        check('nombre_usuario', 'El nombre de usuario debe ser letras').if(body('nombre_usuario').exists()).if(body('nombre_usuario').not().equals('')).isAlpha('es-ES', {ignore: ' '}),
         // validaciones de correo
         check('correo', 'El correo no es valido').if(body('correo').exists()).if(body('correo').not().equals('')).isEmail(),
         emailExistenteUpdate,
