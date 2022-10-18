@@ -99,10 +99,39 @@ const registrarIngreso = async (req = request, res = response) => {
 
     }
 
+}
+
+const registrarUsuarioDesconectado = async (req = request, res = response) => {
+
+    const { id_usuario } = req.body;
+
+    try {
+
+        // Traer información del usuario
+        const usuario = await Usuarios.findByPk(id_usuario);
+
+
+        // Registrar salida
+        eventBitacora(new Date, id_usuario, 14, 'SALIDA', `EL ${usuario.USUARIO} CERRÓ SESIÓN `);
+
+        res.json({
+            ok: true
+        })
+        
+    } catch (error) {
+        
+        console.log(error);
+        res.status(500).json({
+            ok: false,
+            msg: error.message
+        })
+
+    }
 
 }
 
 module.exports = {
     getBitacora,
-    registrarIngreso
+    registrarIngreso,
+    registrarUsuarioDesconectado
 }
