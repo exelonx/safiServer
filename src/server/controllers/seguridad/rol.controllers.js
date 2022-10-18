@@ -4,6 +4,7 @@ const { Op } = require('sequelize');
 const Rol = require('../../models/seguridad/rol');
 const ViewRol = require('../../models/seguridad/sql-vistas/view_rol');
 const Parametro = require('../../models/seguridad/parametro');
+const { eventBitacora } = require('../../helpers/event-bitacora');
 
 // Llamar todos los roles paginados
 const getRoles = async (req = request, res = response) => {
@@ -144,6 +145,15 @@ const putRol = async (req = request, res = response) => {
             })
         }
 
+        // Si llega sin cambios
+        if(!((rolAnterior.ROL == rol || rol === "") 
+            && (rolAnterior.DESCRIPCION == descripcion || descripcion === ""))) {
+
+                eventBitacora(new Date, id_usuario, 8, 'ACTUALIZACION', `DATOS ACTUALIZADOS: ${rol !== "" ? 'ROL' : ""}
+                 ${descripcion !== "" ? 'DESCRIPCIÓN' : ""}`);
+
+        }
+
         // Actualizar db Rol
         await Rol.update({
             ROL: rol !== "" ? rol : Rol.ROL,
@@ -154,9 +164,6 @@ const putRol = async (req = request, res = response) => {
                 ID_ROL: id_rol
             }
         })
-
-        // Guardar evento
-        eventBitacora(new Date, id_usuario, 8, 'ACTUALIZACION', `SE ACTUALIZO EL ROL ${rolAnterior.ROL}`);
 
         res.json({
             ok: true,
