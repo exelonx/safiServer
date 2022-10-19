@@ -88,7 +88,7 @@ const validarEspaciosUsuario = ( req = request, res = response, next ) => {
     if ( nombre_usuario.includes('  ') ) {
         return res.status(400).json({
             ok: false,
-            msg: 'No se permite más de 1 espacio en blanco entre palabras'
+            msg: 'No se permite más de 1 espacio en blanco entre palabras en el nombre'
         })
     }
 

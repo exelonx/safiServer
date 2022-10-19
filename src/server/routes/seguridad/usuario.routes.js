@@ -19,7 +19,8 @@ const { registrar,
         contrasenaGenerador,
         cambioContrasenaPerfil,
         cambioContrasenaMantenimiento,
-        crearUsuarioMantenimiento} = require('../../controllers/seguridad/usuario.controllers');
+        crearUsuarioMantenimiento,
+        reActivarUsuario} = require('../../controllers/seguridad/usuario.controllers');
 
 const { emailExistente,
         emailExistenteUpdate } = require('../../helpers/db-validators');
@@ -58,6 +59,7 @@ router.post('/nuevo-usuario', [
     // Validaciones de nombre de usuario
     check('nombre_usuario', 'El nombre de usuario es obligatorio').not().isEmpty(),
     check('nombre_usuario', 'El nombre de usuario debe estar en mayúscula').isUppercase(),
+    check('nombre_usuario', 'El nombre de usuario debe ser letras').isAlpha('es-ES', {ignore: ' '}),
     validarEspaciosUsuario,
     // validaciones de correo
     check('correo', 'El correo es obligatorio').not().isEmpty(),
@@ -121,5 +123,7 @@ router.put('/cambiar-contrasena/mantenimiento/:id_usuario', [
     validarContraseña,
     validarCampos
 ], cambioContrasenaMantenimiento)
+
+router.put('/activar/:id', reActivarUsuario);
 
 module.exports = router;

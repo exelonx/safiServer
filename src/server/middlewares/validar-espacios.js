@@ -20,10 +20,7 @@ const validarEspaciosLogin = (req = request, res = response, next) => {
 const validarEspacio = async( campo = '' ) => {
     // Validar que no exista espacio en blanco
     if ( campo.includes(' ') ) {
-        return res.status(400).json({
-            ok: false,
-            msg: Error() 
-        })    
+        throw new Error()   
         
     }
 };

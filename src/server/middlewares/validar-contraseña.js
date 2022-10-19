@@ -15,6 +15,13 @@ const validarContraseña = (req = request, res = response, next) => {
     // Leer contraseña del body
     const { contrasena } = req.body;
 
+    if (contrasena.includes(' ')) {
+        return res.status(400).json({
+            ok: false,
+            msg: 'No se permiten espacios en blanco en la contraseña'
+        })
+    }
+
     if ( !esquema.validate( contrasena ) ) {
         const [message] = esquema.validate( contrasena, {details: true} )
         return res.status(400).json({
@@ -22,6 +29,7 @@ const validarContraseña = (req = request, res = response, next) => {
             msg: message.message
         })
     }
+
 
     //TODO OK!
     next();

@@ -373,6 +373,9 @@ const putUsuario = async (req = request, res = response) => {
 
         }
 
+        console.log(usuarioModelo.ESTADO_USUARIO)
+        console.log(estado)
+
         // Actualizar db Usuario
         await usuarioModelo.update({
             NOMBRE_USUARIO: nombre_usuario !== "" ? nombre_usuario : Usuario.NOMBRE_USUARIO,
@@ -494,8 +497,8 @@ const putContrasena = async (req = request, res = response) => {
         })
         
         
-        // Si el usuario esta bloqueado, se activara, si tiene otro estado, se mantiene su estado
-        if(estadoUsuario.ESTADO_USUARIO === 'BLOQUEADO' || estadoUsuario.ESTADO_USUARIO === 'NUEVO') {
+        // Si el usuario esta bloqueado o reiniciado, se activara, si tiene otro estado, se mantiene su estado
+        if(estadoUsuario.ESTADO_USUARIO === 'BLOQUEADO' || estadoUsuario.ESTADO_USUARIO === 'REINICIADO' || estadoUsuario.ESTADO_USUARIO === 'NUEVO') {
             if(countPreguntasUser >= parametroNumPreguntas.VALOR) {
                 estadoUsuario.ESTADO_USUARIO = 'ACTIVO'
             } else {
@@ -728,7 +731,7 @@ const cambioContrasenaMantenimiento = async (req = request, res = response) => {
         })
         
         // Si el usuario esta bloqueado, se activara, si tiene otro estado, se mantiene su estado
-        if(estadoUsuario.ESTADO_USUARIO === 'BLOQUEADO' || estadoUsuario.ESTADO_USUARIO === 'NUEVO') {
+        if(estadoUsuario.ESTADO_USUARIO === 'BLOQUEADO' || estadoUsuario.ESTADO_USUARIO === 'REINICIADO' || estadoUsuario.ESTADO_USUARIO === 'NUEVO') {
             if(countPreguntasUser >= parametroNumPreguntas.VALOR) {
                 estadoUsuario.ESTADO_USUARIO = 'ACTIVO'
             } else {
@@ -755,12 +758,6 @@ const cambioContrasenaMantenimiento = async (req = request, res = response) => {
         // Actualizar modificado por:
         estadoUsuario.MODIFICADO_POR = quienModifico;
         estadoUsuario.FECHA_VENCIMIENTO = fechaVencimiento;
-
-        if(estadoUsuario.USUARIO !== 'ROOT') {
-
-            estadoUsuario.PASS_RESETEADO = true;
-            
-        }
 
         await estadoUsuario.save();
         
@@ -879,6 +876,66 @@ const crearUsuarioMantenimiento = async (req = request, res = response) => {
     }
 }
 
+const reActivarUsuario = async (req = request, res = response) => { 
+
+    const { id } = req.params
+    const { quienActiva } = req.body
+    try {
+        
+        const usuarioInactivo = await Usuario.findByPk(id);
+    
+        if( usuarioInactivo.ESTADO_USUARIO !== 'INACTIVO' ) {
+            return res.status(400).json({
+                ok: false,
+                msg: `El usuario ${usuarioInactivo.USUARIO} ya está activado`
+            })
+        }
+
+        // ----------------- DEFINIR ESTADO --------------------
+
+        // Traer el número de preguntas configuradas del usuario
+        const countPreguntasUser = await PreguntaUsuario.count({where: {
+            ID_USUARIO: id
+        }})
+        
+        // Traer los parametros de número de preguntas
+        const parametroNumPreguntas = await Parametro.findOne({
+            where: {
+                PARAMETRO: 'ADMIN_PREGUNTAS'
+            }
+        })
+        
+        // si no tiene preguntas configuradas se pondra como nuevo, caso contrario sera activo
+        if(countPreguntasUser >= parametroNumPreguntas.VALOR) {
+            usuarioInactivo.ESTADO_USUARIO = 'ACTIVO'
+        } else {
+            usuarioInactivo.ESTADO_USUARIO = 'NUEVO'
+        }
+
+        // Guardar quien reactiva
+        usuarioInactivo.MODIFICADO_POR = quienActiva;
+
+        // Registrar evento
+        eventBitacora(new Date(), quienActiva, 2, 'ACTUALIZACIÓN', `USUARIO ${usuarioInactivo.USUARIO} HA SIDO REACTIVADO`);
+
+        // Guardar en db
+        usuarioInactivo.save();
+    
+        return res.json({
+            ok: true,
+            msg: `Usuario ${usuarioInactivo.USUARIO} ha sido reactivado`
+        })
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            ok: false,
+            msg: error.message
+        })
+    }
+
+}
+
 module.exports = {
     registrar,
     crearUsuarioMantenimiento,
@@ -889,5 +946,6 @@ module.exports = {
     putUsuario,
     cambioContrasenaPerfil,
     contrasenaGenerador,
-    cambioContrasenaMantenimiento
+    cambioContrasenaMantenimiento,
+    reActivarUsuario
 }
