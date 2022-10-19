@@ -73,7 +73,7 @@ class Server {
             await db.authenticate();
             const sistemaNombre = await Parametro.findOne({where: { PARAMETRO: 'SYS_NOMBRE' } });
             console.log(colors.underline.cyan('\n'+sistemaNombre.VALOR))
-            console.log(colors.bold.green('Base de datos online'));
+            console.log(colors.bold.green('Base de datos online 🍔🍗'));
         } catch (error) {
             console.log(error)
             throw new Error(error);

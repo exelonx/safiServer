@@ -16,8 +16,10 @@ const { registrar,
         bloquearUsuario,
         putContrasena,
         putUsuario,
-        cambioContraseñaPerfil,
-        registrarConRol } = require('../../controllers/seguridad/usuario.controllers');
+        contrasenaGenerador,
+        cambioContrasenaPerfil,
+        cambioContrasenaMantenimiento,
+        crearUsuarioMantenimiento} = require('../../controllers/seguridad/usuario.controllers');
 
 const { emailExistente,
         emailExistenteUpdate } = require('../../helpers/db-validators');
@@ -35,7 +37,7 @@ router.post('/registro', [
     // Validaciones de nombre de usuario
     check('nombre_usuario', 'El nombre de usuario es obligatorio').not().isEmpty(),
     check('nombre_usuario', 'El nombre de usuario debe estar en mayúscula').isUppercase(),
-    check('nombre_usuario', 'Solo se permite un espacio entre palabras.').custom(validarEspaciosUsuario),
+    validarEspaciosUsuario,
     // validaciones de correo
     check('correo', 'El correo es obligatorio').not().isEmpty(),
     check('correo', 'El correo no es valido').isEmail(),
@@ -56,17 +58,18 @@ router.post('/nuevo-usuario', [
     // Validaciones de nombre de usuario
     check('nombre_usuario', 'El nombre de usuario es obligatorio').not().isEmpty(),
     check('nombre_usuario', 'El nombre de usuario debe estar en mayúscula').isUppercase(),
-    check('nombre_usuario', 'Solo se permite un espacio entre palabras.').custom(validarEspaciosUsuario),
+    validarEspaciosUsuario,
     // validaciones de correo
     check('correo', 'El correo es obligatorio').not().isEmpty(),
     check('correo', 'El correo no es valido').isEmail(),
     check('correo').custom(emailExistente),
+    check('id_rol', 'El rol es obligatorio').not().isEmpty(),
     // Validar contraseña
     existeUsuario,
     validarLongitudDBContra,
     validarContraseña,
     validarCampos
-], registrarConRol)
+], crearUsuarioMantenimiento)
 
 router.get('/', getUsuarios);
 
@@ -107,8 +110,16 @@ router.put('/cambiar-contrasena/perfil/:id_usuario', [
     validarLongitudDBContra,
     validarContraseña,
     validarCampos
-], cambioContraseñaPerfil)
+], cambioContrasenaPerfil)
 
+router.get('/generador/password', contrasenaGenerador)
 
+router.put('/cambiar-contrasena/mantenimiento/:id_usuario', [
+    // Validar contraseña
+    check('contrasena', 'La contraseña es obligatoria').not().isEmpty(),
+    validarLongitudDBContra,
+    validarContraseña,
+    validarCampos
+], cambioContrasenaMantenimiento)
 
 module.exports = router;

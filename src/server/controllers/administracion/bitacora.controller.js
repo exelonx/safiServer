@@ -77,7 +77,6 @@ const registrarIngreso = async (req = request, res = response) => {
 
     try {
 
-        console.log('registrando')
         // Traer información del usuario y pantalla
         const usuario = await Usuarios.findByPk(id_usuario);
         const pantalla = await Objeto.findByPk(idPantalla);

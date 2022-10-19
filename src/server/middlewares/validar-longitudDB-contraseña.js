@@ -9,7 +9,11 @@ const validarLongitudDBContra = async(req = request, res = response, next) => {
     const minimo = await Parametro.findOne({where: {PARAMETRO: 'MIN_CONTRASENA'}})
 
     // data del body 
-    const { contrasena = "" } = req.body;
+    let { contrasena = "" } = req.body;
+
+    if(!contrasena) {
+        contrasena = ""
+    }
 
     // Validar que la contraseña no sea
     if ( maximo.VALOR < contrasena.length ) {

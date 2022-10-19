@@ -1,6 +1,7 @@
 const { response, request } = require("express");
 const { Op, where } = require("sequelize");
 const bcrypt = require('bcryptjs');
+const generator = require('generate-password');
 
 const Usuario = require("../../models/seguridad/usuario");
 const Parametro = require("../../models/seguridad/parametro");
@@ -142,124 +143,8 @@ const registrar = async(req = request, res = response) => {
     }
 }
 
-const registrarConRol = async(req = request, res = response) => {
-
-    const { usuario = "", nombre_usuario = "", contrasena = "", confirmContrasena = "", correo = "", id_rol = ""} = req.body;
-
-    try {
-
-        // Validar que hagan match la confirmación de contraseña
-        if( contrasena !== confirmContrasena ) {
-            return res.status(401).json({
-                ok: false,
-                msg: `Contraseña no coincide`
-            })
-        }
-
-        // Traer días de vigencia de parametros
-        const diasVigencias = await Parametro.findOne({
-            where:{
-                PARAMETRO: 'ADMIN_DIAS_VIGENCIA'
-            }
-        });
-
-        // Calcular fecha de vencimiento
-        const fechaActual = new Date();
-        const fechaVencimiento = (modificarDias(fechaActual, parseInt(diasVigencias.VALOR,10)));  
-
-        
-        const idRol = await Roles.findByPk(id_rol);
-
-        if(!idRol){
-            return res.status(404).json({
-                ok: false,
-                msg: `El rol ${idRol}, no existe`
-            })
-        }
-
-        // Crear usuario con el modelo
-        DBusuario = await Usuario.update({
-            USUARIO: usuario,
-            NOMBRE_USUARIO: nombre_usuario,
-            CONTRASENA :contrasena,
-            CORREO_ELECTRONICO: correo,
-            FECHA_VENCIMIENTO: fechaVencimiento,
-            ID_ROL: idRol
-        })
-
-        // Hashear contraseña
-        const salt = bcrypt.genSaltSync();
-        DBusuario.CONTRASENA = bcrypt.hashSync(contrasena, salt);
-
-        // Crear usuario de DB
-        await DBusuario.save()
-
-        //''''''''''''''''''''''' Guardar contraseña en historial ''''''''''''''''''''''''''
-
-        // Llamar al usuario recien creado
-        const usuarioCreado = await Usuario.findOne({where:{USUARIO: usuario}});
-
-        historialContrasena = await HistorialContrasena.build({
-            ID_USUARIO: usuarioCreado.ID_USUARIO,
-            CONTRASENA: DBusuario.CONTRASENA
-        })
-
-        historialContrasena.save();
-
-        // Traer ID del usuario creado
-        const user = await Usuario.findOne({where:{USUARIO: usuario}});
-        //Actualizar quién lo modifico y creo
-        await Usuario.update({
-            CREADO_POR: user.ID_USUARIO,
-            MODIFICADO_POR: user.ID_USUARIO
-        },{
-            where:{
-                ID_USUARIO: user.ID_USUARIO
-            }
-        })
-
-        // ------------------ Mandar Correos ----------------------
-
-        // Para enviar correos
-        const transporte = await crearTransporteSMTP();
-
-        // Parametros del mailer
-        const correoSMTP = await Parametro.findOne({where: { PARAMETRO: 'SMTP_CORREO' }});
-        const nombreEmpresaSMTP = await Parametro.findOne({where: { PARAMETRO: 'SMTP_NOMBRE_EMPRESA' }});
-
-        // Al usuario
-        transporte.sendMail({
-            from: `"${nombreEmpresaSMTP.VALOR} 🍔" <${correoSMTP.VALOR}>`, // Datos de emisor
-	    	to: correo, // Receptor
-	    	subject: "¡Cuenta creada! 🍔👌", // Asunto
-	    	html: `<b>Bienvenido a Dr. Buger, su cuenta ha sido creada
-            <hr>Usuario: ${usuario} 
-            <br>Contraseña: ${contrasena} 
-            <hr>contacte con el administrador para activar su cuenta</b>`
-	    }, (err) => {
-            if(err) { console.log( err ) };
-        });
-
-        // Guardar evento
-        eventBitacora(new Date, user.ID_USUARIO, 4, 'NUEVO', 'SE REGISTRO EL USUARIO '+usuario);
-
-        // Generar respuesta exitosa
-        return res.status(201).json({
-            ok: true,
-            msg: 'Registro éxitoso'
-        })
-
-    } catch (error) {
-        console.log(error);
-        return res.status(500).json({
-            ok: false,
-            msg: 'Por favor hable con el administrador'
-        });
-    }
-}
-
 const getUsuarios = async(req = request, res = response) => {
-    let { limite, desde = 0, buscar = "", quienBusco} = req.query
+    let { limite, desde = 0, buscar = "", quienBusco, mostrarInactivos = false} = req.query
 
     try {
         // Definir el número de objetos a mostrar
@@ -271,6 +156,7 @@ const getUsuarios = async(req = request, res = response) => {
         if(desde === ""){
             desde = 0;
         }
+
 
         // Paginación
         const usuarios = await ViewUsuarios.findAll({
@@ -288,6 +174,10 @@ const getUsuarios = async(req = request, res = response) => {
                     ROL: { [Op.like]: `%${buscar.toUpperCase()}%`}
                 }, {
                     CORREO_ELECTRONICO: { [Op.like]: `%${buscar.toUpperCase()}%`}
+                }],
+                [Op.not]: [{
+                    // Si se recibe true mostrara los inactivos
+                    ESTADO_USUARIO: `${mostrarInactivos === 'false' ? 'INACTIVO' : ''}` 
                 }]
             }
         });
@@ -305,6 +195,10 @@ const getUsuarios = async(req = request, res = response) => {
                 ROL: { [Op.like]: `%${buscar.toUpperCase()}%`}
             }, {
                 CORREO_ELECTRONICO: { [Op.like]: `%${buscar.toUpperCase()}%`}
+            }],
+            [Op.not]: [{
+                // Si se recibe true mostrara los inactivos
+                ESTADO_USUARIO: `${mostrarInactivos === 'false' ? 'INACTIVO' : ''}` 
             }]
         }})
 
@@ -474,8 +368,8 @@ const putUsuario = async (req = request, res = response) => {
             && (usuarioModelo.ID_ROL == id_rol || id_rol === "") 
             && (usuarioModelo.CORREO_ELECTRONICO == correo || correo === ""))) {
 
-                eventBitacora(new Date, quienModifico, idPantalla, 'ACTUALIZACION', `DATOS ACTUALIZADOS: ${nombre_usuario !== "" ? 'NOMBRE' : ""}
-                 ${estado !== "" ? 'ESTADO' : ""} ${correo !== "" ? 'CORREO' : ""} ${id_rol !== "" ? 'ROL' : ""} ${fechaVencimiento !== "" ? 'VENCIMIENTO' : ""}`);
+                eventBitacora(new Date, quienModifico, idPantalla, 'ACTUALIZACION', `DATOS ACTUALIZADOS AL USUARIO ${usuarioModelo.USUARIO}: ${nombre_usuario !== "" ? '`NOMBRE`' : ""}
+                 ${estado !== "" ? '`ESTADO`' : ""} ${correo !== "" ? '`CORREO`' : ""} ${id_rol !== "" ? '`ROL`' : ""} ${fechaVencimiento !== "" ? '`VENCIMIENTO`' : ""}`);
 
         }
 
@@ -511,7 +405,7 @@ const putUsuario = async (req = request, res = response) => {
 
         return res.json({
             ok: true,
-            msg: 'Los datos del usuario '+ usuarioModelo.USUARIO.tolowerCase() +' han sido actualizados'
+            msg: 'Los datos del usuario '+ usuarioModelo.USUARIO.toLowerCase() +' han sido actualizados'
         });
 
     } catch (error) {
@@ -638,7 +532,7 @@ const putContrasena = async (req = request, res = response) => {
 
         res.json({
             ok: true,
-            usuario
+            msg: 'La contraseña ha sido actualizada con éxito'
         });
 
     } catch (error) {
@@ -650,7 +544,7 @@ const putContrasena = async (req = request, res = response) => {
     }
 }
 
-const cambioContraseñaPerfil = async (req = request, res = response) => {
+const cambioContrasenaPerfil = async (req = request, res = response) => {
     const { id_usuario } = req.params;
     let { contrasena, confirmContrasena, confirmContrasenaActual } = req.body;
 
@@ -726,14 +620,12 @@ const cambioContraseñaPerfil = async (req = request, res = response) => {
 
         Usuario.FECHA_VENCIMIENTO = fechaVencimiento;
         await Usuario.save();
-
-        const usuario = Usuario;
         
-        eventBitacora(new Date, id_usuario, 13, 'ACTUALIZACION', 'ACTUALIZACION DE CONTRASEÑA EXITOSA');
+        eventBitacora(new Date, id_usuario, 13, 'ACTUALIZACION', Usuario.USUARIO+' ACTUALIZO SU CONTRASEÑA CON ÉXITO');
 
         res.json({
             ok: true,
-            usuario
+            msg: 'La contraseña ha sido actualizada con éxito'
         });
 
     } catch (error) {
@@ -745,50 +637,257 @@ const cambioContraseñaPerfil = async (req = request, res = response) => {
     }
 }
 
-const cambioCorreoPerfil = async (req = request, res = response) => { 
-    const { id_usuario } = req.params
-    const { correo = "" } = req.body;
+const contrasenaGenerador = async (req = request, res = response) => { 
 
     try {
-
-        // Validar existencia
-        const usuarioModelo = await Usuarios.findByPk( id_usuario );
-        if( !usuarioModelo ){
-            eventBitacora(new Date, quienModifico, 2, 'ACTUALIZACION', 'ACTUALIZACION DE DATOS SIN EXITO');
-            return res.status(404).json({
-                msg: 'No existe un usuario con el id ' + id_usuario
-            })
-        }
-
-        // Actualizar db Usuario
-        await usuarioModelo.update({
-            CORREO_ELECTRONICO: correo !== "" ? correo : Usuario.CORREO_ELECTRONICO,
-            ID_ROL: id_rol !== "" ? id_rol : Usuario.ID_ROL,
-            FECHA_VENCIMIENTO: fechaVencimiento !== "" ? fechaVencimiento : Usuario.FECHA_VENCIMIENTO,
-            MODIFICADO_POR: quienModifico
-        }, {
-            where: {
-                ID_USUARIO: id_usuario
-            }
+        
+        const maxContra = await Parametro.findOne({where: {
+            PARAMETRO: 'MAX_CONTRASENA'
+        }})
+    
+        const password = generator.generate({
+            length: maxContra.VALOR,
+            numbers: true,
+            uppercase: true,
+            symbols: true,
+            exclude: '|[]*\\`&°~^><}{',
+            strict: true,
         })
-        eventBitacora(new Date, quienModifico, 2, 'ACTUALIZACION', 'ACTUALIZACION DE DATOS EXITOSO');
-        res.json(usuarioModelo);
+    
+        res.json(password)
 
     } catch (error) {
         console.log(error);
         res.status(500).json({
+            ok: false,
+            msg: error.message
+        })
+    }
+
+}
+
+const cambioContrasenaMantenimiento = async (req = request, res = response) => { 
+    const { id_usuario } = req.params;
+    let { contrasena, quienModifico } = req.body;
+
+    try {
+
+        // Validar usuario inactivo
+        const estadoUsuario = await Usuario.findOne({where: {ID_USUARIO: id_usuario}})
+
+        // Validar si existe la misma contraseña en el historial de contraseñas
+        const buscarContrasena = await HistorialContrasena.findAll({where: {ID_USUARIO: id_usuario}});
+        for await (const contra of buscarContrasena){
+
+            if (await bcrypt.compareSync( contrasena, contra.CONTRASENA )) {
+                return res.status(400).json({
+                    ok: false,
+                    msg: 'La contraseña ya existe en el historial'
+                })
+            }
+        }
+
+        // Hashear contraseña
+        const salt = bcrypt.genSaltSync();
+        contrasena = bcrypt.hashSync(contrasena, salt);
+
+        // Validar existencia
+        if( !estadoUsuario ){
+            return res.status(404).json({
+                ok: false,
+                msg: 'No existe un usuario con el id ' + id_usuario
+            })
+        }
+
+        // Validar numero del historial
+        const countContrasenas = await HistorialContrasena.count({where:{ID_USUARIO: id_usuario}});
+        if (countContrasenas >= 10) {
+            const primeraContrasena = await HistorialContrasena.findOne({order:["ID_HIST"], limit: 1})
+            await primeraContrasena.destroy();
+        }
+
+        const historialContrasena = HistorialContrasena.build({
+            ID_USUARIO: id_usuario,
+            CONTRASENA: contrasena
+        })
+        
+        await historialContrasena.save();
+
+        // ----------------- DEFINIR ESTADO --------------------
+
+        // Traer el número de preguntas configuradas del usuario
+        const countPreguntasUser = await PreguntaUsuario.count({where: {
+            ID_USUARIO: id_usuario
+        }})
+        
+        // Traer los parametros de número de preguntas
+        const parametroNumPreguntas = await Parametro.findOne({
+            where: {
+                PARAMETRO: 'ADMIN_PREGUNTAS'
+            }
+        })
+        
+        // Si el usuario esta bloqueado, se activara, si tiene otro estado, se mantiene su estado
+        if(estadoUsuario.ESTADO_USUARIO === 'BLOQUEADO' || estadoUsuario.ESTADO_USUARIO === 'NUEVO') {
+            if(countPreguntasUser >= parametroNumPreguntas.VALOR) {
+                estadoUsuario.ESTADO_USUARIO = 'ACTIVO'
+            } else {
+                estadoUsuario.ESTADO_USUARIO = 'NUEVO'
+            }
+        }
+
+        // Asignar contraseña encryptada y reiniciar intentos
+        estadoUsuario.CONTRASENA = contrasena;
+        estadoUsuario.INTENTOS = 0;
+
+        // Traer días de vigencia de parametros
+        const diasVigencias = await Parametro.findOne({
+            where:{
+                PARAMETRO: 'ADMIN_DIAS_VIGENCIA'
+            }
+        });
+
+        // ------------------- Actualizar fecha de vencimiento ------------------
+        // Calcular fecha de vencimiento
+        const fechaActual = new Date();
+        const fechaVencimiento = (modificarDias(fechaActual, parseInt(diasVigencias.VALOR,10)));
+
+        // Actualizar modificado por:
+        estadoUsuario.MODIFICADO_POR = quienModifico;
+        estadoUsuario.FECHA_VENCIMIENTO = fechaVencimiento;
+
+        if(estadoUsuario.USUARIO !== 'ROOT') {
+
+            estadoUsuario.PASS_RESETEADO = true;
+            
+        }
+
+        await estadoUsuario.save();
+        
+        eventBitacora(new Date, quienModifico, 2
+            , 'ACTUALIZACION', 'ACTUALIZACION DE CONTRASEÑA EXITOSA DEL USUARIO '+estadoUsuario.USUARIO);
+
+        res.json({
+            ok: true,
+            msg: 'La contraseña ha sido actualizada con éxito'
+        });
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            ok: false,
             msg: error.message
         })
     }
 }
 
+const crearUsuarioMantenimiento = async (req = request, res = response) => { 
+    const { usuario = "", nombre_usuario = "", contrasena = "", id_rol = "", correo = "", quienCreo = "" } = req.body;
+
+    try {
+
+        // Traer días de vigencia de parametros
+        const diasVigencias = await Parametro.findOne({
+            where:{
+                PARAMETRO: 'ADMIN_DIAS_VIGENCIA'
+            }
+        });
+
+        // Calcular fecha de vencimiento
+        const fechaActual = new Date();
+        const fechaVencimiento = (modificarDias(fechaActual, parseInt(diasVigencias.VALOR,10)));  
+
+        // Crear usuario con el modelo
+        DBusuario = Usuario.build({
+            USUARIO: usuario,
+            NOMBRE_USUARIO: nombre_usuario,
+            CONTRASENA :contrasena,
+            CORREO_ELECTRONICO: correo,
+            FECHA_VENCIMIENTO: fechaVencimiento,
+            ID_ROL: id_rol
+        })
+
+        // Hashear contraseña
+        const salt = bcrypt.genSaltSync();
+        DBusuario.CONTRASENA = bcrypt.hashSync(contrasena, salt);
+
+        // Crear usuario de DB
+        await DBusuario.save()
+
+        //''''''''''''''''''''''' Guardar contraseña en historial ''''''''''''''''''''''''''
+
+        // Llamar al usuario recien creado
+        const usuarioCreado = await Usuario.findOne({where:{USUARIO: usuario}});
+
+        historialContrasena = HistorialContrasena.build({
+            ID_USUARIO: usuarioCreado.ID_USUARIO,
+            CONTRASENA: DBusuario.CONTRASENA
+        })
+
+        historialContrasena.save();
+
+        // Traer ID del usuario creado
+        const user = await Usuario.findByPk(quienCreo);
+        //Actualizar quién lo modifico y creo
+        await Usuario.update({
+            CREADO_POR: user.ID_USUARIO,
+            MODIFICADO_POR: user.ID_USUARIO
+        },{
+            where:{
+                USUARIO: usuario 
+            }
+        })
+
+        // ------------------ Mandar Correos ----------------------
+
+        // Para enviar correos
+        const transporte = await crearTransporteSMTP();
+
+        // Parametros del mailer
+        const correoSMTP = await Parametro.findOne({where: { PARAMETRO: 'SMTP_CORREO' }});
+        const nombreEmpresaSMTP = await Parametro.findOne({where: { PARAMETRO: 'SMTP_NOMBRE_EMPRESA' }});
+
+        // Al usuario
+        transporte.sendMail({
+            from: `"${nombreEmpresaSMTP.VALOR} 🍔" <${correoSMTP.VALOR}>`, // Datos de emisor
+	    	to: correo, // Receptor
+	    	subject: "¡Cuenta creada! 🍔👌", // Asunto
+	    	html: `<b>Bienvenido a Dr. Buger, su cuenta ha sido creada
+            <hr>Usuario: ${usuario} 
+            <br>Contraseña: ${contrasena} 
+            <br>Para ingresar entre en el siguiente enlace:</b>
+            <a href=http://localhost:4200/auth/login/>Iniciar Sesión</a><br>`
+	    }, (err) => {
+            if(err) { console.log( err ) };
+        });
+
+        // Guardar evento
+        eventBitacora(new Date, user.ID_USUARIO, 2, 'NUEVO', 'SE CREÓ EL USUARIO '+usuario);
+
+        // Generar respuesta exitosa
+        return res.status(201).json({
+            ok: true,
+            msg: 'Usuario creado con éxito'
+        })
+
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            ok: false,
+            msg: 'Por favor hable con el administrador'
+        });
+    }
+}
+
 module.exports = {
     registrar,
-    registrarConRol,
+    crearUsuarioMantenimiento,
     getUsuarios,
     getUsuario,
     bloquearUsuario,
     putContrasena,
     putUsuario,
-    cambioContraseñaPerfil
+    cambioContrasenaPerfil,
+    contrasenaGenerador,
+    cambioContrasenaMantenimiento
 }

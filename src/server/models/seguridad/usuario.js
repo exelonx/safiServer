@@ -42,6 +42,9 @@ const Usuarios = db.define(`TBL_MS_USUARIO`, {
     INTENTOS: {
         type: DataTypes.INTEGER
     },
+    PASS_RESETEADO: {
+        type: DataTypes.BOOLEAN
+    },
     CREADO_POR: {
         type: DataTypes.INTEGER
     },
