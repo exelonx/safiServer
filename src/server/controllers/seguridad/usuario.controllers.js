@@ -692,7 +692,7 @@ const cambioContrasenaMantenimiento = async (req = request, res = response) => {
 
         // Hashear contraseña
         const salt = bcrypt.genSaltSync();
-        contrasena = bcrypt.hashSync(contrasena, salt);
+        contrasenia = bcrypt.hashSync(contrasena, salt);
 
         // Validar existencia
         if( !estadoUsuario ){
@@ -711,7 +711,7 @@ const cambioContrasenaMantenimiento = async (req = request, res = response) => {
 
         const historialContrasena = HistorialContrasena.build({
             ID_USUARIO: id_usuario,
-            CONTRASENA: contrasena
+            CONTRASENA: contrasenia
         })
         
         await historialContrasena.save();
@@ -740,7 +740,7 @@ const cambioContrasenaMantenimiento = async (req = request, res = response) => {
         }
 
         // Asignar contraseña encryptada y reiniciar intentos
-        estadoUsuario.CONTRASENA = contrasena;
+        estadoUsuario.CONTRASENA = contrasenia;
         estadoUsuario.INTENTOS = 0;
 
         // Traer días de vigencia de parametros
@@ -760,6 +760,27 @@ const cambioContrasenaMantenimiento = async (req = request, res = response) => {
         estadoUsuario.FECHA_VENCIMIENTO = fechaVencimiento;
 
         await estadoUsuario.save();
+
+        const usuario = await Usuarios.findByPk( id_usuario );
+
+        // Para enviar correos
+        const transporte = await crearTransporteSMTP();
+
+        // Parametros del mailer
+        const correoSMTP = await Parametro.findOne({where: { PARAMETRO: 'SMTP_CORREO' }});
+        const nombreEmpresaSMTP = await Parametro.findOne({where: { PARAMETRO: 'SMTP_NOMBRE_EMPRESA' }});
+
+        // Al usuario
+        transporte.sendMail({
+            from: `"${nombreEmpresaSMTP.VALOR} 🍔" <${correoSMTP.VALOR}>`, // Datos de emisor
+	    	to: usuario.CORREO_ELECTRONICO, // Receptor
+	    	subject: "¡Confirmación del restablecimiento de su contraseña! 🍔👌", // Asunto
+	    	html: `<b>¡Confirmación del restablecimiento de su contraseña!
+            <hr>Usuario: ${usuario.USUARIO} 
+            <br>Contraseña reiniciada: ${contrasena}`
+	    }, (err) => {
+            if(err) { console.log( err ) };
+        });
         
         eventBitacora(new Date, quienModifico, 2
             , 'ACTUALIZACION', 'ACTUALIZACION DE CONTRASEÑA EXITOSA DEL USUARIO '+estadoUsuario.USUARIO);
