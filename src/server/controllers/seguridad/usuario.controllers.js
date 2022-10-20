@@ -14,6 +14,7 @@ const Roles = require("../../models/seguridad/rol");
 const modificarDias = require("../../helpers/manipulacion-fechas");
 const { crearTransporteSMTP } = require("../../helpers/nodemailer");
 const { eventBitacora } = require("../../helpers/event-bitacora");
+const ViewRol = require("../../models/seguridad/sql-vistas/view_rol");
 
 
 const registrar = async(req = request, res = response) => {
@@ -362,7 +363,7 @@ const putUsuario = async (req = request, res = response) => {
 
         }
 
-        // Si llega sin cambios
+        // Si llega con cambios se registran cambios y manda correo
         if(!((usuarioModelo.NOMBRE_USUARIO == nombre_usuario || nombre_usuario === "") 
             && (usuarioModelo.ESTADO_USUARIO == estado || estado === "") 
             && (usuarioModelo.ID_ROL == id_rol || id_rol === "") 
@@ -390,6 +391,34 @@ const putUsuario = async (req = request, res = response) => {
             }
         })
 
+        let mensaje = "";
+        if(idPantalla === 2){
+            mensaje = 'desde la pantalla de getión de usuarios'
+        }
+
+        const rol = await ViewUsuarios.findByPk(id_usuario)
+        // Para enviar correos
+        const transporte = await crearTransporteSMTP();
+
+        // Parametros del mailer
+        const correoSMTP = await Parametro.findOne({where: { PARAMETRO: 'SMTP_CORREO' }});
+        const nombreEmpresaSMTP = await Parametro.findOne({where: { PARAMETRO: 'SMTP_NOMBRE_EMPRESA' }});
+
+        // Al usuario
+        transporte.sendMail({
+            from: `"${nombreEmpresaSMTP.VALOR} 🍔" <${correoSMTP.VALOR}>`, // Datos de emisor
+	    	to: usuarioModelo.CORREO_ELECTRONICO, // Receptor
+	    	subject: "Actualización de datos de usuario 🍔👌", // Asunto
+	    	html: `<b>Los datos de su cuenta han sido actualizados ${mensaje}
+            <hr>Usuario: ${usuarioModelo.USUARIO}
+            <br>Nombre de Usuario: ${usuarioModelo.NOMBRE_USUARIO} 
+            <br>Estado: ${usuarioModelo.ESTADO_USUARIO}
+            <br>Correo electronico: ${usuarioModelo.CORREO_ELECTRONICO}
+            <br>Rol:: ${rol.ROL}`
+	    }, (err) => {
+            if(err) { console.log( err ) };
+        });
+
         if( correo !== "" && (nombre_usuario === "" && estado === "" && id_rol === "")) {
             
             return res.json({
@@ -411,6 +440,7 @@ const putUsuario = async (req = request, res = response) => {
             msg: 'Los datos del usuario '+ usuarioModelo.USUARIO.toLowerCase() +' han sido actualizados'
         });
 
+        
     } catch (error) {
         console.log(error);
         res.status(500).json({
