@@ -852,7 +852,8 @@ const crearUsuarioMantenimiento = async (req = request, res = response) => {
             CONTRASENA :contrasena,
             CORREO_ELECTRONICO: correo,
             FECHA_VENCIMIENTO: fechaVencimiento,
-            ID_ROL: id_rol
+            ID_ROL: id_rol,
+            AUTOREGISTRADO: false
         })
 
         // Hashear contraseña

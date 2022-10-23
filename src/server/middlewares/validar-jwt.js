@@ -130,5 +130,5 @@ const validarPreguntaJWT = (req = request, res = response, next) => {
 module.exports = {
     validarJWT,
     validarCorreoJWT,
-    validarPreguntaJWT
+    validarPreguntaJWT,
 }

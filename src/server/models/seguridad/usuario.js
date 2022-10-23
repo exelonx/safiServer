@@ -42,7 +42,7 @@ const Usuarios = db.define(`TBL_MS_USUARIO`, {
     INTENTOS: {
         type: DataTypes.INTEGER
     },
-    PASS_RESETEADO: {
+    AUTOREGISTRADO: {
         type: DataTypes.BOOLEAN
     },
     CREADO_POR: {

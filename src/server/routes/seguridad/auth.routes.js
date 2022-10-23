@@ -6,14 +6,15 @@ const { login,
         generarCorreoRecuperacion, 
         revalidarTokenCorreo, 
         usuarioPorUsernameRecovery, 
-        revalidarTokenPregunta } = require('../../controllers/seguridad/auth.controllers');
+        revalidarTokenPregunta} = require('../../controllers/seguridad/auth.controllers');
 
 const {validarCampos,
        validarJWT,
        validarEspaciosLogin,
        validarLongitudDBContra,
        validarCorreoJWT,
-       validarPreguntaJWT} = require('../../middlewares')
+       validarPreguntaJWT
+       } = require('../../middlewares')
 
 const router = Router();
 
@@ -25,7 +26,7 @@ router.post('/login', [
     check('usuario', 'Máximo de 15 carácteres').isLength({ max: 15 }),
     // Validaciones de contraseña
     check('contrasena', 'La contraseña es obligatoria').not().isEmpty(),
-    validarLongitudDBContra,
+    // validarLongitudDBContra,
     // Validaciones genericas
     validarEspaciosLogin,
     validarCampos,
@@ -33,8 +34,7 @@ router.post('/login', [
 
 //Validar y revalidar token
 router.get('/revalidar', [
-    validarJWT,
-    revalidarToken
+    validarJWT
 ], revalidarToken)
 
 //API para solicitar correo de recuperación

@@ -118,7 +118,31 @@ const validarContrasenaActual = async( req = request, res = response, next ) => 
     next()
 }
 
+const validarContrasenaActualForPreguntas = async( req = request, res = response, next ) => {
+
+    const { id_usuario } = req.params;
+    const { confirmContrasenaActual } = req.body;
+
+    // Verificar el usuario
+    let user = await Usuario.findByPk( id_usuario );
+
+    // Confirmar si el contraseña hace match
+    const validarContrasena = await bcrypt.compareSync( confirmContrasenaActual, user.CONTRASENA )
+    if( !validarContrasena ) {
+
+        eventBitacora(new Date, id_usuario, 13, 'ACTUALIZACION', 'INTENTO DE CONFIGURACIÓN DE PREGUNTA SECRETA SIN ÉXITO');
+
+        return res.status(404).json({
+            ok: false,
+            msg: 'Contraseña incorrecta'
+        });
+    }
+
+    next()
+}
+
 module.exports = {
+    validarContrasenaActualForPreguntas,
     validarContrasenaActual,
     existeEmail,
     existeUsuario,

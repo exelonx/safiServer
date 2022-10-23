@@ -20,6 +20,7 @@ const routerPermiso = require('../routes/seguridad/permiso.routes');
 const routerBackup = require('../routes/administracion/backup.routes');
 const routerBitacora = require('../routes/administracion/bitacora.routes');
 const routerReporteria = require('../routes/reporteria/reporteria.routes');
+const routerProveedores = require('../routes/inventario/proveedores.routes');
 
 // Jobs
 const { generarBackup } = require('../jobs/db-backup');
@@ -52,7 +53,9 @@ class Server {
             bitacora:         '/api/bitacora',
             dbBackup:         '/api/db-backup',
             // REPORTERÍA
-            reporteria:       '/api/reporteria'
+            reporteria:       '/api/reporteria',
+            // INVENTARIO
+            proveedores:      '/api/proveedores'
         }
 
         // middlewares
@@ -108,6 +111,8 @@ class Server {
         this.app.use(this.apiPath.dbBackup, routerBackup)              // Backups
         // Reportería
         this.app.use(this.apiPath.reporteria, routerReporteria)
+        // Inventario
+        this.app.use(this.apiPath.proveedores, routerProveedores)
     }
 
     async listen () {

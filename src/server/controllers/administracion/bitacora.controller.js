@@ -10,10 +10,12 @@ const { eventBitacora } = require('../../helpers/event-bitacora');
 
 // Llamar todas los parametros
 const getBitacora = async (req = request, res = response) => {
-    let { limite, desde = 0, buscar = "", id_usuario } = req.query
+    let { limite, desde = 0, buscar = "", id_usuario, fechaInicial ="", fechaFinal="" } = req.query
+    let filtrarPorFecha = {}
 
     try {
 
+        console.log( fechaFinal, fechaInicial)
         // Definir el número de objetos a mostrar
         if(!limite || limite === "") {
             const { VALOR } = await Parametro.findOne({where: { PARAMETRO: 'ADMIN_NUM_REGISTROS'}})
@@ -23,6 +25,17 @@ const getBitacora = async (req = request, res = response) => {
         if(desde === "") {
             desde = 0
         }
+
+        // Validar si llegaron fechas
+        if( fechaFinal !== '' && fechaInicial !== '') {
+            filtrarPorFecha = { 
+                FECHA: {
+                    [Op.between]: [new Date(fechaInicial), new Date(fechaFinal)]
+                }
+            }
+        }
+
+        console.log(filtrarPorFecha)
 
         const registros = await ViewBitacora.findAll({
             limit: parseInt(limite, 10),
@@ -37,7 +50,8 @@ const getBitacora = async (req = request, res = response) => {
                     ACCION: { [Op.like]: `%${buscar.toUpperCase()}%`}
                 }, {
                     DESCRIPCION: { [Op.like]: `%${buscar.toUpperCase()}%`}
-                }]
+                }],
+                [Op.and]: [filtrarPorFecha]
             }
         });
 
@@ -52,7 +66,8 @@ const getBitacora = async (req = request, res = response) => {
                 ACCION: { [Op.like]: `%${buscar.toUpperCase()}%`}
             }, {
                 DESCRIPCION: { [Op.like]: `%${buscar.toUpperCase()}%`}
-            }]
+            }],
+            [Op.and]: [filtrarPorFecha]
         }})
 
         // Guardar evento

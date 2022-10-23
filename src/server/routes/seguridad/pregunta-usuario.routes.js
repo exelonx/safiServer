@@ -8,11 +8,13 @@ const { getPreguntasAllUsuarios,
         getPreguntasUsuario,
         compararPregunta,
         getPreguntasFaltantes,
-        postMultiplesRespuestas } = require('../../controllers/seguridad/pregunta-usuario.controllers');
+        postMultiplesRespuestas, 
+        putPreguntaPerfil} = require('../../controllers/seguridad/pregunta-usuario.controllers');
 
 const { noExisteRespuesta,
         validarCampos, 
-        validarEspaciosRespuesta} = require('../../middlewares');
+        validarEspaciosRespuesta,
+        validarContrasenaActualForPreguntas} = require('../../middlewares');
 
 const router = Router();
 
@@ -51,5 +53,9 @@ router.put('/:id_respuesta', [
     check('respuesta', 'Máximo de caracteres: 100').isLength({ max: 100 }),
     validarCampos
 ], putRespuesta);
+
+router.put('/editar-pregunta/:id_usuario',[
+    validarContrasenaActualForPreguntas
+], putPreguntaPerfil)
 
 module.exports = router;

@@ -10,6 +10,8 @@ const Usuarios = require('../../models/seguridad/Usuario');
 const Parametros = require('../../models/seguridad/Parametro');
 
 const { eventBitacora } = require('../../helpers/event-bitacora');
+const { crearTransporteSMTP } = require('../../helpers/nodemailer');
+const Parametro = require('../../models/seguridad/Parametro');
 
 
 // Llamar todas las preguntas de los usuarios paginadas
@@ -99,6 +101,7 @@ const getPreguntasUsuario = async (req = request, res = response) => {
  
              return {
                 id: pregunta.ID,
+                id_pregunta: pregunta.ID_PREGUNTA,
                 pregunta: pregunta.PREGUNTA
              }
 
@@ -260,7 +263,11 @@ const postRespuesta = async (req = request, res = response) => {
 const postMultiplesRespuestas = async (req = request, res = response) => {
     const { arregloRespuestas } = req.body
     let error = false;    // Para evitar crasheo del servidor
+    let dobleEspacio = false;   // Evitar doble espacio en la respuesta
     let indice = 0;
+    let id_usuario = 0;
+    let cod = 'creado';
+
     try {
 
         // Hashear respuesta
@@ -268,12 +275,21 @@ const postMultiplesRespuestas = async (req = request, res = response) => {
 
         // Validar que sea un arreglo válido
         arregloRespuestas.forEach((respuesta, i) => {
+            // Verificar que el arreglo este lleno
             if(!(respuesta.ID_USUARIO && respuesta.RESPUESTA && respuesta.ID_PREGUNTA)){
                 // Respuesta
                 error = true
                 indice = i;
                 return // Salir del bucle
             }
+            // Buscar más de un espacio en blanco entre palabras
+            if( respuesta.RESPUESTA.includes('  ') && !dobleEspacio) {
+                dobleEspacio = true
+                indice = i;
+                return // Salir del bucle
+            }
+            // Extraer el ID del usuario
+            id_usuario = respuesta.ID_USUARIO;
             respuesta.RESPUESTA = bcrypt.hashSync(respuesta.RESPUESTA, salt);   // Encriptar respuesta
         });
 
@@ -285,14 +301,102 @@ const postMultiplesRespuestas = async (req = request, res = response) => {
             });
         }
 
+        if( dobleEspacio ) {
+            return res.status(400).json({
+                ok: false,
+                msg: `Pregunta # ${indice+1}: No se permiten más de un espacio en blanco entre palabras`
+            });
+        }
+
+        
         // Insertar en la base de datos
         await PreguntaUsuario.bulkCreate(arregloRespuestas);
+        
+        // Instanciar al usuario
+        const usuario = await Usuarios.findByPk(id_usuario)
+        
+        // Validar si el usuario se autoregistro o no
+        if( usuario.AUTOREGISTRADO ) {
+            // En caso de ser autoregistrado, su estado pasara a ser activo
+            usuario.ESTADO_USUARIO = 'ACTIVO';
+            usuario.AUTOREGISTRADO = true;
+            usuario.save()
+            cod = 'autoregistrado';
+        }
+        
+        // Respuesta éxitosa
+        res.json({
+            ok: true,
+            cod,
+            msg: '¡Preguntas configuradas con éxito!'
+        })
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: error.message
+        })
+    }
+}
+
+const putPreguntaPerfil = async (req = request, res = response) => {
+    const { id_usuario } = req.params;
+    let { idRegistro, idPregunta, respuesta } = req.body;
+
+    try {
+        
+        let pregunta = await PreguntaUsuario.findByPk(idRegistro);
+        let usuario = await Usuarios.findByPk(id_usuario);
+
+        // Validaciones
+        if(!pregunta) {
+            return res.status(404).json({
+                ok: false,
+                msg: `No existe esta pregunta en el usuario con id: `+id_usuario
+            });
+        }
+
+        if(respuesta.includes('  ')) {
+            return res.status(400).json({
+                ok: false,
+                msg: `No se permite más de un espacio entre palabras en la respuesta`
+            });
+        }
+
+        // Hashear respuesta
+        const salt = bcrypt.genSaltSync();
+        respuesta = bcrypt.hashSync(respuesta, salt);   // Encriptar respuesta
+
+        pregunta.RESPUESTA = respuesta.toUpperCase();
+        pregunta.ID_PREGUNTA = idPregunta;
+        pregunta.save();
+
+        eventBitacora(new Date, id_usuario, 13, 'ACTUALIZACION', `USUARIO ${usuario.USUARIO} HA ACTUALIZADO SUS PREGUNTAS SECRETAS`);
+        
+        // ------------------ Mandar Correos ----------------------
+
+        // Para enviar correos
+        const transporte = await crearTransporteSMTP();
+
+        // Parametros del mailer
+        const correoSMTP = await Parametro.findOne({where: { PARAMETRO: 'SMTP_CORREO' }});
+        const nombreEmpresaSMTP = await Parametro.findOne({where: { PARAMETRO: 'SMTP_NOMBRE_EMPRESA' }});
+
+        // Al usuario
+        transporte.sendMail({
+            from: `"${nombreEmpresaSMTP.VALOR} 🍔" <${correoSMTP.VALOR}>`, // Datos de emisor
+	    	to: usuario.CORREO_ELECTRONICO, // Receptor
+	    	subject: "¡Confirmación de actualización de pregunta secreta! 🍔👌", // Asunto
+	    	html: `<b>Confirmación de actualización de pregunta secreta desde la pantalla de editar perfil<br>`
+	    }, (err) => {
+            if(err) { console.log( err ) };
+        });
 
         // Respuesta éxitosa
         res.json({
             ok: true,
-            msg: '¡Preguntas configuradas con éxito!'
+            msg: 'Pregunta actualizada con éxito'
         })
+
     } catch (error) {
         console.log(error);
         res.status(500).json({
@@ -341,4 +445,5 @@ module.exports = {
     postRespuesta,
     postMultiplesRespuestas,
     putRespuesta,
+    putPreguntaPerfil
 }
