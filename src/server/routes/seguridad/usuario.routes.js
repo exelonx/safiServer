@@ -75,8 +75,6 @@ router.post('/nuevo-usuario', [
     validarCampos
 ], crearUsuarioMantenimiento)
 
-router.post('/', validarArchivoSubir, cargarArchivo);
-
 router.get('/', getUsuarios);
 
 router.get('/:id_usuario', getUsuario)
