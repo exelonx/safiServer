@@ -340,7 +340,7 @@ const postMultiplesRespuestas = async (req = request, res = response) => {
 
 const putPreguntaPerfil = async (req = request, res = response) => {
     const { id_usuario } = req.params;
-    let { idRegistro, idPregunta, respuesta } = req.body;
+    let { idRegistro, idPregunta, respuesta, respuestaActual = "hola" } = req.body;
 
     try {
         
@@ -355,6 +355,22 @@ const putPreguntaPerfil = async (req = request, res = response) => {
             });
         }
 
+        // Validar respuesta actual
+        // Confirmar si la respuesta hace match
+        const validarRespuesta = await bcrypt.compareSync( respuestaActual, pregunta.RESPUESTA )
+
+        if( !validarRespuesta ) {
+
+            eventBitacora(new Date, id_usuario, 13, 'ACTUALIZACION', 'INTENTO DE CAMBIO DE PREGUNTA DE SECRETA SIN ÉXITO, RESPUESTA INCORRECTA');
+
+            // Respuesta
+            return res.status(401).json({
+                ok: false,
+                msg: 'Respuesta incorrecta'
+            });
+        }
+
+
         if(respuesta.includes('  ')) {
             return res.status(400).json({
                 ok: false,
@@ -364,9 +380,9 @@ const putPreguntaPerfil = async (req = request, res = response) => {
 
         // Hashear respuesta
         const salt = bcrypt.genSaltSync();
-        respuesta = bcrypt.hashSync(respuesta, salt);   // Encriptar respuesta
+        respuesta = bcrypt.hashSync(respuesta.toUpperCase(), salt);   // Encriptar respuesta
 
-        pregunta.RESPUESTA = respuesta.toUpperCase();
+        pregunta.RESPUESTA = respuesta;
         pregunta.ID_PREGUNTA = idPregunta;
         pregunta.save();
 

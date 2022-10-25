@@ -109,7 +109,7 @@ const validarContrasenaActual = async( req = request, res = response, next ) => 
 
         eventBitacora(new Date, id_usuario, 13, 'ACTUALIZACION', 'INTENTO DE CAMBIO DE CONTRASEÑA SIN ÉXITO');
 
-        return res.status(404).json({
+        return res.status(401).json({
             ok: false,
             msg: 'Contraseña incorrecta'
         });
@@ -130,9 +130,9 @@ const validarContrasenaActualForPreguntas = async( req = request, res = response
     const validarContrasena = await bcrypt.compareSync( confirmContrasenaActual, user.CONTRASENA )
     if( !validarContrasena ) {
 
-        eventBitacora(new Date, id_usuario, 13, 'ACTUALIZACION', 'INTENTO DE CONFIGURACIÓN DE PREGUNTA SECRETA SIN ÉXITO');
+        eventBitacora(new Date, id_usuario, 13, 'ACTUALIZACION', 'INTENTO DE CONFIGURACIÓN DE PREGUNTA SECRETA SIN ÉXITO, CONTRASEÑA INCORRECTA');
 
-        return res.status(404).json({
+        return res.status(401).json({
             ok: false,
             msg: 'Contraseña incorrecta'
         });

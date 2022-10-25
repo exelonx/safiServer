@@ -658,6 +658,7 @@ const cambioContrasenaPerfil = async (req = request, res = response) => {
 
         res.json({
             ok: true,
+            fechaVencimiento,
             msg: 'La contraseña ha sido actualizada con éxito'
         });
 
