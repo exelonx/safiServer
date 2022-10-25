@@ -5,6 +5,8 @@ const cron = require('node-cron');
 require('dotenv').config();
 const colors = require('colors/safe');
 
+
+
 // Importación de la conexión y parametros de la DB
 const { db } = require('../database/db-conexion');
 const Parametro = require('../models/seguridad/parametro');
@@ -49,6 +51,7 @@ class Server {
             preguntaUsuarios: '/api/pregunta-usuario',
             parametro:        '/api/parametro',
             permiso:          '/api/permiso',
+
             // ADMINISTRACION
             bitacora:         '/api/bitacora',
             dbBackup:         '/api/db-backup',
@@ -66,7 +69,9 @@ class Server {
 
         // Tareas programadas
         this.tareaDepurarBitacora();
-        this.tareaGenerarBackup()
+        this.tareaGenerarBackup();
+
+
     }
 
     // ---------------Métodos---------------
@@ -93,7 +98,8 @@ class Server {
         // Carga de archivos
         this.app.use(fileUpload({
             useTempFiles : true,
-            tempFileDir : '/tmp/'
+            tempFileDir : '/tmp/',
+            createParentPath: true
         }));
     }
 
@@ -106,6 +112,7 @@ class Server {
         this.app.use(this.apiPath.preguntaUsuarios, routerPregUser);   // Preguntas de los usuarios (Respuestas)
         this.app.use(this.apiPath.parametro, routerParametro);         // Parametros del sistema
         this.app.use(this.apiPath.permiso, routerPermiso);             // Permisos
+
         // Administracion
         this.app.use(this.apiPath.bitacora, routerBitacora)
         this.app.use(this.apiPath.dbBackup, routerBackup)              // Backups

@@ -50,6 +50,9 @@ const Usuarios = db.define(`TBL_MS_USUARIO`, {
     },
     MODIFICADO_POR: {
         type: DataTypes.INTEGER
+    },
+    IMAGEN: {
+        type: DataTypes.STRING
     }
 }, {
     tableName: 'TBL_MS_USUARIO',

@@ -24,6 +24,8 @@ const { registrar,
 
 const { emailExistente,
         emailExistenteUpdate } = require('../../helpers/db-validators');
+const { actualizarImagen, mostrarImagen, cargarArchivo } = require('../../controllers/seguridad/uploads.controllers');
+const { validarArchivoSubir } = require('../../middlewares/validar-archivo');
 
 const router = Router();
 
@@ -73,9 +75,13 @@ router.post('/nuevo-usuario', [
     validarCampos
 ], crearUsuarioMantenimiento)
 
+router.post('/', validarArchivoSubir, cargarArchivo);
+
 router.get('/', getUsuarios);
 
 router.get('/:id_usuario', getUsuario)
+
+router.get('/imagen-perfil/:id_usuario', mostrarImagen)
 
 router.put('/bloquear/:id_usuario', bloquearUsuario)
 
@@ -104,6 +110,10 @@ router.put('/actualizar/:id_usuario', [
         existeUsuarioUpdated,
         validarCampos
 ], putUsuario)
+
+router.put('/actualizar-imagen/:id_usuario', [
+    validarCampos
+], actualizarImagen)
 
 router.put('/cambiar-contrasena/perfil/:id_usuario', [
     // Validar contraseña

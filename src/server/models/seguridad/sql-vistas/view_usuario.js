@@ -62,6 +62,9 @@ const ViewUsuarios = db.define(`VIEW_MS_USUARIO`, {
     },
     FECHA_MODIFICACION: {
         type: DataTypes.DATE
+    },
+    IMAGEN: {
+        type: DataTypes.STRING
     }
 }, {
     tableName: 'VIEW_MS_USUARIO',
