@@ -1,5 +1,6 @@
 const path = require('path')
 const fs = require('fs');
+const sharp = require('sharp');
 
 const { response, request } = require('express');
 
@@ -9,7 +10,7 @@ const ViewUsuario = require('../../models/seguridad/sql-vistas/view_usuario');
 
 const subirImagen = async (req = request, res = response) => {
     const { id_usuario } = req.params;
-    const { imagenUsuario } = req.files;
+    const imagenUsuario = req.file;
     let { quienModifico } = req.body
 
     try {
@@ -23,20 +24,29 @@ const subirImagen = async (req = request, res = response) => {
             })
         }
 
-        //Concertir la imagen a base64
-        const imagenNombre = imagenUsuario.name;
-        const imagen = new Buffer(imagenNombre).toString('base64');
+        // Extraer el buffer de la imagen
+        const imagen = req.file.buffer;
 
-        console.log(imagen);
+        // Cambiar tamaño de la imagen
+        const imagenReescalada = sharp(imagen).resize(200, 200)
+        
+        // Obtener el buffer de la imagen reescalada
+        const bufferImagenReescalada = await imagenReescalada.toBuffer()
+        
+
         // Actualizar Imagen de usuario
         await usuario.update({
-            IMAGEN: imagen,
+            IMAGEN: bufferImagenReescalada,
             MODIFICADO_POR: quienModifico
         },{
             where: {
                 ID_USUARIO: id_usuario
             }
         })
+
+        const prueba = await Usuario.findByPk(37);
+        console.log(prueba.IMAGEN)
+        fs.writeFileSync('./fotoSQL.jpg',prueba.IMAGEN)
 
         return res.json({
             ok: true,

@@ -2,8 +2,9 @@ const { response, request } = require("express")
 
 
 const validarExisteImagen = (req, res = response, next) =>{
+console.log(req.file)
 
-    if (!req.files || Object.keys(req.files).length === 0 || !req.files.imagenUsuario) {
+    if (!req.file) {
         return res.status(400).json({
             msg: 'No hay imagen'
         });
@@ -15,9 +16,9 @@ const validarExisteImagen = (req, res = response, next) =>{
 
 const validarFormatoImagen = (req = request, res = response, next) => {
 
-    const {imagenUsuario} = req.files;
+    const imagenUsuario = req.file;
 
-    const nombreCortado = imagenUsuario.name.split('.');
+    const nombreCortado = imagenUsuario.originalname.split('.');
 
     const extension = nombreCortado[nombreCortado.length - 1];
 

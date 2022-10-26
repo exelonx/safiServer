@@ -5,6 +5,7 @@ const { eventBitacora } = require('../../helpers/event-bitacora');
 
 const Parametro = require('../../models/seguridad/parametro');
 const ViewParametro = require('../../models/seguridad/sql-vistas/view-parametro');
+const Usuarios = require('../../models/seguridad/Usuario');
 
 // Llamar todas los parametros
 const getParametros = async (req = request, res = response) => {
@@ -125,7 +126,103 @@ const putParametro = async (req = request, res = response) => {
         res.json({ 
             ok: true,
             msg: `¡Parametro ${parametro.PARAMETRO} actualizado con éxito!`
-         });
+        });
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: error.message
+        })
+    }
+}
+
+const postParametro = async (req = request, res = response) => { 
+    const { parametro, valor, id_quienCreo } = req.body;
+
+    try {
+
+        if(parametro.includes(' ')) {
+            return res.status(400).json({
+                ok: false,
+                msg: 'No se permite espacio blanco en los parámetros, usar "_" para separar las palabras'
+            })
+        }
+
+        const nuevoParametro = await Parametro.build({
+            PARAMETRO: parametro,
+            VALOR: valor,
+            CREADO_POR: id_quienCreo,
+            MODIFICADO_POR: id_quienCreo
+        })
+
+        // Guardar en BD
+        await nuevoParametro.save()
+            .then( resp => {
+                // Guardar evento
+                eventBitacora(new Date, id_quienCreo, 10, 'NUEVO', `PARAMETRO ${parametro.toUpperCase()} CREADO`);
+
+                return res.json({ 
+                    ok: true,
+                    msg: `Parametro ${parametro} creado con éxito`
+                });
+            })
+            .catch( err => {
+                // Error de campo unico
+                if( err.errors[0].type === 'unique violation' ) {
+                    return res.status(400).json({
+                        ok: false,
+                        msg: 'Ya existe un parametro con el nombre '+parametro
+                    })
+                }
+            });   
+        
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: error.message
+        })
+    }
+}
+
+const deleteParametro = async (req = request, res = response) => {
+
+    const { id_parametro } = req.params
+    const { id_quienElimino } = req.query
+
+    try {
+
+        const parametro = await Parametro.findByPk( id_parametro )
+        const usuario = await Usuarios.findByPk( id_quienElimino )
+        
+        if(!usuario) {
+
+            return res.status(404).json({
+                ok: false,
+                msg: 'No se encuentra el usuario con el id: '+id_quienElimino
+            })
+
+        }
+        
+        // Si no hay modificaciones
+        if(!parametro) {
+            
+            return res.status(404).json({
+                ok: false,
+                msg: 'No se encuentra el parámetro con el id: '+id_parametro
+            })
+            
+        }
+        
+        let nombre_parametro = parametro.PARAMETRO;
+
+        parametro.destroy();
+        // Guardar evento
+        eventBitacora(new Date, id_quienElimino, 10, 'ELIMINACIÓN', `SE ELIMINÓ EL PARAMETRO: ${nombre_parametro}`);
+
+        return res.json({ 
+            ok: true,
+            msg: `Parametro ${nombre_parametro} ha sido eliminado del sistema`
+        });
 
     } catch (error) {
         console.log(error);
@@ -139,4 +236,6 @@ module.exports = {
     getParametros,
     getParametro,
     putParametro,
+    deleteParametro,
+    postParametro
 }
