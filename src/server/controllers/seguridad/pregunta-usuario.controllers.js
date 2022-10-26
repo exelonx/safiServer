@@ -340,7 +340,7 @@ const postMultiplesRespuestas = async (req = request, res = response) => {
 
 const putPreguntaPerfil = async (req = request, res = response) => {
     const { id_usuario } = req.params;
-    let { idRegistro, idPregunta, respuesta, respuestaActual = "hola" } = req.body;
+    let { idRegistro, idPregunta, respuesta } = req.body;
 
     try {
         
@@ -354,22 +354,6 @@ const putPreguntaPerfil = async (req = request, res = response) => {
                 msg: `No existe esta pregunta en el usuario con id: `+id_usuario
             });
         }
-
-        // Validar respuesta actual
-        // Confirmar si la respuesta hace match
-        const validarRespuesta = await bcrypt.compareSync( respuestaActual, pregunta.RESPUESTA )
-
-        if( !validarRespuesta ) {
-
-            eventBitacora(new Date, id_usuario, 13, 'ACTUALIZACION', 'INTENTO DE CAMBIO DE PREGUNTA DE SECRETA SIN ÉXITO, RESPUESTA INCORRECTA');
-
-            // Respuesta
-            return res.status(401).json({
-                ok: false,
-                msg: 'Respuesta incorrecta'
-            });
-        }
-
 
         if(respuesta.includes('  ')) {
             return res.status(400).json({
