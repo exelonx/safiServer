@@ -1,5 +1,7 @@
 const { Router } = require('express');
 const { check, body } = require("express-validator");
+const multer = require('multer');
+const upload = multer({storage:multer.memoryStorage()});
 
 const { validarCampos,
         validarLongitudDBContra,
@@ -24,8 +26,8 @@ const { registrar,
 
 const { emailExistente,
         emailExistenteUpdate } = require('../../helpers/db-validators');
-const { actualizarImagen, mostrarImagen, cargarArchivo } = require('../../controllers/seguridad/uploads.controllers');
-const { validarArchivoSubir } = require('../../middlewares/validar-archivo');
+const { actualizarImagen, mostrarImagen, subirImagen } = require('../../controllers/seguridad/uploads.controllers');
+const { validarExisteImagen, validarFormatoImagen } = require('../../middlewares/validar-imagen');
 
 const router = Router();
 
@@ -79,8 +81,6 @@ router.get('/', getUsuarios);
 
 router.get('/:id_usuario', getUsuario)
 
-router.get('/imagen-perfil/:id_usuario', mostrarImagen)
-
 router.put('/bloquear/:id_usuario', bloquearUsuario)
 
 router.put('/cambiar-contrasena/:id_usuario', [
@@ -109,9 +109,17 @@ router.put('/actualizar/:id_usuario', [
         validarCampos
 ], putUsuario)
 
-router.put('/actualizar-imagen/:id_usuario', [
-    validarCampos
-], actualizarImagen)
+// router.get('/imagen-perfil/:id_usuario', mostrarImagen)
+
+router.post('/subir-imagen/:id_usuario', upload.single("imagenUsuario"), [
+    validarExisteImagen,
+    validarFormatoImagen
+],subirImagen)
+
+router.put('/actualizar-imagen/:id_usuario', upload.single("imagenUsuario"), [
+    validarExisteImagen,
+    validarFormatoImagen
+], actualizarImagen);
 
 router.put('/cambiar-contrasena/perfil/:id_usuario', [
     // Validar contraseña
