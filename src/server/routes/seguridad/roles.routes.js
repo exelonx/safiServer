@@ -27,7 +27,7 @@ router.post('/', [
     check('rol', 'El Rol es obligatorio').not().isEmpty(),
     check('rol', 'Rol debe estar en mayúscula').isUppercase(),
     check('rol', 'Máximo de caracteres: 30').isLength({ max: 30 }),
-    check('rol').custom( existeRol ),
+    existeRol,
     // Validaciones de Descripción
     check('descripcion', 'La descripción es obligatoria').not().isEmpty(),
     check('descripcion', 'La descripción debe estar en mayúscula').isUppercase(),
@@ -37,7 +37,7 @@ router.post('/', [
 
 router.put('/:id_rol', [
     // Validaciones de Rol
-    check( 'id_rol' ).custom( noExisteRolPorId ),
+    noExisteRolPorId,
     check('rol', 'Rol debe estar en mayúscula').isUppercase(),
     check('rol', 'Máximo de caracteres: 30').isLength({ max: 30 }),
     // Validaciones de Descripción
@@ -49,7 +49,8 @@ router.put('/:id_rol', [
 
 router.delete('/:id_rol', [
     // Validar existencia
-    check( 'id_rol' ).custom( noExisteRolPorId ),
+    check('quienElimina', 'El id del usuario es obligatorio').not().isEmpty(),
+    noExisteRolPorId,
     validarCampos
 ], DeleteRol);
 

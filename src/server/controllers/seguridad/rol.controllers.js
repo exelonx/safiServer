@@ -1,5 +1,5 @@
 const { request, response } = require('express');
-const { Op } = require('sequelize');
+const { Op, ForeignKeyConstraintError } = require('sequelize');
 
 const Rol = require('../../models/seguridad/rol');
 const ViewRol = require('../../models/seguridad/sql-vistas/view_rol');
@@ -181,6 +181,7 @@ const putRol = async (req = request, res = response) => {
 
 const DeleteRol = async (req = request, res = response) => {
     const { id_rol } = req.params
+    const { quienElimina } = req.query
 
     try {
 
@@ -194,18 +195,27 @@ const DeleteRol = async (req = request, res = response) => {
         await rol.destroy();
 
         // Guardar evento
-        eventBitacora(new Date, quienModifico, 8, 'BORRADO', `SE ELIMINO EL ROL ${ROL}`);
+        eventBitacora(new Date, quienElimina, 8, 'BORRADO', `SE ELIMINO EL ROL ${ROL}`);
 
         res.json({
-            ok: false,
+            ok: true,
             msg: `El rol: ${ROL} ha sido eliminado`
         });
 
     } catch (error) {
-        console.log(error);
-        res.status(500).json({
-            msg: error.message
-        })
+        if( error instanceof ForeignKeyConstraintError ) {
+            res.status(403).json({
+                ok: false,
+                msg: `El rol no puede ser eliminado`
+            })
+        } else {
+
+            console.log(error);
+            res.status(500).json({
+                msg: error.message
+            })
+
+        }
     }  
 }
 
