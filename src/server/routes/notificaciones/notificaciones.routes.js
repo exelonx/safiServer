@@ -16,10 +16,4 @@ router.post('/', [
 
 router.get('/config', configPermisosInicialesNoti);
 
-router.get('/banner', (req, res)=>{
-    console.log(__dirname)
-    res.sendFile('C:/Users/Kevin/Documents/PROYECTO DRBURGER/safiServer/src/assets/svg/DrBurger.png');
-})
-
-
 module.exports = router

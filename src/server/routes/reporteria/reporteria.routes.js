@@ -1,9 +1,8 @@
 const { Router } = require('express');
-
-const { getReporte } = require('../../controllers/reporteria/reporteria.controllers');
+const { getReporteBitacora } = require('../../controllers/reporteria/bitacora.report.controllers');
 
 const router = Router();
 
-router.post('/', getReporte);
+router.post('/bitacora', getReporteBitacora);
 
 module.exports = router

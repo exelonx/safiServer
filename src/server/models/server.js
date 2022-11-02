@@ -3,6 +3,7 @@ const cors = require('cors');
 const cron = require('node-cron');
 require('dotenv').config();
 const colors = require('colors/safe');
+const path = require('path');
 
 // Sockets
 const socket = require('../sockets/socket');
@@ -101,6 +102,9 @@ class Server {
         // Lectura del body
         this.app.use(express.json());
 
+        console.log()
+        // Imagenes
+        this.app.use('/imgs', express.static(path.join(process.cwd()+'/src/server/public/imgs')))
     }
 
     routes () {
