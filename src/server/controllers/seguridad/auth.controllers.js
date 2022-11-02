@@ -9,6 +9,8 @@ const ViewUsuarios = require("../../models/seguridad/sql-vistas/view_usuario");
 const { generarJWT } = require("../../helpers/jwt");
 const { crearTransporteSMTP } = require("../../helpers/nodemailer");
 const { eventBitacora } = require("../../helpers/event-bitacora");
+const { cargarOpcionesHBS } = require("../../templates/mail/opcionCorreoHbs");
+const hbs = require("nodemailer-express-handlebars");
 
 const login = async(req = request, res = response) => {
 
@@ -21,8 +23,12 @@ const login = async(req = request, res = response) => {
         // Parametros del mailer
         const correoSMTP = await Parametro.findOne({where: { PARAMETRO: 'SMTP_CORREO' }});
         const nombreEmpresaSMTP = await Parametro.findOne({where: { PARAMETRO: 'SMTP_NOMBRE_EMPRESA' }});
+        // Template del correo
+        const handlebarOptions = cargarOpcionesHBS()
         const transporte = await crearTransporteSMTP(); // Transportador
+        transporte.use('compile', hbs(handlebarOptions))
 
+        
         if( !dbUser ) {
             return res.status(404).json({
                 ok: false,
@@ -57,8 +63,11 @@ const login = async(req = request, res = response) => {
                     from: `"${nombreEmpresaSMTP.VALOR} 🍔" <${correoSMTP.VALOR}>`, // Datos de emisor
                     to: dbUser.CORREO_ELECTRONICO, // Receptop
                     subject: "Cuenta bloqueada 🍔", // Asunto
-                    html: `<b>Su cuenta ha superado los intentos permitidos y ha sido bloqueada, 
-                    cambie la contraseña o comuniquese con el administrador</b>`
+                    template: 'correos',
+                    context: {
+                        titulo: 'Bloqueo de cuenta',
+                        contenido: `Le informamos que su cuenta ha sido bloqueada debido a que ha excedido el número de intentos permitidos para ingresar su contraseña.`
+                    }
                 }, (err) => {
                     if(err) { console.log( err ) };
                 })
@@ -118,7 +127,11 @@ const login = async(req = request, res = response) => {
                 from: `"${nombreEmpresaSMTP.VALOR} 🍔" <${correoSMTP.VALOR}>`, // Datos de emisor
                 to: dbUser.CORREO_ELECTRONICO, // Receptop
                 subject: "Acceso no válido 🍔", // Asunto
-                html: `<b>Su cuenta no tiene los accesos válidos, hable con el administrador</b>`
+                template: 'correos',
+                context: {
+                    titulo: 'Acceso <strong>restringido</strong>',
+                    contenido: `Su cuenta no posee un acceso válido al sistema, contacte con el administrador para solicitar el acceso al sistema.`
+                }
             }, (err) => {
                 if(err) { console.log( err ) };
             })

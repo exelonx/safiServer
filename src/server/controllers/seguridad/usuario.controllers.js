@@ -114,7 +114,7 @@ const registrar = async(req = request, res = response) => {
                 titulo: '¡Bienvenido a Dr. Buger, su cuenta ha sido <strong>creada</strong>!',
                 contenido: `Usuario: <strong>${usuario}</strong><br>
                             Contraseña: <strong>${contrasena}</strong><br><br>
-                            <strong>Contacte con el administrador para activar su cuenta</strong>`
+                            <strong>Contacte con el administrador para activar su cuenta.</strong>`
             }
 	    }, (err) => {
             if(err) { console.log( err ) };
@@ -313,7 +313,7 @@ const bloquearUsuario = async (req = request, res = response) => {
             template: 'correos',
             context: {
                 titulo: '¡Su cuenta ha sido <strong>desactivada</strong>!',
-                contenido: `La cuenta ha sido desactivada por el administrador`
+                contenido: `La cuenta ha sido desactivada por el administrador.`
             }
 	    }, (err) => {
             if(err) { console.log( err ) };
@@ -323,7 +323,7 @@ const bloquearUsuario = async (req = request, res = response) => {
 
         res.json( {
             ok: true,
-            msg: `Usuario ${usuario.USUARIO} ha sido inactivado`
+            msg: `Usuario ${usuario.USUARIO} ha sido desactivado`
         } )
 
     } catch (error) {
@@ -511,6 +511,7 @@ const putContrasena = async (req = request, res = response) => {
 
         // Hashear contraseña
         const salt = bcrypt.genSaltSync();
+        const contraSinHash = contrasena;
         contrasena = bcrypt.hashSync(contrasena, salt);
 
         // Validar existencia
@@ -582,6 +583,32 @@ const putContrasena = async (req = request, res = response) => {
         await estadoUsuario.save();
 
         const usuario = estadoUsuario;
+
+        // Para enviar correos
+        const transporte = await crearTransporteSMTP();
+
+        
+        // Template del correo
+        const handlebarOptions = cargarOpcionesHBS()
+        transporte.use('compile', hbs(handlebarOptions))
+
+        // Parametros del mailer
+        const correoSMTP = await Parametro.findOne({where: { PARAMETRO: 'SMTP_CORREO' }});
+        const nombreEmpresaSMTP = await Parametro.findOne({where: { PARAMETRO: 'SMTP_NOMBRE_EMPRESA' }});
+
+        // Al usuario
+        transporte.sendMail({
+            from: `"${nombreEmpresaSMTP.VALOR} 🍔" <${correoSMTP.VALOR}>`, // Datos de emisor
+	    	to: usuario.CORREO_ELECTRONICO, // Receptor
+	    	subject: "¡Confirmación del restablecimiento de su contraseña! 🍔👌", // Asunto
+	    	template: 'correos',
+            context: {
+                titulo: '¡Confirmación del restablecimiento de su contraseña!',
+                contenido: `Su contraseña ha sido restablecida con éxito.<br>Nueva contraseña: <strong>${contraSinHash}</strong>`
+            }
+	    }, (err) => {
+            if(err) { console.log( err ) };
+        });
         
         eventBitacora(new Date, quienModifico, 12
             , 'ACTUALIZACION', 'ACTUALIZACION DE CONTRASEÑA EXITOSA');
@@ -639,6 +666,7 @@ const cambioContrasenaPerfil = async (req = request, res = response) => {
 
         // Hashear contraseña
         const salt = bcrypt.genSaltSync();
+        let contraSinHash = contrasena;
         contrasena = bcrypt.hashSync(contrasena, salt);
 
         // Validar numero del historial
@@ -676,6 +704,33 @@ const cambioContrasenaPerfil = async (req = request, res = response) => {
 
         Usuario.FECHA_VENCIMIENTO = fechaVencimiento;
         await Usuario.save();
+
+        const usuario = await Usuarios.findByPk( id_usuario );
+
+        // Para enviar correos
+        const transporte = await crearTransporteSMTP();
+
+        // Template del correo
+        const handlebarOptions = cargarOpcionesHBS()
+        transporte.use('compile', hbs(handlebarOptions))
+
+        // Parametros del mailer
+        const correoSMTP = await Parametro.findOne({where: { PARAMETRO: 'SMTP_CORREO' }});
+        const nombreEmpresaSMTP = await Parametro.findOne({where: { PARAMETRO: 'SMTP_NOMBRE_EMPRESA' }});
+
+        // Al usuario
+        transporte.sendMail({
+            from: `"${nombreEmpresaSMTP.VALOR} 🍔" <${correoSMTP.VALOR}>`, // Datos de emisor
+	    	to: usuario.CORREO_ELECTRONICO, // Receptor
+	    	subject: "¡Confirmación de cambio de contraseña! 🍔👌", // Asunto
+	    	template: 'correos',
+            context: {
+                titulo: '¡Confirmación de cambio de contraseña!',
+                contenido: `Su contraseña ha sido modificada con éxito.<br>Nueva contraseña: <strong>${contraSinHash}</strong>`
+            }
+	    }, (err) => {
+            if(err) { console.log( err ) };
+        });
         
         eventBitacora(new Date, id_usuario, 13, 'ACTUALIZACION', Usuario.USUARIO+' ACTUALIZO SU CONTRASEÑA CON ÉXITO');
 
@@ -746,7 +801,7 @@ const cambioContrasenaMantenimiento = async (req = request, res = response) => {
 
         // Hashear contraseña
         const salt = bcrypt.genSaltSync();
-        contrasenia = bcrypt.hashSync(contrasena, salt);
+        let contrasenia = bcrypt.hashSync(contrasena, salt);
 
         // Validar existencia
         if( !estadoUsuario ){
@@ -923,6 +978,10 @@ const crearUsuarioMantenimiento = async (req = request, res = response) => {
         // Para enviar correos
         const transporte = await crearTransporteSMTP();
 
+        // Template del correo
+        const handlebarOptions = cargarOpcionesHBS()
+        transporte.use('compile', hbs(handlebarOptions))
+
         // Parametros del mailer
         const correoSMTP = await Parametro.findOne({where: { PARAMETRO: 'SMTP_CORREO' }});
         const nombreEmpresaSMTP = await Parametro.findOne({where: { PARAMETRO: 'SMTP_NOMBRE_EMPRESA' }});
@@ -932,11 +991,13 @@ const crearUsuarioMantenimiento = async (req = request, res = response) => {
             from: `"${nombreEmpresaSMTP.VALOR} 🍔" <${correoSMTP.VALOR}>`, // Datos de emisor
 	    	to: correo, // Receptor
 	    	subject: "¡Cuenta creada! 🍔👌", // Asunto
-	    	html: `<b>Bienvenido a Dr. Buger, su cuenta ha sido creada
-            <hr>Usuario: ${usuario} 
-            <br>Contraseña: ${contrasena} 
-            <br>Para ingresar entre en el siguiente enlace:</b>
-            <a href=http://localhost:4200/auth/login/>Iniciar Sesión</a><br>`
+            template: 'correos',
+            context: {
+                titulo: '¡Bienvenido a Dr. Buger, su cuenta ha sido <strong>creada</strong>!',
+                contenido: `Usuario: <strong>${usuario}</strong><br>
+                Nombre del usuario: <strong>${nombre_usuario}</strong><br><br>
+                Accede al siguiente enlace para iniciar sesión: <a href=http://localhost:4200/auth/login/>Iniciar Sesión</a>`
+            }
 	    }, (err) => {
             if(err) { console.log( err ) };
         });
