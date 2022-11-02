@@ -253,6 +253,11 @@ const generarCorreoRecuperacion = async(req = request, res = response) => {
 
     // TODO: ENVIAR CORREO
     const transporte = await crearTransporteSMTP(); // Transportador
+
+    // Template del correo
+    const handlebarOptions = cargarOpcionesHBS()
+    transporte.use('compile', hbs(handlebarOptions))
+
     // Parametros del mailer
     const correoSMTP = await Parametro.findOne({where: { PARAMETRO: 'SMTP_CORREO' }});
     const nombreEmpresaSMTP = await Parametro.findOne({where: { PARAMETRO: 'SMTP_NOMBRE_EMPRESA' }});
@@ -260,8 +265,14 @@ const generarCorreoRecuperacion = async(req = request, res = response) => {
         from: `"${nombreEmpresaSMTP.VALOR} 🍔" <${correoSMTP.VALOR}>`, // Datos de emisor
 		to: usuarioSinPass.CORREO_ELECTRONICO, // Receptor
 		subject: "Recuperación de contraseña 🍔👌", // Asunto
-		html: `<b>haga clic en el siguiente enlace o péguelo en su navegador para completar el proceso de recuperación: </b>
-        <a href=http://localhost:4200/auth/cambio-contrasena/${token}>Recuperar contraseña</a><br>`,
+        template: 'correos',
+        context: {
+            titulo: 'Enlace de recuperación de <strong>contraseña</strong>',
+            contenido: `El siguiente enlace lo redirigirá al sitio para recuperar su contraseña.<br>
+            haga clic sobre el enlace o péguelo en su navegador para completar el proceso de recuperación: 
+            <a href="http://localhost:4200/auth/cambio-contrasena/${token}">Recuperar contraseña</a><br><br>
+            <span style="font-size: 12px;">El enlace expirará en ${duracionTokenPass.VALOR}.</span>`
+        }
 	}, (err) => {
         if(err) { console.log( err ) };
     });
