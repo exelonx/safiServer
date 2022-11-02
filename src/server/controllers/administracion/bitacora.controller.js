@@ -126,7 +126,7 @@ const registrarUsuarioDesconectado = async (req = request, res = response) => {
 
 
         // Registrar salida
-        eventBitacora(new Date, id_usuario, 14, 'SALIDA', `EL ${usuario.USUARIO} CERRÓ SESIÓN `);
+        eventBitacora(new Date, id_usuario, 14, 'SALIDA', `${usuario.USUARIO} CERRÓ SESIÓN `);
 
         res.json({
             ok: true
