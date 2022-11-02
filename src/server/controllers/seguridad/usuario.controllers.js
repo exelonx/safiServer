@@ -1,5 +1,5 @@
 const { response, request } = require("express");
-const { Op, where } = require("sequelize");
+const { Op } = require("sequelize");
 const bcrypt = require('bcryptjs');
 const generator = require('generate-password');
 
@@ -15,6 +15,8 @@ const modificarDias = require("../../helpers/manipulacion-fechas");
 const { crearTransporteSMTP } = require("../../helpers/nodemailer");
 const { eventBitacora } = require("../../helpers/event-bitacora");
 const ViewRol = require("../../models/seguridad/sql-vistas/view_rol");
+const hbs = require("nodemailer-express-handlebars");
+const { cargarOpcionesHBS } = require("../../templates/mail/opcionCorreoHbs");
 
 
 const registrar = async(req = request, res = response) => {
@@ -93,6 +95,10 @@ const registrar = async(req = request, res = response) => {
         // Para enviar correos
         const transporte = await crearTransporteSMTP();
 
+        // Template del correo
+        const handlebarOptions = cargarOpcionesHBS()
+        transporte.use('compile', hbs(handlebarOptions))
+
         // Parametros del mailer
         const correoSMTP = await Parametro.findOne({where: { PARAMETRO: 'SMTP_CORREO' }});
         const correoAdmin = await Parametro.findOne({where: { PARAMETRO: 'ADMIN_CORREO'}});
@@ -103,10 +109,13 @@ const registrar = async(req = request, res = response) => {
             from: `"${nombreEmpresaSMTP.VALOR} 🍔" <${correoSMTP.VALOR}>`, // Datos de emisor
 	    	to: correo, // Receptor
 	    	subject: "¡Cuenta creada! 🍔👌", // Asunto
-	    	html: `<b>Bienvenido a Dr. Buger, su cuenta ha sido creada
-            <hr>Usuario: ${usuario} 
-            <br>Contraseña: ${contrasena} 
-            <hr>contacte con el administrador para activar su cuenta</b>`
+            template: 'correos',
+            context: {
+                titulo: '¡Bienvenido a Dr. Buger, su cuenta ha sido <strong>creada</strong>!',
+                contenido: `Usuario: <strong>${usuario}</strong><br>
+                            Contraseña: <strong>${contrasena}</strong><br><br>
+                            <strong>Contacte con el administrador para activar su cuenta</strong>`
+            }
 	    }, (err) => {
             if(err) { console.log( err ) };
         });
@@ -116,12 +125,12 @@ const registrar = async(req = request, res = response) => {
             from: `"${nombreEmpresaSMTP.VALOR} 🍔" <${correoSMTP.VALOR}>`, // Datos de emisor
 	    	to: correoAdmin.VALOR, // Receptor
 	    	subject: "¡Nuevo usuario creado! 🍔👌", // Asunto
-	    	html: `
-            <b>Un nuevo usuario ha sido creado</b><br>
-            <b>Usuario: <strong>${usuario}</strong></b><br>
-            <b>Nombre del usuario: <strong>${nombre_usuario}</strong></b>
-            <br>
-            `
+            template: 'correos',
+            context: {
+                titulo: '¡Un nuevo usuario ha sido creado <strong>registrado</strong>!',
+                contenido: `Usuario: <strong>${usuario}</strong><br>
+                            Nombre del usuario: <strong>${nombre_usuario}</strong>`
+            }
         }, (err) => {
             if(err) { console.log( err ) };
         })
@@ -288,6 +297,10 @@ const bloquearUsuario = async (req = request, res = response) => {
         // Para enviar correos
         const transporte = await crearTransporteSMTP();
 
+        // Template del correo
+        const handlebarOptions = cargarOpcionesHBS()
+        transporte.use('compile', hbs(handlebarOptions))
+
         // Parametros del mailer
         const correoSMTP = await Parametro.findOne({where: { PARAMETRO: 'SMTP_CORREO' }});
         const nombreEmpresaSMTP = await Parametro.findOne({where: { PARAMETRO: 'SMTP_NOMBRE_EMPRESA' }});
@@ -297,7 +310,11 @@ const bloquearUsuario = async (req = request, res = response) => {
             from: `"${nombreEmpresaSMTP.VALOR} 🍔" <${correoSMTP.VALOR.VALOR}>`, // Datos de emisor
 	    	to: usuario.CORREO_ELECTRONICO, // Receptor
 	    	subject: "Cuenta desactivada 🍔", // Asunto
-	    	html: `<b>Su cuenta ha sido desactivada por el administrador</b><br>`
+            template: 'correos',
+            context: {
+                titulo: '¡Su cuenta ha sido <strong>desactivada</strong>!',
+                contenido: `La cuenta ha sido desactivada por el administrador`
+            }
 	    }, (err) => {
             if(err) { console.log( err ) };
         });
@@ -369,13 +386,42 @@ const putUsuario = async (req = request, res = response) => {
             && (usuarioModelo.ID_ROL == id_rol || id_rol === "") 
             && (usuarioModelo.CORREO_ELECTRONICO == correo || correo === ""))) {
 
-                eventBitacora(new Date, quienModifico, idPantalla, 'ACTUALIZACION', `DATOS ACTUALIZADOS AL USUARIO ${usuarioModelo.USUARIO}: ${nombre_usuario !== "" ? '`NOMBRE`' : ""}
-                 ${estado !== "" ? '`ESTADO`' : ""} ${correo !== "" ? '`CORREO`' : ""} ${id_rol !== "" ? '`ROL`' : ""} ${fechaVencimiento !== "" ? '`VENCIMIENTO`' : ""}`);
+                // Para enviar correos
+                const transporte = await crearTransporteSMTP();
+
+                // Template del correo
+                const handlebarOptions = cargarOpcionesHBS()
+                transporte.use('compile', hbs(handlebarOptions))
+
+                // Parametros del mailer
+                const correoSMTP = await Parametro.findOne({where: { PARAMETRO: 'SMTP_CORREO' }});
+                const nombreEmpresaSMTP = await Parametro.findOne({where: { PARAMETRO: 'SMTP_NOMBRE_EMPRESA' }});
+
+                const rol = await ViewUsuarios.findByPk(id_usuario)
+
+                console.log(correo)
+                // Al usuario
+                transporte.sendMail({
+                    from: `"${nombreEmpresaSMTP.VALOR} 🍔" <${correoSMTP.VALOR}>`, // Datos de emisor
+	            	to: usuarioModelo.CORREO_ELECTRONICO, // Receptor
+	            	subject: "Datos de usuario actualizados 🍔👌", // Asunto
+                    template: 'correos',
+                    context: {
+                        titulo: 'Los datos de su cuenta han sido <strong>actualizados</strong>!',
+                        contenido: `Datos actualizados: <br><br>
+                                    ${(nombre_usuario !== "" && usuarioModelo.NOMBRE_USUARIO != nombre_usuario) ? `Nombre: <strong>${nombre_usuario}</strong><br>`: ''}
+                                    ${(estado !== "" && usuarioModelo.ESTADO_USUARIO != estado) ? `Estado: <strong>${estado}</strong><br>` : ""}
+                                    ${(correo !== "" && usuarioModelo.CORREO_ELECTRONICO != correo) ? `Correo: <strong>${correo}</strong><br>`: ''}
+                                    ${(id_rol !== "" && usuarioModelo.ID_ROL != id_rol) ? `Rol: <strong>${rol.ROL}</strong><br>`: ''}`
+                    }
+	            }, (err) => {
+                    if(err) { console.log( err ) };
+                });
+                
+                eventBitacora(new Date, quienModifico, idPantalla, 'ACTUALIZACION', `DATOS ACTUALIZADOS AL USUARIO ${usuarioModelo.USUARIO}: ${(nombre_usuario !== "" && usuarioModelo.NOMBRE_USUARIO != nombre_usuario) ? '`NOMBRE`' : ""}
+                 ${(estado !== "" && usuarioModelo.ESTADO_USUARIO != estado) ? '`ESTADO`' : ""} ${(correo !== "" && usuarioModelo.CORREO_ELECTRONICO != correo) ? '`CORREO`' : ""} ${(id_rol !== "" && usuarioModelo.ID_ROL != id_rol) ? '`ROL`' : ""} ${fechaVencimiento !== "" ? '`VENCIMIENTO`' : ""}`);
 
         }
-
-        console.log(usuarioModelo.ESTADO_USUARIO)
-        console.log(estado)
 
         // Actualizar db Usuario
         await usuarioModelo.update({
@@ -395,29 +441,6 @@ const putUsuario = async (req = request, res = response) => {
         if(idPantalla === 2){
             mensaje = 'desde la pantalla de getión de usuarios'
         }
-
-        const rol = await ViewUsuarios.findByPk(id_usuario)
-        // Para enviar correos
-        const transporte = await crearTransporteSMTP();
-
-        // Parametros del mailer
-        const correoSMTP = await Parametro.findOne({where: { PARAMETRO: 'SMTP_CORREO' }});
-        const nombreEmpresaSMTP = await Parametro.findOne({where: { PARAMETRO: 'SMTP_NOMBRE_EMPRESA' }});
-
-        // Al usuario
-        transporte.sendMail({
-            from: `"${nombreEmpresaSMTP.VALOR} 🍔" <${correoSMTP.VALOR}>`, // Datos de emisor
-	    	to: usuarioModelo.CORREO_ELECTRONICO, // Receptor
-	    	subject: "Actualización de datos de usuario 🍔👌", // Asunto
-	    	html: `<b>Los datos de su cuenta han sido actualizados ${mensaje}
-            <hr>Usuario: ${usuarioModelo.USUARIO}
-            <br>Nombre de Usuario: ${usuarioModelo.NOMBRE_USUARIO} 
-            <br>Estado: ${usuarioModelo.ESTADO_USUARIO}
-            <br>Correo electronico: ${usuarioModelo.CORREO_ELECTRONICO}
-            <br>Rol:: ${rol.ROL}`
-	    }, (err) => {
-            if(err) { console.log( err ) };
-        });
 
         if( correo !== "" && (nombre_usuario === "" && estado === "" && id_rol === "")) {
             
@@ -797,6 +820,11 @@ const cambioContrasenaMantenimiento = async (req = request, res = response) => {
         // Para enviar correos
         const transporte = await crearTransporteSMTP();
 
+        
+        // Template del correo
+        const handlebarOptions = cargarOpcionesHBS()
+        transporte.use('compile', hbs(handlebarOptions))
+
         // Parametros del mailer
         const correoSMTP = await Parametro.findOne({where: { PARAMETRO: 'SMTP_CORREO' }});
         const nombreEmpresaSMTP = await Parametro.findOne({where: { PARAMETRO: 'SMTP_NOMBRE_EMPRESA' }});
@@ -806,9 +834,11 @@ const cambioContrasenaMantenimiento = async (req = request, res = response) => {
             from: `"${nombreEmpresaSMTP.VALOR} 🍔" <${correoSMTP.VALOR}>`, // Datos de emisor
 	    	to: usuario.CORREO_ELECTRONICO, // Receptor
 	    	subject: "¡Confirmación del restablecimiento de su contraseña! 🍔👌", // Asunto
-	    	html: `<b>¡Confirmación del restablecimiento de su contraseña!
-            <hr>Usuario: ${usuario.USUARIO} 
-            <br>Contraseña reiniciada: ${contrasena}`
+	    	template: 'correos',
+            context: {
+                titulo: '¡Confirmación del restablecimiento de su contraseña!',
+                contenido: `Su contraseña ha sido restablecida con éxito.<br>Nueva contraseña: <strong>${contrasena}</strong>`
+            }
 	    }, (err) => {
             if(err) { console.log( err ) };
         });

@@ -4,7 +4,8 @@ const cron = require('node-cron');
 require('dotenv').config();
 const colors = require('colors/safe');
 
-
+// Sockets
+const socket = require('../sockets/socket');
 
 // Importación de la conexión y parametros de la DB
 const { db } = require('../database/db-conexion');
@@ -22,6 +23,7 @@ const routerBackup = require('../routes/administracion/backup.routes');
 const routerBitacora = require('../routes/administracion/bitacora.routes');
 const routerReporteria = require('../routes/reporteria/reporteria.routes');
 const routerProveedores = require('../routes/inventario/proveedores.routes');
+const routerNotificacion = require('../routes/notificaciones/notificaciones.routes');
 
 // Jobs
 const { generarBackup } = require('../jobs/db-backup');
@@ -54,10 +56,15 @@ class Server {
             // ADMINISTRACION
             bitacora:         '/api/bitacora',
             dbBackup:         '/api/db-backup',
+
             // REPORTERÍA
             reporteria:       '/api/reporteria',
+
             // INVENTARIO
-            proveedores:      '/api/proveedores'
+            proveedores:      '/api/proveedores',
+
+            // NOTIFICACION
+            notificacion:     '/api/notificacion'
         }
 
         // middlewares
@@ -113,6 +120,8 @@ class Server {
         this.app.use(this.apiPath.reporteria, routerReporteria)
         // Inventario
         this.app.use(this.apiPath.proveedores, routerProveedores)
+        // Notificacion
+        this.app.use(this.apiPath.notificacion, routerNotificacion)
     }
 
     async listen () {
@@ -126,10 +135,14 @@ class Server {
     websocket() {
         this.io.on('connection', (cliente) => {
             console.log('Cliente conectado')
-            
             //eliminar
             // socket.eliminar(cliente);
+
+            // Desconectar
+            socket.desconectar( cliente );
+            socket.mensaje(cliente, this.io)
         })
+
     }
 
     //Métodos de Tareas Programadas

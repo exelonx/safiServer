@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Estilos -->
+    <link rel="stylesheet" href="/template.css">
+    <style>
+        * {
+            font-family: 'Montserrat', sans-serif;
+
+        }
+
+        body {
+
+            margin: 0;
+            background-color: #d0d0d0;
+
+        }
+
+        table {
+
+            border-spacing: 0;
+
+        }
+
+        td {
+
+            padding: 0;
+
+        }
+
+        img {
+
+            border: 0;
+
+        }
+
+        a {
+
+            font-size: 0%;
+            /* color: transparent; */
+
+        }
+
+        strong {
+
+            color: #ff2600;
+
+        }
+
+        .wrapper {
+
+            width: 100%;
+            table-layout: fixed;
+            background-color: #ffffff;
+            padding-bottom: 60px;
+
+        }
+
+        .main {
+
+            background-color: #ffffff;
+            margin: 0 auto;
+            width: 100%;
+            max-width: 600px;
+            border-spacing: 0;
+            color: #4a4a4a;
+
+        }
+
+        .encabezado {
+
+            padding: 14px 0 4px;
+            align-items: center;
+            text-align: center;
+            align-content: center;
+
+        }
+
+        .two-colums {
+
+            text-align: center;
+            /* font-size: 0; */
+
+        }
+
+        .two-columns .column {
+
+            /*  width: 100%; */
+            max-width: 300px;
+            display: inline-block !important;
+            vertical-align: top;
+
+        }
+
+        .logo {
+
+            padding: 0 62px 10px;
+
+        }
+
+        .titulo {
+
+            padding: 5px 0 15px;
+
+        }
+
+        .banner {
+
+            margin-bottom: 0%;
+
+        }
+
+
+        #barra {
+
+            background-color: #ff2600;
+
+        }
+
+        #logo {
+
+            margin: 10px;
+
+
+        }
+
+        #banner {
+
+            max-width: 100%;
+            position: relative;
+            margin: 0%;
+            min-height: 100;
+
+        }
+
+        #titular {
+
+            text-align: center;
+            padding: 5px;
+
+        }
+
+        #titulo {
+
+            font-size: 20px;
+            margin-top: 0;
+            font-weight: bold;
+            color: #4a4a4a;
+
+        }
+
+        #contenido {
+
+            font-size: 15px;
+            line-height: 23px;
+            padding: 5px 0px 15px;
+            text-align: justify;
+            padding-left: 25px;
+            padding-right: 25px;
+            color: #4a4a4a;
+
+        }
+
+        span {
+            font-size: 15px;
+            color:#4a4a4a
+        }
+
+        tbody {
+            background-color: #ffffff;
+        }
+
+    </style>
+
+    <!-- Fuentes -->
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;700;900&display=swap"
+        rel="stylesheet">
+
+    <!-- Iconos -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+
+    <title>Template de Email | Dr. Burger</title>
+</head>
+
+<body>
+
+    <center class="wrapeer">
+
+        <table class="main" width="100%">
+
+            <!-- BORDE SUPERIOR -->
+
+            <tr>
+                <td id="barra" height="8">
+
+                </td>
+            </tr>
+
+            <!-- SECCIÓN DEL ENCABEZADO -->
+
+            <tr>
+                <td class="encabezado">
+
+                    <table width="100%">
+
+                        <tr>
+                            <td class="two-columns">
+
+                                <table class="column">
+                                    <tr>
+                                        <td class="logo">
+
+                                            <a href="#">
+
+                                                <img src="https://i.ibb.co/yXDNP9G/Dr-Burger-CBGW.png"
+                                                    alt="Logo" id="logo" width="80" title="Logo">
+
+                                            </a>
+
+                                        </td>
+                                    </tr>
+
+                                </table>
+
+                            </td>
+                        </tr>
+
+                    </table>
+                </td>
+            </tr>
+
+            <!-- CONTENIDO -->
+
+            <tr>
+                <td class="titulo">
+                    <table width="100%">
+
+                        <tr>
+                            <td id="titular">
+
+                                <p id="titulo">{{{titulo}}} <strong>{{tituloStrong}}</strong> </p>
+
+                                <p id="contenido">
+                                    
+                                    {{{contenido}}}
+
+                                </p>
+
+                            </td>
+                        </tr>
+
+                    </table>
+                </td>
+            </tr>
+
+        </table>
+
+        <!-- IMAGEN -->
+        <table>
+
+            <tr>
+                <td class="banner">
+                    <table width="100%">
+
+                        <img src="https://i.ibb.co/JQhZ9rx/footer-Correo.jpg" alt="Banner" id="banner" width="600"
+                            title="Banner">
+
+                    </table>
+                </td>
+            </tr>
+
+        </table>
+
+
+    </center>
+
+</body>
+
+</html>
