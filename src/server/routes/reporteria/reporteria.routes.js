@@ -5,4 +5,10 @@ const router = Router();
 
 router.post('/bitacora', getReporteBitacora);
 
+router.post('/usuario', )
+
+router.post('/rol', )
+
+router.post('/parametro', )
+
 module.exports = router

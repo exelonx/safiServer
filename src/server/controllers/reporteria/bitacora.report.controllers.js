@@ -1,11 +1,10 @@
 const { request, response } = require('express');
 const puppeteer = require('puppeteer');
-const hbs = require('handlebars');
-const fs = require('fs');
-const path = require('path');
-const { compilarTemplate } = require('../../helpers/compilarTemplate');
-const ViewBitacora = require('../../models/administracion/sql-vistas/view_bitacora');
 const { Op } = require('sequelize');
+
+const { compilarTemplate } = require('../../helpers/compilarTemplate');
+
+const ViewBitacora = require('../../models/administracion/sql-vistas/view_bitacora');
 
 // Llamar todas los parametros
 const getReporteBitacora = async (req = request, res = response) => {
