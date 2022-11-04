@@ -2,6 +2,10 @@ const { request, response } = require('express');
 const puppeteer = require('puppeteer');
 const { Op } = require('sequelize');
 
+// Importar librerias de fechas
+const dayjs = require('dayjs');
+const localizedFormat = require('dayjs/plugin/localizedFormat');
+
 const { compilarTemplate } = require('../../helpers/compilarTemplate');
 
 const ViewBitacora = require('../../models/administracion/sql-vistas/view_bitacora');
@@ -41,10 +45,12 @@ const getReporteBitacora = async (req = request, res = response) => {
             }
         })
 
+        // formato local
+        dayjs.extend(localizedFormat)
         
         const regristrosMapped = registros.map(( registro )=> {
             return {
-                FECHA: registro.FECHA,
+                FECHA: dayjs(registro.FECHA).format('D MMM, YYYY, h:mm A'),
                 USUARIO: registro.USUARIO,
                 OBJETO: registro.OBJETO,
                 ACCION: registro.ACCION,
