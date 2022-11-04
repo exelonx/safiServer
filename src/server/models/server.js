@@ -25,6 +25,7 @@ const routerBitacora = require('../routes/administracion/bitacora.routes');
 const routerReporteria = require('../routes/reporteria/reporteria.routes');
 const routerProveedores = require('../routes/inventario/proveedores.routes');
 const routerNotificacion = require('../routes/notificaciones/notificaciones.routes');
+const routerCatalogo = require('../routes/catalogo_ventas/catalogo.routes');
 
 // Jobs
 const { generarBackup } = require('../jobs/db-backup');
@@ -65,7 +66,10 @@ class Server {
             proveedores:      '/api/proveedores',
 
             // NOTIFICACION
-            notificacion:     '/api/notificacion'
+            notificacion:     '/api/notificacion',
+
+            // CATALOGO VENTA
+            catalogo:    '/api/catalogo-venta'
         }
 
         // middlewares
@@ -126,6 +130,8 @@ class Server {
         this.app.use(this.apiPath.proveedores, routerProveedores)
         // Notificacion
         this.app.use(this.apiPath.notificacion, routerNotificacion)
+        // Catalogo de ventas
+        this.app.use(this.apiPath.catalogo, routerCatalogo)
     }
 
     async listen () {
