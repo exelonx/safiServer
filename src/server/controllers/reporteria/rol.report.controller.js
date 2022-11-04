@@ -43,7 +43,7 @@ const getReporteRol = async (req = request, res = response)=>{
             }
         })
 
-        const content = await compilarTemplate('rol', {registros: regristrosMapped})
+        const content = await compilarTemplate('rol', {rol: regristrosMapped})
 
         await pagina.setContent(content)
 
