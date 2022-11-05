@@ -2,15 +2,14 @@ const { request, response } = require('express');
 const { Op, ForeignKeyConstraintError } = require('sequelize');
 
 const Parametro = require("../../models/seguridad/parametro");
-
-const Catalogo = require('../../models/catalogo-ventas/catalogo');
+const ViewProveedor = require('../../models/inventario/sql-vista/view-proveedor');
+const Unidad = require('../../models/inventario/unidad');
 const { eventBitacora } = require('../../helpers/event-bitacora');
-const ViewCatalogo = require('../../models/catalogo-ventas/sql-vistas/view_catalogo');
 
 // Llamar todas las preguntas paginadas
-const getCatalogos = async (req = request, res = response) => {
+const getUnidades = async (req = request, res = response) => {
     
-    let { limite, desde = 0, buscar = "", quienBusco = "" } = req.query
+    let { limite = 10, desde = 0, buscar = "", quienBusco = "" } = req.query
 
     try {
 
@@ -25,31 +24,31 @@ const getCatalogos = async (req = request, res = response) => {
         }
 
         // Paginación
-        const catalogos = await ViewCatalogo.findAll({
+        const unidades = await Unidad.findAll({
             limit: parseInt(limite, 10),
             offset: parseInt(desde, 10),
             where: {
                 [Op.or]: [{
-                    NOMBRE: { [Op.like]: `%${buscar.toUpperCase() }%`}
+                    UNIDAD_MEDIDA: { [Op.like]: `%${buscar.toUpperCase() }%`}
                 }]
             }
         });
 
         // Contar resultados total
-        const countCatalogos = await ViewCatalogo.count({where: {
+        const countUnidades = await Unidad.count({where: {
                 [Op.or]: [{
-                    NOMBRE: { [Op.like]: `%${buscar.toUpperCase() }%`}
+                    UNIDAD_MEDIDA: { [Op.like]: `%${buscar.toUpperCase() }%`}
                 }]
             }
         });
 
         // Guardar evento
         if( buscar !== "" && desde == 0) {
-            eventBitacora(new Date, quienBusco, 17, 'CONSULTA', `SE BUSCÓ EL CATÁLOGO CON EL TÉRMINO: '${buscar}'`);
+            eventBitacora(new Date, quienBusco, 16, 'CONSULTA', `SE BUSCO LAS UNIDADES CON EL TERMINO '${buscar}'`);
         }
 
         // Respuesta
-        res.json( {limite, countCatalogos, catalogos} )
+        res.json( {limite, countUnidades, unidades} )
 
     } catch (error) {
         console.log(error);
@@ -60,7 +59,7 @@ const getCatalogos = async (req = request, res = response) => {
 }
 
 // Para llamar 1 solo Proveedor
-/* const getUnidad = async (req = request, res = response) => {
+const getUnidad = async (req = request, res = response) => {
      
     const { id } = req.params
 
@@ -84,9 +83,9 @@ const getCatalogos = async (req = request, res = response) => {
         })
     }
 
-} */
+}
 
-/* const postUnidad = async (req = request, res = response) => {
+const postUnidad = async (req = request, res = response) => {
     //body
     const { unidad_medida = "", id_usuario } = req.body;
     
@@ -115,9 +114,9 @@ const getCatalogos = async (req = request, res = response) => {
             msg: error.message
         })
     }
-} */
+}
 
-/* const putUnidad = async (req = request, res = response) => {
+const putUnidad = async (req = request, res = response) => {
     const { id } = req.params
     const { unidad_medida = "", id_usuario = "" } = req.body;
 
@@ -153,9 +152,9 @@ const getCatalogos = async (req = request, res = response) => {
             msg: error.message
         })
     }
-} */
+}
 
-/* const deleteUnidad = async (req = request, res = response) => {
+const deleteUnidad = async (req = request, res = response) => {
     const { id } = req.params
     const { quienElimina } = req.body
 
@@ -193,12 +192,12 @@ const getCatalogos = async (req = request, res = response) => {
 
         }
     }  
-} */
+}
 
 module.exports = {
-    getCatalogos
-   /*  getUnidad,
+    getUnidades,
+    getUnidad,
     postUnidad,
     putUnidad,
-    deleteUnidad */
+    deleteUnidad
 }

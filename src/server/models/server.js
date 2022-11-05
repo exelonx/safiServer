@@ -24,8 +24,10 @@ const routerBackup = require('../routes/administracion/backup.routes');
 const routerBitacora = require('../routes/administracion/bitacora.routes');
 const routerReporteria = require('../routes/reporteria/reporteria.routes');
 const routerProveedores = require('../routes/inventario/proveedores.routes');
+const routerUnidades = require('../routes/inventario/unidades.routes');
 const routerNotificacion = require('../routes/notificaciones/notificaciones.routes');
 const routerCatalogo = require('../routes/catalogo_ventas/catalogo.routes');
+const routerInsumos = require('../routes/inventario/insumo.routes');
 
 // Jobs
 const { generarBackup } = require('../jobs/db-backup');
@@ -68,8 +70,9 @@ class Server {
             reporteria:       '/api/reporteria',
 
             // INVENTARIO
-            proveedores:      '/api/proveedores',
-
+            proveedores:      '/api/proveedor',
+            unidades:         '/api/unidad',
+            insumos:          '/api/insumo',
             // NOTIFICACION
             notificacion:     '/api/notificacion',
 
@@ -137,6 +140,8 @@ class Server {
         this.app.use(this.apiPath.reporteria, routerReporteria)
         // Inventario
         this.app.use(this.apiPath.proveedores, routerProveedores)
+        this.app.use(this.apiPath.unidades, routerUnidades)
+        this.app.use(this.apiPath.insumos, routerInsumos)
         // Notificacion
         this.app.use(this.apiPath.notificacion, routerNotificacion)
         // Catalogo de ventas

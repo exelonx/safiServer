@@ -97,7 +97,7 @@ const registrarIngreso = async (req = request, res = response) => {
         const pantalla = await Objeto.findByPk(idPantalla);
 
         // Registrar ingreso
-        eventBitacora(new Date, id_usuario, idPantalla, 'INGRESO', `${usuario.USUARIO} INGRESO A LA PANTALLA '${pantalla.OBJETO}'`);
+        eventBitacora(new Date, id_usuario, idPantalla, 'INGRESO', `${usuario.USUARIO} INGRESÓ A LA PANTALLA '${pantalla.OBJETO}'`);
 
         res.json({
             ok: true
