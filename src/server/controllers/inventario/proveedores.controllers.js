@@ -1,5 +1,5 @@
 const { request, response } = require('express');
-const { Op } = require('sequelize');
+const { Op, ForeignKeyConstraintError } = require('sequelize');
 
 const Parametro = require("../../models/seguridad/parametro");
 const ViewProveedor = require('../../models/inventario/sql-vista/view-proveedor');
@@ -10,7 +10,6 @@ const { eventBitacora } = require('../../helpers/event-bitacora');
 const getProveedores = async (req = request, res = response) => {
     
     let { limite = 10, desde = 0, buscar = "", quienBusco = "" } = req.query
-    let { mmm } = req.body
 
     try {
 
@@ -185,7 +184,7 @@ const deleteProveedor = async (req = request, res = response) => {
         // Extraer el nombre del proveedor
         const { NOMBRE } = proveedor;
 
-        // Borrar Rol
+        // Borrar Proveedor
         await proveedor.destroy();
 
         // Guardar evento
@@ -200,7 +199,7 @@ const deleteProveedor = async (req = request, res = response) => {
         if( error instanceof ForeignKeyConstraintError ) {
             res.status(403).json({
                 ok: false,
-                msg: `El rol no puede ser eliminado`
+                msg: `El proveedor no puede ser eliminado`
             })
         } else {
 

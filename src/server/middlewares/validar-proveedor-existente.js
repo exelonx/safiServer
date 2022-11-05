@@ -25,9 +25,9 @@ const noExisteProveedorPorId = async(req = request, res = response, next) => {
 
     const { id } = req.params;
     // Validar que no exista rol repetido
-    const proveedorRepetido = await Proveedor.findByPk( id )
+    const proveedorNoExistente = await Proveedor.findByPk( id )
 
-    if ( !proveedorRepetido ) {
+    if ( !proveedorNoExistente ) {
         return res.status(400).json({
             ok: false,
             msg: `El proveedor: ${ id }, no existe`
