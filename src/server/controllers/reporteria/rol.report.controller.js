@@ -2,6 +2,10 @@ const { request, response } = require('express');
 const puppeteer = require('puppeteer');
 const { Op } = require('sequelize');
 
+// Importar librerias de fechas
+const dayjs = require('dayjs');
+const localizedFormat = require('dayjs/plugin/localizedFormat');
+
 const { compilarTemplate } = require('../../helpers/compilarTemplate');
 const ViewRol = require('../../models/seguridad/sql-vistas/view_rol');
 
@@ -37,9 +41,9 @@ const getReporteRol = async (req = request, res = response)=>{
                 ROL: registro.ROL,
                 DESCRIPCION: registro.DESCRIPCION,
                 CREADO_POR: registro.CREADO_POR,
-                FECHA_CREACION: registro.FECHA_CREACION,
+                FECHA_CREACION: dayjs(registro.FECHA_CREACION).format('D MMM, YYYY, h:mm A'),
                 MODIFICADO_POR : registro.MODIFICADO_POR,
-                FECHA_MODIFICACION: registro.FECHA_MODIFICACION
+                FECHA_MODIFICACION: dayjs(registro.FECHA_MODIFICACION).format('D MMM, YYYY, h:mm A')
             }
         })
 
