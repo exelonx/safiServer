@@ -35,7 +35,12 @@ const { generarBackup } = require('../jobs/db-backup');
 const { depurarBitacora } = require('../jobs/depuradorBitacora');
 
 class Server {
+    static instance
     constructor () {
+
+        if (!Server.instance) {
+            Server.instance = this
+        }
 
         // Configuración de express y WebSocket
         this.app    = express();
@@ -88,6 +93,10 @@ class Server {
         this.tareaGenerarBackup();
 
 
+    }
+
+    static getInstance() {
+        return this.instance
     }
 
     // ---------------Métodos---------------
