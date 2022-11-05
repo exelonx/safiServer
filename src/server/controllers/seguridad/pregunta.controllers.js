@@ -1,26 +1,53 @@
 const { request, response } = require('express');
 const { Op } = require('sequelize');
+const { eventBitacora } = require('../../helpers/event-bitacora');
+const Parametro = require('../../models/seguridad/parametro');
 
 const Pregunta = require('../../models/seguridad/Pregunta');
 
 // Llamar todas las preguntas paginadas
 const getPreguntas = async (req = request, res = response) => {
-    
-    let { limite = 10, desde = 0 } = req.query
+
+    let { limite , desde = 0, buscar = "", id_usuario } = req.query;
 
     try {
+        // Definir el número de objetos a mostrar
+        if(!limite || limite === "") {
+            const { VALOR } = await Parametro.findOne({where: { PARAMETRO: 'ADMIN_NUM_REGISTROS'}})
+            limite = VALOR
+        }
+
+        if(desde === "") {
+            desde = 0
+        }
 
         // Paginación
         const preguntas = await Pregunta.findAll({
             limit: parseInt(limite, 10),
-            offset: parseInt(desde, 10)
+            offset: parseInt(desde, 10),
+            where: {
+                [Op.or]: [{
+                    PREGUNTA: { [Op.like]: `%${buscar.toUpperCase() }%`}
+                }]
+            }
         });
         
         // Contar resultados total
-        const countPregunta = await Pregunta.count()
+        const countPregunta = await Pregunta.count({
+            where: {
+                [Op.or]: [{
+                    PREGUNTA: { [Op.like]: `%${buscar.toUpperCase() }%`}
+                }]
+            }
+        })
+
+        // Guardar evento
+        if( buscar !== "" && desde == 0) {
+            eventBitacora(new Date, id_usuario, 5, 'CONSULTA', `SE BUSCO LA PREGUNTA CON EL TERMINO ${buscar}`);
+        }
 
         // Respuesta
-        res.json( { preguntas, countPregunta} )
+        res.json( { preguntas, countPregunta, limite } )
 
     } catch (error) {
         console.log(error);
@@ -72,7 +99,10 @@ const postPregunta = async (req = request, res = response) => {
         await nuevaPregunta.save();   
 
         // Responder
-        res.json( nuevaPregunta );
+        res.json({
+            ok: true,
+            msg: 'Pregunta creada correctamente'
+        });
 
     } catch (error) {
         console.log(error);
@@ -84,12 +114,15 @@ const postPregunta = async (req = request, res = response) => {
 
 const putPregunta = async (req = request, res = response) => {
     const { id_pregunta } = req.params
-    const { pregunta } = req.body;
+    const { pregunta, id_usuario = "" } = req.body;
 
     try {
 
+        const preguntaAnterior = await Pregunta.findByPk(id_pregunta)
+
         // Actualizar db Pregunta
         await Pregunta.update({
+            
             PREGUNTA: pregunta
         }, {
             where: {
@@ -97,7 +130,15 @@ const putPregunta = async (req = request, res = response) => {
             }
         })
 
-        res.json({ id_pregunta, pregunta });
+         // Si llega sin cambios
+         if(!(pregunta.PREGUNTA == pregunta || pregunta === "")) { 
+            eventBitacora(new Date, id_usuario, 5, 'ACTUALIZACION', `LA PREGUNTA '${preguntaAnterior.PREGUNTA}' HA SIDO ACTUALIZADA CON ÉXITO`);
+        }
+
+
+        res.json({ 
+            ok: true, 
+            msg: 'Pregunta actualizada con éxito'});
 
     } catch (error) {
         console.log(error);
@@ -105,6 +146,7 @@ const putPregunta = async (req = request, res = response) => {
             msg: error.message
         })
     }
+    
 }
 
 const deletePregunta = async (req = request, res = response) => {

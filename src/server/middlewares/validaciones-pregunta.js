@@ -14,19 +14,31 @@ const noExistePregunta = async( pregunta_id, res = response) => {
 }
 
 const noEsPregunta = async (pregunta = '') =>{
+    if(pregunta.charAt(0) !== '¿' && pregunta.charAt(pregunta.length - 1) !== '?'){
+        throw new Error(`La pregunta debe llevar signos de interrogación`);
+       
+    }
+
     if(pregunta.charAt(0) !== '¿'){
-        return res.status(400).json({
-            ok: false,
-            msg: `${ pregunta }, hace falta el signo ¿`
-        })
+        throw new Error(`Hace falta el signo '¿'`);
+       
     }
 
     if(pregunta.charAt(pregunta.length - 1) !== '?'){
-        return res.status(400).json({
-            ok: false,
-            msg: `${ pregunta }, hace falta el signo ?`
-        })
+        throw new Error(`Hace falta el signo '?'`);
+       
     }
+
+    console.log(pregunta.substring(1, pregunta.length))
+
+    if(pregunta.substring(1, pregunta.length - 1).includes('?') || pregunta.substring(1, pregunta.length - 1).includes('¿') ){
+        throw new Error(`No se permiten caracteres especiales`);
+    }
+    
+    if(pregunta.includes('  ')){
+        throw new Error(`No se permite más de un espacio en blanco entre palabras`);
+    }
+    
 }
 
 module.exports = {
