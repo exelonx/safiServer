@@ -1,6 +1,7 @@
 const { request, response } = require('express');
 const jwt = require('jsonwebtoken')
 const { Op } = require('sequelize');
+const { instanciarServidor } = require('../../helpers/instanciarServer');
 const Notificacion = require('../../models/notificacion/notificacion');
 const NotificacionUsuario = require('../../models/notificacion/notificacion_usuario');
 const PermisoNotificacion = require('../../models/notificacion/permiso_notificacion');
@@ -15,7 +16,6 @@ const getNotificacionesCampana = async (req = request, res = response) => {
     const token = req.header('x-token')
 
     try {
-        console.log(limite, desde)
         // Extraer el id del usuario
         const { uid } = jwt.verify( token, process.env.SEMILLA_SECRETA_JWT_LOGIN );
 
@@ -87,14 +87,56 @@ const postNotificacion = async (req = request, res = response) => {
                 })
             }
         }
-    
-        // Buscar que roles tienen permisos de ver
-    
+
+        const id_notificacion = notificacion.id
+
+        const payload = {
+            permisos,
+            id_notificacion
+        }
+
+        
         res.json({
             ok: true,
-            notificacion
+            // notificacion
         })
 
+        // Instanciar el servidor singletone
+        const server = instanciarServidor();
+        // Notificar que se creo nueva notificación y mandar lista de permisos para avisar que roles recibiran la notificacion
+        server.io.emit('notificar', payload)
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: error.message
+        })
+    }
+}
+
+const recibirNotificacion = async (req = request, res = response) => {
+    let { id_notificacion } = req.params;
+    const token = req.header('x-token');
+
+    try {
+        // Extraer el id del usuario
+        const { uid } = jwt.verify( token, process.env.SEMILLA_SECRETA_JWT_LOGIN );
+        let nuevaNotificacion
+        
+        // Traer la nueva notificación del usuario
+        do {
+            nuevaNotificacion = await ViewNotificacionUsuario.findOne({
+                where: {
+                    ID_USUARIO: uid,
+                    ID_NOTIFICACION: id_notificacion
+                }
+            })
+        } while (!nuevaNotificacion);
+         
+        // Enviar notificación
+        res.json({
+            nuevaNotificacion
+        })
     } catch (error) {
         console.log(error);
         res.status(500).json({
@@ -161,5 +203,6 @@ const configPermisosInicialesNoti = async (req = request, res = response) => {
 module.exports = {
     getNotificacionesCampana,
     postNotificacion,
+    recibirNotificacion,
     configPermisosInicialesNoti
 }
