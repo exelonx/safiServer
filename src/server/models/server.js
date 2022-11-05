@@ -28,6 +28,7 @@ const routerUnidades = require('../routes/inventario/unidades.routes');
 const routerNotificacion = require('../routes/notificaciones/notificaciones.routes');
 const routerCatalogo = require('../routes/catalogo_ventas/catalogo.routes');
 const routerInsumos = require('../routes/inventario/insumo.routes');
+const routerProducto = require('../routes/catalogo_ventas/producto.routes');
 
 // Jobs
 const { generarBackup } = require('../jobs/db-backup');
@@ -72,7 +73,8 @@ class Server {
             notificacion:     '/api/notificacion',
 
             // CATALOGO VENTA
-            catalogo:    '/api/catalogo-venta'
+            catalogos:    '/api/catalogo-venta',
+            productos:    '/api/producto'
         }
 
         // middlewares
@@ -136,7 +138,8 @@ class Server {
         // Notificacion
         this.app.use(this.apiPath.notificacion, routerNotificacion)
         // Catalogo de ventas
-        this.app.use(this.apiPath.catalogo, routerCatalogo)
+        this.app.use(this.apiPath.catalogos, routerCatalogo)
+        this.app.use(this.apiPath.productos, routerProducto)
     }
 
     async listen () {
