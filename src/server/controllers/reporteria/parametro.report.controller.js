@@ -2,6 +2,10 @@ const { request, response } = require('express');
 const puppeteer = require('puppeteer');
 const { Op } = require('sequelize');
 
+// Importar librerias de fechas
+const dayjs = require('dayjs');
+const localizedFormat = require('dayjs/plugin/localizedFormat');
+
 const { compilarTemplate } = require('../../helpers/compilarTemplate');
 
 const ViewParametro = require('../../models/seguridad/sql-vistas/view-parametro')
@@ -30,15 +34,17 @@ const getReporteParametro = async (req = request, res = response) => {
             }
         });
 
+        // formato local
+        dayjs.extend(localizedFormat)
         
         const regristrosMapped = registros.map(( registro )=> {
             return {
                 PARAMETRO: registro.PARAMETRO,
                 VALOR: registro.VALOR,
                 CREADO_POR: registro.CREADO_POR,
-                FECHA_CREACION: registro.FECHA_CREACION,
+                FECHA_CREACION: dayjs(registro.FECHA_CREACION).format('D MMM, YYYY, h:mm A'), 
                 MODIFICADO_POR: registro.MODIFICADO_POR,
-                FECHA_MODIFICACION: registro.FECHA_MODIFICACION
+                FECHA_MODIFICACION: dayjs(registro.FECHA_MODIFICACION).format('D MMM, YYYY, h:mm A'), 
             }
         })
 
