@@ -1,5 +1,5 @@
 const { Router } = require('express');
-const { check } = require('express-validator');
+const { check, body } = require('express-validator');
 
 const { getPreguntas,
         getPregunta,
@@ -20,6 +20,7 @@ router.get('/:id_pregunta', getPregunta);
 router.post('/', [
     check('pregunta', 'La pregunta es obligatoria').not().isEmpty(),
     check('pregunta', 'La pregunta debe estar en Mayúsculas').isUppercase(),
+    check('pregunta', 'No se permiten caracteres especiales').isAlpha('es-ES', {ignore: '¿? '}),
     check('pregunta').custom(noEsPregunta),
     validarCampos
 ], postPregunta);
@@ -28,6 +29,8 @@ router.put('/:id_pregunta', [
     check('id_pregunta').custom( noExistePregunta ),
     check('pregunta', 'La pregunta es obligatoria').not().isEmpty(),
     check('pregunta', 'La pregunta debe estar en Mayúsculas').isUppercase(),
+    check('pregunta', 'No se permiten caracteres especiales').if(body('pregunta').exists()).if(body('pregunta').not().equals('')).isAlpha('es-ES', {ignore: '¿? '}),
+    check('pregunta').if(body('pregunta').exists()).if(body('pregunta').not().equals('')).custom(noEsPregunta),
     validarCampos
 ], putPregunta);
 
