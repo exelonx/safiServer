@@ -27,9 +27,16 @@ const getNotificacionesCampana = async (req = request, res = response) => {
             ID_USUARIO: uid
         }})
 
+        const cantidadNoVistas = await NotificacionUsuario.count({
+            where: {
+                VISTO: false,
+                ID_USUARIO: uid
+        }})
+
         res.json({
             ok: true,
-            notificaciones
+            notificaciones,
+            cantidadNoVistas
         })
     } catch (error) {
         if(error instanceof jwt.JsonWebTokenError) {
@@ -48,15 +55,35 @@ const getNotificacionesCampana = async (req = request, res = response) => {
 }
 
 const postNotificacion = async (req = request, res = response) => {
-    const { idTipoNotificacion, accion, detalle } = req.body;
+    const { idTipoNotificacion, accion, detalle, id_responsable, id_insumo } = req.body;
 
     try {
+
+        if(idTipoNotificacion === 1) {
+            if(!id_insumo || id_insumo === "") {
+                return res.status(404).json({
+                    ok: false,
+                    msg: 'El insumo es obligatorio en notificaciones de inventario'
+                })
+            }
+        }
+
+        if(idTipoNotificacion === 2) {
+            if(!id_responsable || id_insumo === "") {
+                return res.status(404).json({
+                    ok: false,
+                    msg: 'El responsable es obligatorio en notificaciones de pedido'
+                })
+            }
+        }
         
         // Crear Notificación
         const notificacion = await Notificacion.create({
             ID_TIPO_NOTIFICACION: idTipoNotificacion,
             ACCION: accion,
-            DETALLE: detalle
+            DETALLE: detalle,
+            ID_RESPONSABLE: id_responsable !== "" ? id_responsable : null,
+            ID_INSUMO: id_insumo !== "" ? id_insumo : null
         })
     
         // Traer todos los roles con permisos
@@ -200,9 +227,74 @@ const configPermisosInicialesNoti = async (req = request, res = response) => {
     })
 }
 
+const verNotificacion = async (req = request, res = response) => {
+    let { id_notificacion } = req.params
+    const token = req.header('x-token')
+
+    try {
+
+        if(isNaN(id_notificacion)) {
+            return res.status(400).json({
+                ok: false,
+                msg: 'id inválido'
+            })
+        }
+
+        const { uid } = jwt.verify( token, process.env.SEMILLA_SECRETA_JWT_LOGIN );
+
+        const notificacion = await ViewNotificacionUsuario.findOne({
+            where: {
+                ID: id_notificacion,
+                ID_USUARIO: uid 
+            }
+        })
+
+        if(!notificacion) {
+            return res.status(404).json({
+                ok: false,
+                msg: 'No existe la notificación'
+            })
+        }
+
+        // Marcar como vista la notificación
+        const notificacionTBL = await NotificacionUsuario.findOne({
+            where: {
+                ID: id_notificacion,
+                ID_USUARIO: uid 
+            }
+        })
+
+        // Solo si no estan vistas
+        if(!notificacionTBL.VISTO) {
+            notificacionTBL.VISTO = true;
+            await notificacionTBL.save()
+        }
+        
+        const cantidadNoVistas = await NotificacionUsuario.count({
+            where: {
+                VISTO: false,
+                ID_USUARIO: uid
+        }})
+
+        return res.json({
+            ok: true,
+            notificacion,
+            cantidadNoVistas
+        })
+        
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            ok: false,
+            msg: error.message
+        })
+    }
+}
+
 module.exports = {
     getNotificacionesCampana,
     postNotificacion,
     recibirNotificacion,
-    configPermisosInicialesNoti
+    configPermisosInicialesNoti,
+    verNotificacion
 }
