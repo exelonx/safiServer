@@ -6,7 +6,9 @@ const Notificacion = require('../../models/notificacion/notificacion');
 const NotificacionUsuario = require('../../models/notificacion/notificacion_usuario');
 const PermisoNotificacion = require('../../models/notificacion/permiso_notificacion');
 const ViewNotificacionUsuario = require('../../models/notificacion/sql-vistas/view_notificacion_usuario');
+const ViewPermisoNotificacion = require('../../models/notificacion/sql-vistas/view_permiso_notificacion');
 const TipoNotificacion = require('../../models/notificacion/tipo_notificacion');
+const Parametro = require('../../models/seguridad/parametro');
 const Roles = require('../../models/seguridad/rol');
 const Usuarios = require('../../models/seguridad/Usuario');
 
@@ -291,10 +293,99 @@ const verNotificacion = async (req = request, res = response) => {
     }
 }
 
+const getTipoNotificacion = async (req = request, res = response) => {
+    try {
+        
+        const tipoNotificacion = await TipoNotificacion.findAll();
+        res.json({tipoNotificacion})
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            ok: false,
+            msg: error.message
+        })
+    }
+}
+
+const getPermisosNotificaciones = async (req = request, res = response) => {
+    let {limite, desde = 0, buscar = "", id_usuario, id_rol = "", id_tipo = ""} = req.query;
+    let filtrarPorRol = {}
+    let filtrarPorTipo = {}
+    try {
+
+         // Definir el número de objetos a mostrar
+         if(!limite || limite === "") {
+            const { VALOR } = await Parametro.findOne({where: { PARAMETRO: 'ADMIN_NUM_REGISTROS'}})
+            limite = VALOR
+        }
+
+        if(desde === "") {
+            desde = 0
+        }
+
+        if( id_rol !== '' ) {
+            filtrarPorRol = {
+                ID_ROL: id_rol
+            }
+        }
+
+        if( id_tipo !== '' ) {
+            filtrarPorTipo = {
+                ID_TIPO_NOTIFICACION: id_tipo
+            }
+        }
+
+        //Paginacion
+        const permisos = await ViewPermisoNotificacion.findAll({
+            limit: parseInt(limite, 10),
+            offset: parseInt(desde, 10),
+            where:{
+                [Op.or]: [{
+                    ROL: {[Op.like]: `%${buscar.toUpperCase()}%`}
+                }, {
+                    TIPO_NOTIFICACION: {[Op.like]: `%${buscar.toUpperCase()}%`}
+                }, {
+                    CREADO_POR: { [Op.like]: `%${buscar.toUpperCase()}%`}
+                }, {
+                    MODIFICADO_POR: { [Op.like]: `%${buscar.toUpperCase()}%`}
+                }],
+                [Op.and]: [filtrarPorRol, filtrarPorTipo]
+            }
+        });
+
+        const countPermisos = await ViewPermisoNotificacion.count({
+            where:{
+                [Op.or]: [{
+                    ROL: {[Op.like]: `%${buscar.toUpperCase()}%`}
+                }, {
+                    TIPO_NOTIFICACION: {[Op.like]: `%${buscar.toUpperCase()}%`}
+                }, {
+                    CREADO_POR: { [Op.like]: `%${buscar.toUpperCase()}%`}
+                }, {
+                    MODIFICADO_POR: { [Op.like]: `%${buscar.toUpperCase()}%`}
+                }],
+                [Op.and]: [filtrarPorRol, filtrarPorTipo]
+            }
+        });
+        
+        res.json({limite, countPermisos, permisos})
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            ok: false,
+            msg: error.message
+        })
+    }
+}
+
 module.exports = {
     getNotificacionesCampana,
     postNotificacion,
     recibirNotificacion,
     configPermisosInicialesNoti,
-    verNotificacion
+    verNotificacion,
+    getTipoNotificacion,
+    getPermisosNotificaciones
 }

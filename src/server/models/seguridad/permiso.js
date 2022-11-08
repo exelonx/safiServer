@@ -39,6 +39,4 @@ const Permiso = db.define(`TBL_MS_PERMISO`, {
     updatedAt: 'FECHA_MODIFICACION'
 })
 
-Permiso.removeAttribute('id');
-
 module.exports = Permiso;

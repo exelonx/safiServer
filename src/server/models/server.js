@@ -29,6 +29,7 @@ const routerNotificacion = require('../routes/notificaciones/notificaciones.rout
 const routerCatalogo = require('../routes/catalogo_ventas/catalogo.routes');
 const routerInsumos = require('../routes/inventario/insumo.routes');
 const routerProducto = require('../routes/catalogo_ventas/producto.routes');
+const routerPantalla = require('../routes/seguridad/objeto.routes');
 
 // Jobs
 const { generarBackup } = require('../jobs/db-backup');
@@ -62,6 +63,7 @@ class Server {
             preguntaUsuarios: '/api/pregunta-usuario',
             parametro:        '/api/parametro',
             permiso:          '/api/permiso',
+            pantalla:         '/api/pantalla',
 
             // ADMINISTRACION
             bitacora:         '/api/bitacora',
@@ -134,7 +136,7 @@ class Server {
         this.app.use(this.apiPath.preguntaUsuarios, routerPregUser);   // Preguntas de los usuarios (Respuestas)
         this.app.use(this.apiPath.parametro, routerParametro);         // Parametros del sistema
         this.app.use(this.apiPath.permiso, routerPermiso);             // Permisos
-
+        this.app.use(this.apiPath.pantalla, routerPantalla)            // Pantallas/Objetos
         // Administracion
         this.app.use(this.apiPath.bitacora, routerBitacora)
         this.app.use(this.apiPath.dbBackup, routerBackup)              // Backups

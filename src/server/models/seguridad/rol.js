@@ -27,8 +27,5 @@ const Roles = db.define(`TBL_MS_ROL`, {
     updatedAt: 'FECHA_MODIFICACION'
 })
 
-//Solo cuando no tenga llave primaria
-Roles.removeAttribute('id');
-
 //Para exportar el modelo
 module.exports = Roles;
