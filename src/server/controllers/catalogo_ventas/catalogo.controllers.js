@@ -59,53 +59,56 @@ const getCatalogos = async (req = request, res = response) => {
     }
 }
 
-// Para llamar 1 solo Proveedor
-/* const getUnidad = async (req = request, res = response) => {
+// Para llamar 1 solo Producto
+const getCatalogo = async (req = request, res = response) => {
      
     const { id } = req.params
 
     try {
         
-        const unidad = await Unidad.findByPk( id );
+        const catalogo = await ViewCatalogo.findByPk( id );
 
         // Validar Existencia
-        if( !unidad ){
+        if( !catalogo ){
             return res.status(404).json({
-                msg: 'No existe una unidad con el id ' + id
+                msg: 'No existe un catálogo con el id ' + id
             })
         }
 
-        res.json({ unidad })
+        res.json({ catalogo })
 
-    } catch (error) {
+    } 
+    catch (error) {
         console.log(error);
         res.status(500).json({
             msg: error.message
         })
     }
 
-} */
+}
 
-/* const postUnidad = async (req = request, res = response) => {
+const postCatalogo = async (req = request, res = response) => {
     //body
-    const { unidad_medida = "", id_usuario } = req.body;
+    const { nombre_catalogo = "", id_usuario } = req.body;
     
     try {
  
         // Construir modelo
-        const nuevaUnidad = await Unidad.build({
-            UNIDAD_MEDIDA: unidad_medida,
+        const nuevoCatalogo = await Catalogo.build({
+            NOMBRE_CATALOGO: nombre_catalogo,
+            CREADO_POR: id_usuario,
+            MODIFICADO_POR: id_usuario
         });
         // Insertar a DB
-        await nuevaUnidad.save();   
+        await nuevoCatalogo.save();   
         
         // Guardar evento
-        eventBitacora(new Date, id_usuario, 16, 'NUEVO', `SE CREO UNA NUEVA UNIDAD ${nuevaUnidad.UNIDAD_MEDIDA}`);
+        eventBitacora(new Date, id_usuario, 17, 'NUEVO', `SE CREO UN NUEVO CATÁLOGO DE PRODUCTOS ${nuevoCatalogo.NOMBRE_CATALOGO}`);
 
         // Responder
         res.json( {
             ok: true,
-            msg: 'Unidad: '+ unidad_medida + ' ha sido creada con éxito'
+            msg: 'Catálogo: '+ nombre_catalogo + ' ha sido creado con éxito'
         } );
 
     } catch (error) {
@@ -115,26 +118,26 @@ const getCatalogos = async (req = request, res = response) => {
             msg: error.message
         })
     }
-} */
+}
 
-/* const putUnidad = async (req = request, res = response) => {
+const putCatalogo = async (req = request, res = response) => {
     const { id } = req.params
-    const { unidad_medida = "", id_usuario = "" } = req.body;
+    const { nombre_catalogo = "", id_usuario } = req.body;
 
     try {
 
-        const unidad = await Unidad.findByPk(id);
+        const catalogo = await Catalogo.findByPk(id);
         
         // Si llega sin cambios
-        if(!((unidad.UNIDAD_MEDIDA == unidad_medida || unidad_medida === ""))) {
+        if(!((catalogo.NOMBRE_CATALOGO == nombre_catalogo || nombre_catalogo === ""))) {
 
-                eventBitacora(new Date, id_usuario, 16, 'ACTUALIZACION', `DATOS ACTUALIZADOS: ${unidad_medida !== "" ? 'UNIDAD_MEDIDA' : ""}`);
+            eventBitacora(new Date, id_usuario, 17, 'ACTUALIZACION', `CATÁLOGO ${catalogo.NOMBRE_CATALOGO}, ACTUALIZADO A : ${nombre_catalogo !== "" && catalogo.NOMBRE_CATALOGO != nombre_catalogo ? `${nombre_catalogo}` : ""}`);
 
         }
 
-        // Actualizar db Rol
-        await Unidad.update({
-            UNIDAD_MEDIDA: unidad_medida !== "" ? unidad_medida : Unidad.UNIDAD_MEDIDA,
+        // Actualizar db Catálogo
+        await Catalogo.update({
+            NOMBRE_CATALOGO: nombre_catalogo !== "" ? nombre_catalogo : Catalogo.NOMBRE_CATALOGO,
         }, {
             where: {
                 ID: id
@@ -143,7 +146,7 @@ const getCatalogos = async (req = request, res = response) => {
 
         res.json({
             ok: true,
-            msg: 'Unidad: '+ unidad.UNIDAD_MEDIDA + ' ha sido actualizada con éxito'
+            msg: 'Catálogo de Productos: '+ catalogo.NOMBRE_CATALOGO + ' ha sido actualizado con éxito'
         });
 
     } catch (error) {
@@ -153,36 +156,36 @@ const getCatalogos = async (req = request, res = response) => {
             msg: error.message
         })
     }
-} */
+}
 
-/* const deleteUnidad = async (req = request, res = response) => {
+const deleteCatalogo = async (req = request, res = response) => {
     const { id } = req.params
-    const { quienElimina } = req.body
+    const { quienElimina } = req.query
 
     try {
 
-        // Llamar el proveedor a borrar
-        const unidad = await Unidad.findByPk( id );
+        // Llamar el catálogo a borrar
+        const catalogo = await Catalogo.findByPk( id );
 
-        // Extraer el nombre de la unidad
-        const { UNIDAD_MEDIDA } = unidad;
+        // Extraer el nombre del catálogo
+        const { NOMBRE_CATALOGO } = catalogo;
 
-        // Borrar unidad
-        await unidad.destroy();
+        // Borrar catalogo
+        await catalogo.destroy();
 
         // Guardar evento
-        eventBitacora(new Date, quienElimina, 16, 'BORRADO', `SE ELIMINO LA UNIDAD ${UNIDAD_MEDIDA}`);
+        eventBitacora(new Date, quienElimina, 17, 'BORRADO', `SE ELIMINO EL CATÁLOGO ${NOMBRE_CATALOGO}`);
 
         res.json({
             ok: true,
-            msg: `La unidad: ${UNIDAD_MEDIDA} ha sido eliminado`
+            msg: `El catálogo: ${NOMBRE_CATALOGO} ha sido eliminado`
         });
 
     } catch (error) {
         if( error instanceof ForeignKeyConstraintError ) {
             res.status(403).json({
                 ok: false,
-                msg: `La unidad de medida no puede ser eliminada`
+                msg: `El catálogo de productos no puede ser eliminado`
             })
         } else {
 
@@ -193,10 +196,14 @@ const getCatalogos = async (req = request, res = response) => {
 
         }
     }  
-} */
+}
 
 module.exports = {
-    getCatalogos
+    getCatalogos,
+    getCatalogo,
+    postCatalogo,
+    putCatalogo,
+    deleteCatalogo
    /*  getUnidad,
     postUnidad,
     putUnidad,
