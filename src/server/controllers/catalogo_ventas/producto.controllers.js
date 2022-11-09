@@ -104,23 +104,23 @@ const getProductos = async (req = request, res = response) => {
     }
 }
 
-// Para llamar 1 solo Proveedor
-/* const getUnidad = async (req = request, res = response) => {
+// Para llamar 1 solo Producto
+const getProducto = async (req = request, res = response) => {
      
     const { id } = req.params
 
     try {
         
-        const unidad = await Unidad.findByPk( id );
+        const producto = await ViewProducto.findByPk( id );
 
         // Validar Existencia
-        if( !unidad ){
+        if( !producto ){
             return res.status(404).json({
-                msg: 'No existe una unidad con el id ' + id
+                msg: 'No existe un producto con el id ' + id
             })
         }
 
-        res.json({ unidad })
+        res.json({ producto })
 
     } catch (error) {
         console.log(error);
@@ -129,28 +129,40 @@ const getProductos = async (req = request, res = response) => {
         })
     }
 
-} */
+}
 
-/* const postUnidad = async (req = request, res = response) => {
+const postProducto = async (req = request, res = response) => {
     //body
-    const { unidad_medida = "", id_usuario } = req.body;
+    const { id_usuario = "", id_impuesto = "", id_tipo_producto = "", nombre = "", precio = "", exenta = "", descripcion = "", fecha_inicio = "", fecha_final = "", sin_estado = "", bebida = "", imagen = "" } = req.body;
     
     try {
  
         // Construir modelo
-        const nuevaUnidad = await Unidad.build({
-            UNIDAD_MEDIDA: unidad_medida,
+        const nuevoProducto = await Producto.build({
+            ID_IMPUESTO: id_impuesto,
+            ID_TIPO_PRODUCTO: id_tipo_producto,
+            NOMBRE: nombre,
+            PRECIO: precio,
+            EXENTA: exenta,
+            DESCRIPCION: descripcion,
+            FECHA_INICIO: fecha_inicio,
+            FECHA_FINAL: fecha_final,
+            SIN_ESTADO: sin_estado,
+            BEBIDA: bebida,
+            IMAGEN: imagen,
+            CREADO_POR: id_usuario,
+            MODIFICADO_POR: id_usuario
         });
         // Insertar a DB
-        await nuevaUnidad.save();   
+        await nuevoProducto.save();   
         
         // Guardar evento
-        eventBitacora(new Date, id_usuario, 16, 'NUEVO', `SE CREO UNA NUEVA UNIDAD ${nuevaUnidad.UNIDAD_MEDIDA}`);
+        eventBitacora(new Date, id_usuario, 18, 'NUEVO', `SE CREO UN NUEVO PRODUCTO ${nuevoProducto.NOMBRE}`);
 
         // Responder
         res.json( {
             ok: true,
-            msg: 'Unidad: '+ unidad_medida + ' ha sido creada con éxito'
+            msg: 'Producto: '+ nombre + ' ha sido creada con éxito'
         } );
 
     } catch (error) {
@@ -160,26 +172,70 @@ const getProductos = async (req = request, res = response) => {
             msg: error.message
         })
     }
-} */
+}
 
-/* const putUnidad = async (req = request, res = response) => {
+const putProducto = async (req = request, res = response) => {
     const { id } = req.params
-    const { unidad_medida = "", id_usuario = "" } = req.body;
+    const { id_usuario = "", id_impuesto = "", id_tipo_producto = "", nombre = "", precio = "", exenta = "",
+            descripcion = "", fecha_inicio = "", fecha_final = "", sin_estado = "", bebida = "", imagen = "" } = req.body;
 
     try {
 
-        const unidad = await Unidad.findByPk(id);
+        const producto = await Producto.findByPk(id);
         
         // Si llega sin cambios
-        if(!((unidad.UNIDAD_MEDIDA == unidad_medida || unidad_medida === ""))) {
+        if(!((producto.ID_IMPUESTO == id_impuesto || id_impuesto === "")
+            &&(producto.ID_TIPO_PRODUCTO == id_tipo_producto || id_tipo_producto === "")
+            &&(producto.NOMBRE == nombre || nombre === "")
+            &&(producto.PRECIO == precio || precio === "")
+            &&(producto.EXENTA == exenta || exenta === "")
+            &&(producto.DESCRIPCION == descripcion || descripcion === "")
+            &&(producto.FECHA_INICIO == fecha_inicio || fecha_inicio === "")
+            &&(producto.FECHA_FINAL == fecha_final || fecha_final === "")
+            &&(producto.SIN_ESTADO == sin_estado || sin_estado === "")
+            &&(producto.BEBIDA == bebida || bebida === "")
+            &&(producto.IMAGEN == imagen || imagen === ""))) {
 
-                eventBitacora(new Date, id_usuario, 16, 'ACTUALIZACION', `DATOS ACTUALIZADOS: ${unidad_medida !== "" ? 'UNIDAD_MEDIDA' : ""}`);
+                eventBitacora(new Date, id_usuario, 18, 'ACTUALIZACION', 
+                             `DATOS ACTUALIZADOS: ${id_impuesto !== "" && producto.ID_IMPUESTO!= id_impuesto
+                              ?`${producto.ID_IMPUESTO} actualizado a ${id_impuesto}`: ""}
+                              ${id_tipo_producto !== "" && producto.ID_TIPO_PRODUCTO!= id_tipo_producto
+                              ?`${producto.ID_TIPO_PRODUCTO} actualizado a ${id_tipo_producto}`: ""}
+                              ${nombre !== "" && producto.NOMBRE!= nombre
+                              ?`${producto.NOMBRE} actualizado a ${nombre}`: ""}
+                              ${precio !== "" && producto.PRECIO!= precio
+                              ?`${producto.PRECIO} actualizado a ${precio}`: ""}
+                              ${exenta !== "" && producto.EXENTA!= exenta
+                              ?`${producto.EXENTA} actualizado a ${exenta}`: ""}
+                              ${descripcion !== "" && producto.DESCRIPCION!= descripcion
+                              ?`${producto.DESCRIPCION} actualizado a ${descripcion}`: ""}
+                              ${fecha_inicio !== "" && producto.FECHA_INICIO!= fecha_inicio
+                              ?`${producto.FECHA_INICIO} actualizado a ${fecha_inicio}`: ""}
+                              ${fecha_final !== "" && producto.FECHA_FINAL!= fecha_final
+                              ?`${producto.FECHA_FINAL} actualizado a ${fecha_final}`: ""}
+                              ${sin_estado !== "" && producto.SIN_ESTADO!= sin_estado
+                              ?`${producto.SIN_ESTADO} actualizado a ${sin_estado}`: ""}
+                              ${bebida !== "" && producto.BEBIDA!= bebida
+                              ?`${producto.BEBIDA} actualizado a ${bebida}`: ""}
+                              ${imagen !== "" && producto.IMAGEN!= imagen
+                              ?`${producto.IMAGEN} actualizado a ${imagen}`: ""}
+                              `);
 
         }
 
-        // Actualizar db Rol
-        await Unidad.update({
-            UNIDAD_MEDIDA: unidad_medida !== "" ? unidad_medida : Unidad.UNIDAD_MEDIDA,
+        // Actualizar db Producto
+        await Producto.update({
+            ID_IMPUESTO: id_impuesto !== "" ? id_impuesto : Producto.ID_IMPUESTO,
+            ID_TIPO_PRODUCTO: id_tipo_producto !== "" ? id_tipo_producto : Producto.ID_TIPO_PRODUCTO,
+            NOMBRE: nombre !== "" ? nombre : Producto.NOMBRE,
+            PRECIO: precio !== "" ? precio : Producto.PRECIO,
+            EXENTA: exenta !== "" ? exenta : Producto.EXENTA,
+            DESCRIPCION: descripcion !== "" ? descripcion : Producto.DESCRIPCION,
+            FECHA_INICIO: fecha_inicio !== "" ? fecha_inicio : Producto.FECHA_INICIO,
+            FECHA_FINAL: fecha_final !== "" ? fecha_final : Producto.FECHA_FINAL,
+            SIN_ESTADO: sin_estado !== "" ? sin_estado : Producto.SIN_ESTADO,
+            BEBIDA: bebida !== "" ? bebida : Producto.BEBIDA,
+            IMAGEN: imagen !== "" ? imagen : Producto.IMAGEN,
         }, {
             where: {
                 ID: id
@@ -188,7 +244,7 @@ const getProductos = async (req = request, res = response) => {
 
         res.json({
             ok: true,
-            msg: 'Unidad: '+ unidad.UNIDAD_MEDIDA + ' ha sido actualizada con éxito'
+            msg: 'Producto: '+ producto.NOMBRE + ' ha sido actualizada con éxito'
         });
 
     } catch (error) {
@@ -198,52 +254,50 @@ const getProductos = async (req = request, res = response) => {
             msg: error.message
         })
     }
-} */
+}
 
-/* const deleteUnidad = async (req = request, res = response) => {
+const deleteProducto = async (req = request, res = response) => {
     const { id } = req.params
-    const { quienElimina } = req.body
+    const { quienElimina } = req.query
 
     try {
 
-        // Llamar el proveedor a borrar
-        const unidad = await Unidad.findByPk( id );
+        // Llamar el producto a borrar
+        const producto = await Producto.findByPk( id );
 
-        // Extraer el nombre de la unidad
-        const { UNIDAD_MEDIDA } = unidad;
+        // Extraer el nombre de la producto
+        const { NOMBRE } = producto;
 
-        // Borrar unidad
-        await unidad.destroy();
+        // Borrar producto
+        await producto.destroy();
 
         // Guardar evento
-        eventBitacora(new Date, quienElimina, 16, 'BORRADO', `SE ELIMINO LA UNIDAD ${UNIDAD_MEDIDA}`);
+        eventBitacora(new Date, quienElimina, 18, 'BORRADO', `SE ELIMINO EL PRODUCTO ${NOMBRE}`);
 
         res.json({
             ok: true,
-            msg: `La unidad: ${UNIDAD_MEDIDA} ha sido eliminado`
+            msg: `El producto: ${NOMBRE} ha sido eliminado`
         });
 
     } catch (error) {
         if( error instanceof ForeignKeyConstraintError ) {
             res.status(403).json({
                 ok: false,
-                msg: `La unidad de medida no puede ser eliminada`
+                msg: `El producto no puede ser eliminado`
             })
         } else {
-
             console.log(error);
             res.status(500).json({
                 msg: error.message
             })
-
         }
     }  
-} */
+}
 
 module.exports = {
-    getProductos
-    /*  getUnidad,
-     postUnidad,
-     putUnidad,
-     deleteUnidad */
+    getProductos,
+    getProducto,
+    postProducto,
+    putProducto,
+    deleteProducto
 }
