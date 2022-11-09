@@ -151,8 +151,11 @@ const putPregunta = async (req = request, res = response) => {
 
 const deletePregunta = async (req = request, res = response) => {
     const { id_pregunta } = req.params
+    const { id_usuario = "" } = req.body;
 
     try {
+
+        const preguntaAnterior = await Pregunta.findByPk(id_pregunta);
 
         // Llamar la pregunta a borrar
         const pregunta = await Pregunta.findByPk( id_pregunta );
@@ -160,18 +163,32 @@ const deletePregunta = async (req = request, res = response) => {
         // Extraer la descripcion de la pregunta
         const { PREGUNTA } = pregunta;
 
-        // Borrar Rol
         await pregunta.destroy();
+        
+
+         // Si llega sin cambios
+         if(!(pregunta.PREGUNTA == pregunta || pregunta === "")) { 
+            eventBitacora(new Date, id_usuario, 5, 'ELIMINACIÓN', `LA PREGUNTA '${preguntaAnterior.PREGUNTA}' HA SIDO ELIMINADA CON ÉXITO`);
+        }
 
         res.json({
-            msg: `La pregunta: "${PREGUNTA}" ha sido eliminado`
+            ok: true, 
+            msg: `La pregunta: "${PREGUNTA}" ha sido eliminada`
         });
 
     } catch (error) {
-        console.log(error);
-        res.status(500).json({
-            msg: error.message
-        })
+        
+        if (error instanceof ForeignKeyConstraintError) {
+            res.status(403).json({
+              ok: false,
+              msg: `La pregunta no puede ser eliminada`,
+            });
+          } else {
+            console.log(error);
+            res.status(500).json({
+              msg: error.message,
+            });
+          }
     }  
 }
 
