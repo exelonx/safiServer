@@ -4,7 +4,8 @@ const { check, body } = require('express-validator');
 const { getPermisos,
         getPermiso,
         putPermisos, 
-        configPermisosIniciales} = require('../../controllers/seguridad/permisos.controllers');
+        configPermisosIniciales,
+        validarPermiso} = require('../../controllers/seguridad/permisos.controllers');
 
 const { validarCampos } = require('../../middlewares');
 
@@ -23,5 +24,7 @@ router.put('/:id_permiso',[
 ],putPermisos);
 
 router.get('/config/inicial', configPermisosIniciales)
+
+router.get('/consulta/:pantalla', validarPermiso)
 
 module.exports = router;

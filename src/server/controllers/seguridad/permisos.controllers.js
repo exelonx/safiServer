@@ -1,5 +1,6 @@
 const { request, response } = require("express");
 const { Op } = require("sequelize");
+const jwt = require('jsonwebtoken')
 
 const Permisos = require("../../models/seguridad/permiso");
 const ViewPermisos = require("../..//models/seguridad/sql-vistas/view-permiso");
@@ -9,6 +10,55 @@ const Permiso = require("../../models/seguridad/permiso");
 const Parametro = require("../../models/seguridad/parametro");
 const { eventBitacora } = require("../../helpers/event-bitacora");
 const Usuarios = require("../../models/seguridad/Usuario");
+
+const validarPermiso = async (req = request, res = response) => {
+  let { pantalla } = req.params
+  const token = req.header('x-token')
+
+  try {
+
+    // Extraer id del usuario del token
+    const { uid } = jwt.verify( token, process.env.SEMILLA_SECRETA_JWT_LOGIN );
+
+    // Instanciar usuario
+    const usuario = await Usuarios.findByPk(uid);
+
+    // Validar si es el usuario ROOT
+    if( usuario.USUARIO === 'ROOT' ) {
+      return res.json({
+        PERMISO_INSERCION: true,
+        PERMISO_ELIMINACION: true,
+        PERMISO_ACTUALIZACION: true,
+        PERMISO_CONSULTAR: true,
+      })
+    }
+
+    // Extraer el rol del usuario
+    const rol = usuario.ID_ROL;
+
+    // Verificar si tiene permiso de consulta
+    const permiso = await Permiso.findOne({where: {
+      ID_ROL: rol,
+      ID_OBJETO: pantalla
+    }})
+
+    if(!permiso) {
+      return res.status(404).json({
+        ok: false,
+        msg: 'No existe un permiso asignado al rol'
+      })
+    }
+
+    return res.json(permiso)
+
+  } catch (error) {
+    console.log(error);
+        res.status(500).json({
+            ok: false,
+            msg: error.message
+        })
+  }
+}
 
 const getPermisos = async (req = request, res = response) => {
   let {
@@ -289,4 +339,5 @@ module.exports = {
   getPermiso,
   putPermisos,
   configPermisosIniciales,
+  validarPermiso
 };
