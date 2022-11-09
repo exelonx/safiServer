@@ -1,5 +1,5 @@
 const { request, response } = require('express');
-const { Op } = require('sequelize');
+const { Op, ForeignKeyConstraintError } = require("sequelize");
 const { eventBitacora } = require('../../helpers/event-bitacora');
 const Parametro = require('../../models/seguridad/parametro');
 
@@ -151,7 +151,7 @@ const putPregunta = async (req = request, res = response) => {
 
 const deletePregunta = async (req = request, res = response) => {
     const { id_pregunta } = req.params
-    const { id_usuario = "" } = req.body;
+    const { quienElimina } = req.query;
 
     try {
 
@@ -168,7 +168,7 @@ const deletePregunta = async (req = request, res = response) => {
 
          // Si llega sin cambios
          if(!(pregunta.PREGUNTA == pregunta || pregunta === "")) { 
-            eventBitacora(new Date, id_usuario, 5, 'ELIMINACIÓN', `LA PREGUNTA '${preguntaAnterior.PREGUNTA}' HA SIDO ELIMINADA CON ÉXITO`);
+            eventBitacora(new Date, quienElimina, 5, 'ELIMINACIÓN', `LA PREGUNTA '${preguntaAnterior.PREGUNTA}' HA SIDO ELIMINADA CON ÉXITO`);
         }
 
         res.json({
@@ -181,7 +181,7 @@ const deletePregunta = async (req = request, res = response) => {
         if (error instanceof ForeignKeyConstraintError) {
             res.status(403).json({
               ok: false,
-              msg: `La pregunta no puede ser eliminada`,
+              msg: `La pregunta no puede ser eliminada porque está en uso`,
             });
           } else {
             console.log(error);
