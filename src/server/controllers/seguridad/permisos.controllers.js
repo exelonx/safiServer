@@ -291,40 +291,44 @@ const configPermisosIniciales = async (req = request, res = response) => {
 
   // Recorrer todos los roles
   for await (let rol of roles) {
-    // Buscar que roles no tienen permisos de pantallas
-    if (!(await Permiso.findOne({ where: { ID_ROL: rol.ID_ROL } }))) {
+    
       // Si el rol es el de administrador darle privilegios máximos
       if (rol.ID_ROL === 1) {
         // Configurar todos los permisos por cada tipo de notificacion
         for await (let pantalla of pantallas) {
-          await Permiso.create({
-            ID_ROL: rol.ID_ROL,
-            ID_OBJETO: pantalla.ID_OBJETO,
-            PERMISO_INSERCION: true,
-            PERMISO_ELIMINACION: true,
-            PERMISO_ACTUALIZACION: true,
-            PERMISO_CONSULTAR: true,
-            CREADO_POR: 1,
-            MODIFICADO_POR: 1,
-          });
+          // Buscar que roles no tienen permisos de pantallas
+          if (!(await Permiso.findOne({ where: { ID_ROL: rol.ID_ROL, ID_OBJETO: pantalla.ID_OBJETO } }))) {
+            await Permiso.create({
+              ID_ROL: rol.ID_ROL,
+              ID_OBJETO: pantalla.ID_OBJETO,
+              PERMISO_INSERCION: true,
+              PERMISO_ELIMINACION: true,
+              PERMISO_ACTUALIZACION: true,
+              PERMISO_CONSULTAR: true,
+              CREADO_POR: 1,
+              MODIFICADO_POR: 1,
+            });
+          }
         }
       } else {
         // Configurar todos los permisos por cada tipo de notificacion
         // PERO SIN PRIVILEGIOS
         for await (let pantalla of pantallas) {
-          await Permiso.create({
-            ID_ROL: rol.ID_ROL,
-            ID_OBJETO: pantalla.ID_OBJETO,
-            PERMISO_INSERCION: false,
-            PERMISO_ELIMINACION: false,
-            PERMISO_ACTUALIZACION: false,
-            PERMISO_CONSULTAR: false,
-            CREADO_POR: 1,
-            MODIFICADO_POR: 1,
-          });
+          if (!(await Permiso.findOne({ where: { ID_ROL: rol.ID_ROL, ID_OBJETO: pantalla.ID_OBJETO } }))) {
+            await Permiso.create({
+              ID_ROL: rol.ID_ROL,
+              ID_OBJETO: pantalla.ID_OBJETO,
+              PERMISO_INSERCION: false,
+              PERMISO_ELIMINACION: false,
+              PERMISO_ACTUALIZACION: false,
+              PERMISO_CONSULTAR: false,
+              CREADO_POR: 1,
+              MODIFICADO_POR: 1,
+            });
+          }
         }
       }
-    }
+    
   }
 
   // Buscar que roles tienen permisos de ver
