@@ -31,6 +31,9 @@ const ViewRol = db.define(`VIEW_MS_ROL`, {
     },
     FECHA_MODIFICACION: {
         type: DataTypes.DATE
+    },
+    ESTADO: {
+        type: DataTypes.BOOLEAN
     }
 }, {
     tableName: 'VIEW_MS_ROL',

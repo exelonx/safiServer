@@ -9,6 +9,7 @@ const Objeto = require("../../models/seguridad/objeto");
 const Permiso = require("../../models/seguridad/permiso");
 const TipoNotificacion = require("../../models/notificacion/tipo_notificacion");
 const PermisoNotificacion = require("../../models/notificacion/permiso_notificacion");
+const Usuarios = require("../../models/seguridad/usuario");
 
 // Llamar todos los roles paginados
 const getRoles = async (req = request, res = response) => {
@@ -207,9 +208,16 @@ const putRol = async (req = request, res = response) => {
     const rolAnterior = await Rol.findByPk(id_rol);
 
     if (rolAnterior.ROL === "DEFAULT") {
-      res.status(401).json({
+      return res.status(401).json({
         ok: false,
         msg: "No se puede modificar el rol DEFAULT",
+      });
+    }
+
+    if (rolAnterior.ROL === "ADMINISTRADOR") {
+      return res.status(401).json({
+        ok: false,
+        msg: "No se puede modificar el rol ADMINISTRADOR",
       });
     }
 
@@ -244,7 +252,7 @@ const putRol = async (req = request, res = response) => {
       }
     );
 
-    res.json({
+    return res.json({
       ok: true,
       msg: "Rol: " + rolAnterior.ROL + " ha sido actualizado con éxito",
     });
@@ -266,13 +274,23 @@ const DeleteRol = async (req = request, res = response) => {
     const rol = await Rol.findByPk(id_rol);
 
     // Extraer el nombre del Rol
-    const { ROL } = rol;
+    const { ROL, ID_ROL } = rol;
 
-    // Eliminar permisos configurados
-    const permisosDelRol = await Permiso.destroy({ where: {ID_ROL: id_rol} });
+    const usuarios = await Usuarios.count({ where: {ID_ROL: id_rol} });
+
+    // Validar que el rol no esta siendo usado
+    if(usuarios == 0) {
+
+      // Eliminar permisos configurados
+      await Permiso.destroy({ where: {ID_ROL: id_rol} });
+      await PermisoNotificacion.destroy({ where: {ID_ROL: id_rol} });
+      
+    }
 
     // Borrar Rol
     await rol.destroy();
+    
+
 
     // Guardar evento
     eventBitacora(

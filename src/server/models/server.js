@@ -30,6 +30,7 @@ const routerCatalogo = require('../routes/catalogo_ventas/catalogo.routes');
 const routerInsumos = require('../routes/inventario/insumo.routes');
 const routerProducto = require('../routes/catalogo_ventas/producto.routes');
 const routerPantalla = require('../routes/seguridad/objeto.routes');
+const router = require('../routes/inventario/kardex.routes');
 
 // Jobs
 const { generarBackup } = require('../jobs/db-backup');
@@ -76,6 +77,7 @@ class Server {
             proveedores:      '/api/proveedor',
             unidades:         '/api/unidad',
             insumos:          '/api/insumo',
+            kardex:           '/api/kardex',
             // NOTIFICACION
             notificacion:     '/api/notificacion',
 
@@ -143,9 +145,10 @@ class Server {
         // Reportería
         this.app.use(this.apiPath.reporteria, routerReporteria)
         // Inventario
-        this.app.use(this.apiPath.proveedores, routerProveedores)
-        this.app.use(this.apiPath.unidades, routerUnidades)
-        this.app.use(this.apiPath.insumos, routerInsumos)
+        this.app.use(this.apiPath.proveedores, routerProveedores)      // Proveedores
+        this.app.use(this.apiPath.unidades, routerUnidades)            // Unidades
+        this.app.use(this.apiPath.insumos, routerInsumos)              // Insumos
+        this.app.use(this.apiPath.kardex, router)
         // Notificacion
         this.app.use(this.apiPath.notificacion, routerNotificacion)
         // Catalogo de ventas

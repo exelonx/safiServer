@@ -19,6 +19,9 @@ const Roles = db.define(`TBL_MS_ROL`, {
     },
     MODIFICADO_POR: {
         type: DataTypes.INTEGER
+    },
+    ESTADO: {
+        type: DataTypes.BOOLEAN
     }
 }, {
     tableName: 'TBL_MS_ROL',

@@ -15,7 +15,6 @@ const getBitacora = async (req = request, res = response) => {
 
     try {
 
-        console.log( fechaFinal, fechaInicial)
         // Definir el número de objetos a mostrar
         if(!limite || limite === "") {
             const { VALOR } = await Parametro.findOne({where: { PARAMETRO: 'ADMIN_NUM_REGISTROS'}})
@@ -34,8 +33,6 @@ const getBitacora = async (req = request, res = response) => {
                 }
             }
         }
-
-        console.log(filtrarPorFecha)
 
         const registros = await ViewBitacora.findAll({
             limit: parseInt(limite, 10),
