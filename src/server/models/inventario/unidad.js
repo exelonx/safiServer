@@ -4,7 +4,8 @@ const { db } = require('../../database/db-conexion')
 
 const Unidad = db.define(`TBL_MI_UNIDAD`, {
     ID: {
-        type: DataTypes.INTEGER
+        type: DataTypes.INTEGER, 
+        primaryKey: true        
     },
     UNIDAD_MEDIDA: {
         type: DataTypes.STRING
