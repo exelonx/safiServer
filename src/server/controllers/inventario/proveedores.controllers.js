@@ -174,7 +174,7 @@ const putProveedor = async (req = request, res = response) => {
 
 const deleteProveedor = async (req = request, res = response) => {
     const { id } = req.params
-    const { quienElimina } = req.body
+    const { quienElimina } = req.query
 
     try {
 

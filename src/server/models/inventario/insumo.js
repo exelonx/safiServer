@@ -4,7 +4,8 @@ const { db } = require('../../database/db-conexion')
 
 const Insumo = db.define(`TBL_MI_INSUMO`, {
     ID: {
-        type: DataTypes.INTEGER
+        type: DataTypes.INTEGER, 
+        primaryKey: true
     },
     ID_UNIDAD: {
         type: DataTypes.INTEGER

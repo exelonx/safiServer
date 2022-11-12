@@ -25,7 +25,16 @@ const validarEspacio = async( campo = '' ) => {
     }
 };
 
+const validarDobleEspacio = async( campo = '' ) => {
+    // Validar que no exista espacio en blanco
+    if ( campo.includes('  ') ) {
+        throw new Error()   
+        
+    }
+};
+
 module.exports = {
     validarEspaciosLogin,
-    validarEspacio
+    validarEspacio,
+    validarDobleEspacio
 }

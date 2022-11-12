@@ -156,7 +156,7 @@ const putUnidad = async (req = request, res = response) => {
 
 const deleteUnidad = async (req = request, res = response) => {
     const { id } = req.params
-    const { quienElimina } = req.body
+    const { quienElimina } = req.query
 
     try {
 

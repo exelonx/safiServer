@@ -45,4 +45,4 @@ const ViewInsumo = db.define(`VIEW_MI_INSUMO`, {
 })
 
 //Para exportar el modelo
-module.exports = Insumo;
+module.exports = ViewInsumo;
