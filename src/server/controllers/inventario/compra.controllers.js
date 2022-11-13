@@ -3,6 +3,7 @@ const { Op } = require('sequelize');
 
 const Parametro = require("../../models/seguridad/parametro");
 const { eventBitacora } = require('../../helpers/event-bitacora');
+const ViewCompra = require('../../models/inventario/sql-vista/view-compra');
 
 const getCompras = async (req = request, res = response) => {
     let { limite = 10, desde = 0, buscar = "", quienBusco = "" } = req.query
@@ -20,44 +21,32 @@ const getCompras = async (req = request, res = response) => {
         }
 
         // Paginación
-        const insumos = await Compra.findAll({
+        const compra = await ViewCompra.findAll({
             limit: parseInt(limite, 10),
             offset: parseInt(desde, 10),
             where: {
                 [Op.or]: [{
-                    NOMBRE: { [Op.like]: `%${buscar.toUpperCase()}%` }
-                }, {
-                    UNIDAD_MEDIDA: { [Op.like]: `%${buscar.toUpperCase()}%` }
-                }, {
-                    MODIFICACION_POR: { [Op.like]: `%${buscar.toUpperCase()}%` }
-                }, {
-                    CREADO_POR: { [Op.like]: `%${buscar.toUpperCase()}%` }
+                    PROVEEDOR: { [Op.like]: `%${buscar.toUpperCase()}%` }
                 }]
             }
         });
 
         // Contar resultados total
-        const countInsumos = await ViewInsumo.count({
+        const countCompra = await ViewCompra.count({
             where: {
                 [Op.or]: [{
-                    NOMBRE: { [Op.like]: `%${buscar.toUpperCase()}%` }
-                }, {
-                    UNIDAD_MEDIDA: { [Op.like]: `%${buscar.toUpperCase()}%` }
-                }, {
-                    MODIFICACION_POR: { [Op.like]: `%${buscar.toUpperCase()}%` }
-                }, {
-                    CREADO_POR: { [Op.like]: `%${buscar.toUpperCase()}%` }
+                    PROVEEDOR: { [Op.like]: `%${buscar.toUpperCase()}%` }
                 }]
             }
         });
 
         // Guardar evento
         if (buscar !== "" && desde == 0) {
-            eventBitacora(new Date, quienBusco, 21, 'CONSULTA', `SE BUSCÓ LOS INSUMOS CON EL TÉRMINO '${buscar}'`);
+            eventBitacora(new Date, quienBusco, 23, 'CONSULTA', `SE BUSCÓ LA COMPRA CON EL TÉRMINO '${buscar}'`);
         }
 
         // Respuesta
-        res.json({ limite, countInsumos, insumos })
+        res.json({ limite, countCompra, compra })
 
     } catch (error) {
         console.log(error);

@@ -3,7 +3,7 @@ const { Op } = require('sequelize');
 
 const Parametro = require("../../models/seguridad/parametro");
 const { eventBitacora } = require('../../helpers/event-bitacora');
-const ViewKardex = require('../../models/notificacion/sql-vistas/view_kardex');
+const ViewKardex = require('../../models/inventario/sql-vista/view_kardex');
 
 const getKardex = async (req = request, res = response) => {
     let { limite, desde = 0, buscar = "", id_usuario, fechaInicial ="", fechaFinal="" } = req.query

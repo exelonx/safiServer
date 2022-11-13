@@ -1,10 +1,10 @@
 const { Router } = require('express');
 const { check, body } = require('express-validator');
-const { getInsumos, getInsumo, postInsumo, deleteInsumo } = require('../../controllers/inventario/insumo.controllers');
+const { getCompras } = require('../../controllers/inventario/compra.controllers');
 
 
 const router = Router();
 
-router.get('/', getInsumos);
+router.get('/', getCompras);
 
 module.exports = router;
