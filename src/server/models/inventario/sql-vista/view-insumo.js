@@ -21,6 +21,9 @@ const ViewInsumo = db.define(`VIEW_MI_INSUMO`, {
     CANTIDAD_MINIMA: {
         type: DataTypes.INTEGER
     },
+    EXISTENCIA: {
+        type: DataTypes.DECIMAL
+    },
     ID_CREADO_POR: {
         type: DataTypes.INTEGER
     },

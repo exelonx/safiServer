@@ -3,10 +3,7 @@ const { DataTypes } = require('sequelize')
 const { db } = require('../../database/db-conexion')
 
 const Compra = db.define(`TBL_MI_COMPRA`, {
-    ID: {
-        type: DataTypes.INTEGER, 
-        primaryKey: true
-    },
+    
     ID_PROVEEDOR: {
         type: DataTypes.INTEGER
     },
