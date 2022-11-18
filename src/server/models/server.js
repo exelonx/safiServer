@@ -32,6 +32,7 @@ const routerProducto = require('../routes/catalogo_ventas/producto.routes');
 const routerPantalla = require('../routes/seguridad/objeto.routes');
 const routerKardex = require('../routes/inventario/kardex.routes');
 const routerCompra = require('../routes/inventario/compra.routes');
+const routerDireccion = require('../routes/direccion/direccion.routes');
 
 // Jobs
 const { generarBackup } = require('../jobs/db-backup');
@@ -88,6 +89,9 @@ class Server {
             // CATALOGO VENTA
             catalogos:    '/api/catalogo-venta',
             productos:    '/api/producto',
+
+            //DIRECCION
+            direccion:  '/api/direccion',
         }
 
         // middlewares
@@ -159,6 +163,8 @@ class Server {
         // Catalogo de ventas
         this.app.use(this.apiPath.catalogos, routerCatalogo)
         this.app.use(this.apiPath.productos, routerProducto)
+        // Direccion
+        this.app.use(this.apiPath.direccion, routerDireccion)          // Direccion
     }
 
     async listen () {

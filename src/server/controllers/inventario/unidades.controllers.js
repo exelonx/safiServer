@@ -2,7 +2,6 @@ const { request, response } = require('express');
 const { Op, ForeignKeyConstraintError } = require('sequelize');
 
 const Parametro = require("../../models/seguridad/parametro");
-const ViewProveedor = require('../../models/inventario/sql-vista/view-proveedor');
 const Unidad = require('../../models/inventario/unidad');
 const { eventBitacora } = require('../../helpers/event-bitacora');
 
@@ -87,7 +86,8 @@ const getUnidad = async (req = request, res = response) => {
 
 const postUnidad = async (req = request, res = response) => {
     //body
-    const { unidad_medida = "", id_usuario } = req.body;
+    const { id_usuario } = req.query; 
+    const { unidad_medida = "" } = req.body;
     
     try {
  
@@ -118,7 +118,8 @@ const postUnidad = async (req = request, res = response) => {
 
 const putUnidad = async (req = request, res = response) => {
     const { id } = req.params
-    const { unidad_medida = "", id_usuario = "" } = req.body;
+    const { id_usuario = "" } = req.query;
+    const { unidad_medida = "" } = req.body;
 
     try {
 
