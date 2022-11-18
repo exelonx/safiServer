@@ -1,5 +1,5 @@
 const { request, response } = require('express');
-const { Op, ForeignKeyConstraintError } = require('sequelize');
+const { Op, ForeignKeyConstraintError, DATE } = require('sequelize');
 
 const Parametro = require("../../models/seguridad/parametro");
 const { eventBitacora } = require('../../helpers/event-bitacora');
@@ -129,6 +129,47 @@ const postInsumo = async (req = request, res = response) => {
     }
 };
 
+const putInsumo = async (req = request, res = response) => {
+    const { id_insumo } = req.params
+    const { nombre, id_unidad = "", cantidad_maxima = "", cantidad_minima = "", quienModifico = "" } = req.body;
+
+    try {
+
+        const insumoAnterior = await Insumo.findByPk(id_insumo)
+
+        // Actualizar db Pregunta
+        await Insumo.update({
+            NOMBRE: nombre,
+            ID_UNIDAD: id_unidad,
+            CANTIDAD_MAXIMA: cantidad_maxima,
+            CANTIDAD_MINIMA: cantidad_minima,
+            MODIFICACION_POR: quienModifico,
+            FECHA_MODIFICACION: new Date()
+        }, {
+            where: {
+                ID_INSUMO: id_insumo
+            }
+        })
+
+         // Si llega sin cambios
+         if(!(insumo.INSUMO == insumo || insumo === "")) { 
+            eventBitacora(new Date, quienModifico, 21, 'ACTUALIZACION', `EL INSUMO '${insumoAnterior.NOMBRE}' HA SIDO ACTUALIZADO CON ÉXITO`);
+        }
+
+
+        res.json({ 
+            ok: true, 
+            msg: 'Insumo actualizado con éxito'});
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: error.message
+        })
+    }
+    
+};
+
 const deleteInsumo = async (req = request, res = response) => {
     const { id_insumo } = req.params
     const { quienElimina } = req.query
@@ -183,5 +224,6 @@ module.exports = {
     getInsumos,
     getInsumo,
     postInsumo,
+    putInsumo,
     deleteInsumo
 }
