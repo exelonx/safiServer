@@ -130,7 +130,8 @@ const postProveedor = async (req = request, res = response) => {
 
 const putProveedor = async (req = request, res = response) => {
     const { id } = req.params
-    const { id_direccion = "", nombre = "", telefono = "", id_usuario = "" } = req.body;
+    const { id_direccion = "", nombre = "", telefono = "" } = req.body;
+    const {id_usuario = ""} = req.query;
 
     try {
 

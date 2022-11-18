@@ -135,7 +135,7 @@ const postDepartamento = async (req = request, res = response) => {
 // Llamar todas las preguntas paginadas
 const getMunicipios = async (req = request, res = response) => {
 
-    const { id_departamento } = req.body
+    const { id_departamento } = req.params
 
     try {
 

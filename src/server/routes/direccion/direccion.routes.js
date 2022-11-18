@@ -9,6 +9,6 @@ const router = Router();
 
 router.get('/', getDepartamentos);
 
-router.get('/municipios', getMunicipios);
+router.get('/municipios/:id_departamento', getMunicipios);
 
 module.exports = router;
