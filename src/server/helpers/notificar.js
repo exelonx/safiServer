@@ -65,6 +65,13 @@ const notificar = async ( idTipoNotificacion, accion, detalle, id_responsable, i
 
 }
 
+const emitEventoInventario = async ( evento ) => {
+    // Instanciar el servidor singletone
+    const server = instanciarServidor();
+    server.io.emit('recargarInventario')
+}
+
 module.exports = {
-    notificar
+    notificar,
+    emitEventoInventario
 }

@@ -4,9 +4,10 @@ const { Op } = require('sequelize');
 const Parametro = require("../../models/seguridad/parametro");
 const { eventBitacora } = require('../../helpers/event-bitacora');
 const ViewKardex = require('../../models/inventario/sql-vista/view_kardex');
+const ViewInsumo = require('../../models/inventario/sql-vista/view-insumo');
 
 const getKardex = async (req = request, res = response) => {
-    let { limite, desde = 0, buscar = "", id_usuario, fechaInicial ="", fechaFinal="" } = req.query
+    let { limite, desde = 0, buscar = "", id_usuario, fechaInicial ="", fechaFinal="", id_insumo = "" } = req.query
     let filtrarPorFecha = {}
 
     try {
@@ -38,11 +39,9 @@ const getKardex = async (req = request, res = response) => {
                 [Op.or]: [{
                     USUARIO: { [Op.like]: `%${buscar.toUpperCase()}%`}
                 }, {
-                    NOMBRE: { [Op.like]: `%${buscar.toUpperCase()}%`}
-                }, {
                     TIPO_MOVIMIENTO: { [Op.like]: `%${buscar.toUpperCase()}%`}
                 }],
-                [Op.and]: [filtrarPorFecha]
+                [Op.and]: [filtrarPorFecha, {ID_INSUMO: id_insumo}]
             }
         });
 
@@ -56,7 +55,7 @@ const getKardex = async (req = request, res = response) => {
             }, {
                 TIPO_MOVIMIENTO: { [Op.like]: `%${buscar.toUpperCase()}%`}
             }],
-            [Op.and]: [filtrarPorFecha]
+            [Op.and]: [filtrarPorFecha, {ID_INSUMO: id_insumo}]
         }})
 
         // Guardar evento
@@ -75,6 +74,51 @@ const getKardex = async (req = request, res = response) => {
     } 
 }
 
+const validarIdInsumoKardex = async (req = request, res = response) => {
+    const {id_insumo} = req.params;
+    
+    try {
+        
+        // Instanciar el insumo
+        const insumo = await ViewInsumo.findByPk(id_insumo);
+
+        if(insumo) {
+            return res.json(true)
+        } else {
+            return res.json(false)
+        }
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            ok: false,
+            msg: error.message
+        })
+    }
+
+}
+
+const getNombreInsumo = async (req = request, res = response) => {
+    const {id_insumo} = req.params;
+
+    try {
+        
+        // Instanciar el insumo
+        const insumo = await ViewInsumo.findByPk(id_insumo);
+
+        return res.json( {insumo} )
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            ok: false,
+            msg: error.message
+        })
+    }
+}
+
 module.exports = {
-    getKardex
+    getKardex,
+    validarIdInsumoKardex,
+    getNombreInsumo
 }
