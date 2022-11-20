@@ -2,21 +2,21 @@ const { DataTypes } = require('sequelize')
 
 const { db } = require('../../database/db-conexion')
 
-const Municipio = db.define(`TBL_MUNICIPIO`, {
+const Direccion = db.define(`TBL_DIRECCION`, {
     ID: {
         type: DataTypes.INTEGER, 
         primaryKey: true        
     },
-    ID_DEPARTAMENTO: {
-        type: DataTypes.INTEGER,     
+    ID_MUNICIPIO: {
+        type: DataTypes.INTEGER,        
     },
-    NOMBRE: {
+    DETALLE: {
         type: DataTypes.STRING
     }
 }, {
-    tableName: 'TBL_MUNICIPIO',
+    tableName: 'TBL_DIRECCION',
     timestamps: false,
 })
 
 //Para exportar el modelo
-module.exports = Municipio;
+module.exports = Direccion;

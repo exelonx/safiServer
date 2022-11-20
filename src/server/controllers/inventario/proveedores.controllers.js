@@ -5,6 +5,9 @@ const Parametro = require("../../models/seguridad/parametro");
 const ViewProveedor = require('../../models/inventario/sql-vista/view-proveedor');
 const Proveedor = require('../../models/inventario/proveedor');
 const { eventBitacora } = require('../../helpers/event-bitacora');
+const Departamento = require('../../models/direccion/departamento');
+const Municipio = require('../../models/direccion/municipio');
+const Direccion = require('../../models/direccion/direccion');
 
 // Llamar todas las preguntas paginadas
 const getProveedores = async (req = request, res = response) => {
@@ -95,14 +98,31 @@ const getProveedor = async (req = request, res = response) => {
 
 const postProveedor = async (req = request, res = response) => {
     //body
-    const { nombre = "", id_direccion = "", telefono = "", id_usuario = "" } = req.body;
+    const { nombre = "", id_departamento = "", id_municipio = "", direccion = "", telefono = "", id_usuario = "" } = req.body;
     
     try {
- 
-        // Construir modelo
+
+        const departamento = await Departamento.findByPk(id_departamento);
+        const municipio = await Municipio.findByPk(id_municipio);
+
+        // Construir modole de direccion
+        const nuevaDireccion = await Direccion.build({
+            ID_MUNICIPIO: id_municipio,
+            DETALLE: `${departamento.NOMBRE}, ${municipio.NOMBRE}, ${direccion} `
+        })
+        // Insertar a DB
+        await nuevaDireccion.save();
+
+        const direcionCreada = await Direccion.findOne({
+            where:{
+                DETALLE: `${departamento.NOMBRE}, ${municipio.NOMBRE}, ${direccion} `
+            }
+        })
+
+        // Construir modelo de proveedor
         const nuevoProveedor = await Proveedor.build({
             NOMBRE: nombre,
-            ID_DIRECCION: id_direccion,
+            ID_DIRECCION: direcionCreada.ID,
             TELEFONO: telefono,
             CREADO_POR: id_usuario,
             MODIFICADO_POR: id_usuario
@@ -130,24 +150,37 @@ const postProveedor = async (req = request, res = response) => {
 
 const putProveedor = async (req = request, res = response) => {
     const { id } = req.params
-    const { id_direccion = "", nombre = "", telefono = "" } = req.body;
+    const { id_departamento = "", id_municipio = "", id_direccion = "", nombre = "", telefono = "", direccion = "" } = req.body;
     const {id_usuario = ""} = req.query;
 
     try {
 
+        const departamento = await Departamento.findByPk(id_departamento);
+        const municipio = await Municipio.findByPk(id_municipio);
         const proveedor = await Proveedor.findByPk(id);
-        console.log(nombre)
         // Si llega sin cambios
         if(!((proveedor.NOMBRE == nombre || nombre === "") 
             && (proveedor.TELEFONO == telefono || telefono === "")
-            && (proveedor.ID_DIRECCION == id_direccion || id_direccion === ""))) {
+            && (proveedor.ID_DIRECCION == id_direccion || id_direccion === "")
+            && (departamento.ID == id_departamento || id_departamento === "")
+            && (municipio.ID == id_municipio || id_municipio === ""))) {
 
-                eventBitacora(new Date, id_usuario, 15, 'ACTUALIZACION', `DATOS ACTUALIZADOS: ${nombre !== "" ? 'NOMBRE' : ""}
-                 ${telefono !== "" ? 'TELEFONO' : ""} ${id_direccion !=="" ? 'ID_DIRECCION' :""}`);
+                eventBitacora(new Date, id_usuario, 15, 'ACTUALIZACION', 
+                `DATOS ACTUALIZADOS: ${nombre !== "" && proveedor.NOMBRE != nombre ? `${proveedor.NOMBRE} actualizado a ${nombre}` : ""}
+                 ${telefono !== "" && proveedor.TELEFONO != telefono ? `${proveedor.TELEFONO} actualizado a ${telefono}` : ""}
+                 ${id_direccion !=="" && proveedor.ID_DIRECCION != id_direccion ? `${proveedor.ID_DIRECCION} actualizado a ${id_direccion}` :""}`);
 
-        }
+        } 
 
-        // Actualizar db Rol
+        await Direccion.update({
+            DETALLE: direccion !=="" ? `${departamento.NOMBRE}, ${municipio.NOMBRE}, ${direccion} ` : Direccion.DETALLE
+        },{
+            where: {
+                ID: id_direccion
+            }
+        })
+
+        // Actualizar db Proveedor
         await Proveedor.update({
             ID_DIRECCION: id_direccion !== "" ? id_direccion : Proveedor.ID_DIRECCION,
             NOMBRE: nombre !== "" ? nombre : Proveedor.NOMBRE,
@@ -165,7 +198,7 @@ const putProveedor = async (req = request, res = response) => {
         });
 
     } catch (error) {
-        console.log(error);
+        console.log(error instanceof ForeignKeyConstraintError);
         res.status(500).json({
             ok: false,
             msg: error.message

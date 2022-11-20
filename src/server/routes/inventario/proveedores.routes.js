@@ -23,8 +23,11 @@ router.post('/', [
     check('nombre', 'Máximo de caracteres: 50').isLength({ max: 50 }),
     existeProveedor,
     // Validaciones de Teléfono
-    check('telefono', 'Solo se permiten números en el telefono').isNumeric(),
+    check('telefono', 'Solo se permiten números en el telefono').not().isNumeric(),
     check('telefono', 'Máximo de caracteres: 15').isLength({ max: 15 }),
+    // Validación de direccion
+    check('direccion', 'La dirección debe estar en mayúscula').isUppercase(),
+    check('direccion', 'Máximo de caracteres: 120').isLength({ max: 120 }),
     validarCampos
 ], postProveedor);
 
@@ -39,6 +42,9 @@ router.put('/actualizar-proveedor/:id', [
     // Validaciones de Teléfono
     check('telefono', 'Solo se permiten números en el telefono').not().isNumeric(),
     check('telefono', 'Máximo de caracteres: 15').isLength({ max: 15 }),
+    // Validación de direccion
+    check('direccion', 'La dirección debe estar en mayúscula').isUppercase(),
+    check('direccion', 'Máximo de caracteres: 120').isLength({ max: 120 }),
     existeProveedor,
     validarCampos
 ], putProveedor)
