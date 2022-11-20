@@ -147,12 +147,16 @@ const putInsumo = async (req = request, res = response) => {
             FECHA_MODIFICACION: new Date()
         }, {
             where: {
-                ID_INSUMO: id_insumo
+                id: id_insumo
             }
         })
 
          // Si llega sin cambios
-         if(!(insumo.INSUMO == insumo || insumo === "")) { 
+        if(!(insumoAnterior.NOMBRE == nombre || nombre === "")
+        && (insumoAnterior.ID_UNIDAD == id_unidad || id_unidad === "") 
+        && (insumoAnterior.CANTIDAD_MAXIMA == cantidad_maxima || cantidad_maxima === "")
+        && (insumoAnterior.CANTIDAD_MINIMA == cantidad_minima || cantidad_minima === ""))
+         {
             eventBitacora(new Date, quienModifico, 21, 'ACTUALIZACION', `EL INSUMO '${insumoAnterior.NOMBRE}' HA SIDO ACTUALIZADO CON ÉXITO`);
         }
 

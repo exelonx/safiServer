@@ -33,6 +33,7 @@ const routerPantalla = require('../routes/seguridad/objeto.routes');
 const routerKardex = require('../routes/inventario/kardex.routes');
 const routerCompra = require('../routes/inventario/compra.routes');
 const routerDireccion = require('../routes/direccion/direccion.routes');
+const routerImpuesto = require('../routes/catalogo_ventas/tipo-impuesto.routes');
 
 // Jobs
 const { generarBackup } = require('../jobs/db-backup');
@@ -89,6 +90,7 @@ class Server {
             // CATALOGO VENTA
             catalogos:    '/api/catalogo-venta',
             productos:    '/api/producto',
+            impuestos:    '/api/impuesto',
 
             //DIRECCION
             direccion:  '/api/direccion',
@@ -163,6 +165,7 @@ class Server {
         // Catalogo de ventas
         this.app.use(this.apiPath.catalogos, routerCatalogo)
         this.app.use(this.apiPath.productos, routerProducto)
+        this.app.use(this.apiPath.impuestos, routerImpuesto)
         // Direccion
         this.app.use(this.apiPath.direccion, routerDireccion)          // Direccion
     }

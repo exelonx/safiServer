@@ -31,7 +31,7 @@ router.post('/', [
     validarCampos
 ],postInsumo);
 
-router.put('/insumo/:id', [
+router.put('/:id_insumo', [
     //Validaciones para el nombre del insumo
     check("nombre", "El nombre de insumo es obligatorio").not().isEmpty(), 
     check("nombre", "El nombre sólo permite letras").isAlpha("es-ES", {ignore: ' '}),
@@ -46,7 +46,7 @@ router.put('/insumo/:id', [
     check("cantidad_minima", "La cantidad mínima es obligatoria").not().isEmpty(),
     check("cantidad_minima", "La cantidad mínima debe ser un número").isNumeric(),
     //ID del usuario que lo creo
-    check("creado_por", "El id del usuario que lo creo es obligatorio").not().isEmpty(), 
+    check("quienModifico", "El id del usuario que lo creo es obligatorio").not().isEmpty(), 
     validarCampos
 ], putInsumo);
 
