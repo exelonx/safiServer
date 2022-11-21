@@ -17,7 +17,12 @@ router.post('/', [
     // Validaciones de la unidad_medida
     check('unidad_medida', 'La unidad de medida es obligatoria').not().isEmpty(),
     check('unidad_medida', 'La unidad de medida debe estar en mayúscula').isUppercase(),
-    check('unidad_medida', 'Máximo de caracteres: 4').isLength({ max: 4 }),
+    check('unidad_medida', 'Máximo de caracteres: 6').isLength({ max: 4 }),
+    check("unidad_medida", "La unidad de medida sólo permite letras").isAlpha("es-ES"),
+    check('nombre', 'El nombre de medida es obligatoria').not().isEmpty(),
+    check("nombre", "El nombre sólo permite letras").isAlpha("es-ES"),
+    check('nombre', 'El nombre de medida debe estar en mayúscula').isUppercase(),
+    check('nombre', 'Máximo de caracteres: 15').isLength({ max: 15 }),
     existeUnidad,
     validarCampos
 ], postUnidad);
@@ -25,7 +30,11 @@ router.post('/', [
 router.put('/actualizar-unidad/:id', [
     //Validaciones de la unidad_medida
     check('unidad_medida', 'La unidad de medida debe estar en mayúscula').isUppercase(),
-    check('unidad_medida', 'Máximo de caracteres: 4').isLength({ max: 4 }),
+    check('unidad_medida', 'Máximo de caracteres: 6').isLength({ max: 4 }),
+    check("unidad_medida", "La unidad de medida sólo permite letras").isAlpha("es-ES"),
+    check("nombre", "El nombre sólo permite letras").isAlpha("es-ES"),
+    check('nombre', 'El nombre de medida debe estar en mayúscula').isUppercase(),
+    check('nombre', 'Máximo de caracteres: 15').isLength({ max: 15 }),
     // Validaciones de la unidad_medida
     noExisteUnidadPorId,
     validarCampos

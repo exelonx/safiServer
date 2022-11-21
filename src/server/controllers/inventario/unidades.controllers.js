@@ -87,16 +87,15 @@ const getUnidad = async (req = request, res = response) => {
 const postUnidad = async (req = request, res = response) => {
     //body
     const { id_usuario } = req.query; 
-    const { unidad_medida = "" } = req.body;
+    const { unidad_medida = "", nombre = "" } = req.body;
     
     try {
  
         // Construir modelo
-        const nuevaUnidad = await Unidad.build({
+        const nuevaUnidad = await Unidad.create({
             UNIDAD_MEDIDA: unidad_medida,
-        });
-        // Insertar a DB
-        await nuevaUnidad.save();   
+            NOMBRE: nombre
+        }); 
         
         // Guardar evento
         eventBitacora(new Date, id_usuario, 16, 'NUEVO', `SE CREO UNA NUEVA UNIDAD ${nuevaUnidad.UNIDAD_MEDIDA}`);
@@ -118,15 +117,15 @@ const postUnidad = async (req = request, res = response) => {
 
 const putUnidad = async (req = request, res = response) => {
     const { id } = req.params
-    const { id_usuario = "" } = req.query;
-    const { unidad_medida = "" } = req.body;
-
+    const { id_usuario = "", unidad_medida = "" , nombre = ""} = req.body;
+    
     try {
 
         const unidad = await Unidad.findByPk(id);
         
         // Si llega sin cambios
-        if(!((unidad.UNIDAD_MEDIDA == unidad_medida || unidad_medida === ""))) {
+        if(!((unidad.UNIDAD_MEDIDA == unidad_medida || unidad_medida === ""))
+            && (unidad.NOMBRE == nombre || nombre === "") ) {
 
                 eventBitacora(new Date, id_usuario, 16, 'ACTUALIZACION', `DATOS ACTUALIZADOS: ${unidad_medida !== "" ? 'UNIDAD_MEDIDA' : ""}`);
 
@@ -135,6 +134,7 @@ const putUnidad = async (req = request, res = response) => {
         // Actualizar db Rol
         await Unidad.update({
             UNIDAD_MEDIDA: unidad_medida !== "" ? unidad_medida : Unidad.UNIDAD_MEDIDA,
+            NOMBRE: nombre !== "" ? nombre : Unidad.NOMBRE,
         }, {
             where: {
                 ID: id

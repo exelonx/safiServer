@@ -9,6 +9,9 @@ const Unidad = db.define(`TBL_MI_UNIDAD`, {
     },
     UNIDAD_MEDIDA: {
         type: DataTypes.STRING
+    },
+    NOMBRE: {
+        type: DataTypes.STRING
     }
 }, {
     tableName: 'TBL_MI_UNIDAD',
