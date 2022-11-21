@@ -22,7 +22,7 @@ const ViewCatalogo = db.define(`VIEW_MP_CATALOGO`, {
     ID_MODIFICADO_POR: {
         type: DataTypes.INTEGER
     },
-    MODIFICACION_POR: {
+    MODIFICADO_POR: {
         type: DataTypes.STRING
     },
     FECHA_MODIFICACION: {

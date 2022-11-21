@@ -98,37 +98,27 @@ const getProveedor = async (req = request, res = response) => {
 
 const postProveedor = async (req = request, res = response) => {
     //body
-    const { nombre = "", id_departamento = "", id_municipio = "", direccion = "", telefono = "", id_usuario = "" } = req.body;
+    const { nombre = "", id_municipio = "", detalle = "", telefono = "", id_usuario = "" } = req.body;
     
     try {
 
-        const departamento = await Departamento.findByPk(id_departamento);
-        const municipio = await Municipio.findByPk(id_municipio);
+        console.log("ESTE ES EL ID: "+id_municipio)
 
         // Construir modole de direccion
-        const nuevaDireccion = await Direccion.build({
+        const nuevaDireccion = await Direccion.create({
             ID_MUNICIPIO: id_municipio,
-            DETALLE: `${departamento.NOMBRE}, ${municipio.NOMBRE}, ${direccion} `
-        })
-        // Insertar a DB
-        await nuevaDireccion.save();
-
-        const direcionCreada = await Direccion.findOne({
-            where:{
-                DETALLE: `${departamento.NOMBRE}, ${municipio.NOMBRE}, ${direccion} `
-            }
+            DETALLE: detalle
         })
 
         // Construir modelo de proveedor
-        const nuevoProveedor = await Proveedor.build({
+        const nuevoProveedor = await Proveedor.create({
             NOMBRE: nombre,
-            ID_DIRECCION: direcionCreada.ID,
+            ID_DIRECCION: nuevaDireccion.id,
             TELEFONO: telefono,
             CREADO_POR: id_usuario,
             MODIFICADO_POR: id_usuario
         });
-        // Insertar a DB
-        await nuevoProveedor.save();   
+   
         
         // Guardar evento
         eventBitacora(new Date, id_usuario, 15, 'NUEVO', `SE CREO EL PROVEEDOR ${nuevoProveedor.NOMBRE}`);
@@ -172,8 +162,11 @@ const putProveedor = async (req = request, res = response) => {
 
         } 
 
+        /* `${departamento.NOMBRE}, ${municipio.NOMBRE}, ${direccion} ` */
+
         await Direccion.update({
-            DETALLE: direccion !=="" ? `${departamento.NOMBRE}, ${municipio.NOMBRE}, ${direccion} ` : Direccion.DETALLE
+            DETALLE: direccion !=="" ? direccion: Direccion.DETALLE,
+            ID_MUNICIPIO: id_municipio !=="" ? id_municipio: Direccion.ID_MUNICIPIO
         },{
             where: {
                 ID: id_direccion
@@ -182,7 +175,7 @@ const putProveedor = async (req = request, res = response) => {
 
         // Actualizar db Proveedor
         await Proveedor.update({
-            ID_DIRECCION: id_direccion !== "" ? id_direccion : Proveedor.ID_DIRECCION,
+            /* ID_DIRECCION: id_direccion !== "" ? id_direccion : Proveedor.ID_DIRECCION, */
             NOMBRE: nombre !== "" ? nombre : Proveedor.NOMBRE,
             TELEFONO: telefono !== "" ? telefono : Proveedor.TELEFONO,
             MODIFICADO_POR: id_usuario !== "" ? id_usuario : Proveedor.MODIFICADO_POR

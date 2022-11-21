@@ -2,9 +2,9 @@ const { Router } = require('express');
 const { check, body } = require('express-validator');
 const { getProveedores, getProveedor, postProveedor, putProveedor, deleteProveedor } = require('../../controllers/inventario/proveedores.controllers');
 
-const { validarCampos } = require('../../middlewares');
+const { validarCampos, validarDobleEspacio} = require('../../middlewares');
 const { validarEspaciosProveedor } = require('../../middlewares/validaciones-proveedores');
-const { existeProveedor, noExisteProveedorPorId } = require('../../middlewares/validar-proveedor-existente');
+const { existeProveedor, noExisteProveedorPorId, existeProveedorPut } = require('../../middlewares/validar-proveedor-existente');
 
 const router = Router();
 
@@ -25,9 +25,12 @@ router.post('/', [
     // Validaciones de Teléfono
     check('telefono', 'Solo se permiten números en el telefono').not().isNumeric(),
     check('telefono', 'Máximo de caracteres: 15').isLength({ max: 15 }),
+    /* check('telefono', 'El telefono es obligatorio').not().isEmpty(), */
     // Validación de direccion
-    check('direccion', 'La dirección debe estar en mayúscula').isUppercase(),
-    check('direccion', 'Máximo de caracteres: 120').isLength({ max: 120 }),
+    check('detalle', 'La dirección debe estar en mayúscula').isUppercase(),
+    check('detalle', 'Máximo de caracteres: 120').isLength({ max: 120 }),
+    check('detalle', 'La dirección es obligatoria').not().isEmpty(),
+    check('id_municipio', 'El municipio es obligatorio').not().isEmpty(),
     validarCampos
 ], postProveedor);
 
@@ -37,6 +40,7 @@ router.put('/actualizar-proveedor/:id', [
     check('nombre', 'El nombre del proveedor deben ser solo letras').if(body('nombre').exists()).if(body('nombre').not().equals('')).isAlpha('es-ES', {ignore: ' '}),
     check('nombre', 'El usuario debe estar en mayúscula').isUppercase(),
     check('nombre', 'Máximo de caracteres: 50').isLength({ max: 50 }),
+    check("nombre", "No se permite más de un espacio en blanco entre palabras").custom(validarDobleEspacio),
     //Validación si no existe el proveedor
     noExisteProveedorPorId,
     // Validaciones de Teléfono
@@ -45,7 +49,9 @@ router.put('/actualizar-proveedor/:id', [
     // Validación de direccion
     check('direccion', 'La dirección debe estar en mayúscula').isUppercase(),
     check('direccion', 'Máximo de caracteres: 120').isLength({ max: 120 }),
-    existeProveedor,
+    check("direccion", "No se permite más de un espacio en blanco entre palabras").custom(validarDobleEspacio),
+    check('id_municipio', 'El municipio es obligatorio').not().isEmpty(),
+    existeProveedorPut,
     validarCampos
 ], putProveedor)
 

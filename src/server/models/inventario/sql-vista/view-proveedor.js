@@ -15,6 +15,18 @@ const ViewProveedor = db.define(`VIEW_MI_PROVEEDOR`, {
     DETALLE: {
         type: DataTypes.STRING
     },
+    ID_MUNICIPIO: {
+        type: DataTypes.INTEGER
+    },
+    MUNICIPIO: {
+        type: DataTypes.STRING
+    },
+    ID_DEPARTAMENTO: {
+        type: DataTypes.INTEGER
+    },
+    DEPARTAMENTO: {
+        type: DataTypes.STRING
+    },
     TELEFONO: {
         type: DataTypes.STRING
     },

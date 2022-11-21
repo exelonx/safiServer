@@ -3,10 +3,6 @@ const { DataTypes } = require('sequelize')
 const { db } = require('../../database/db-conexion')
 
 const Direccion = db.define(`TBL_DIRECCION`, {
-    ID: {
-        type: DataTypes.INTEGER, 
-        primaryKey: true        
-    },
     ID_MUNICIPIO: {
         type: DataTypes.INTEGER,        
     },

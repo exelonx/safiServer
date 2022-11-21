@@ -39,6 +39,8 @@ const getCatalogos = async (req = request, res = response) => {
         const countCatalogos = await ViewCatalogo.count({where: {
                 [Op.or]: [{
                     NOMBRE: { [Op.like]: `%${buscar.toUpperCase() }%`}
+                },{
+                    MODIFICADO_POR: { [Op.like]: `%${buscar.toUpperCase()}%` }
                 }]
             }
         });

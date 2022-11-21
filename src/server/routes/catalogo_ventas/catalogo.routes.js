@@ -1,7 +1,7 @@
 const { Router } = require('express');
 const { check, body } = require('express-validator');
 const { getCatalogos, getCatalogo, postCatalogo, deleteCatalogo, putCatalogo } = require('../../controllers/catalogo_ventas/catalogo.controllers');
-const { validarCampos } = require('../../middlewares');
+const { validarCampos, validarDobleEspacio } = require('../../middlewares');
 const { existeCatalogo, noExisteCatalogoPorId } = require('../../middlewares/validar-catalogo-existente');
 
 
@@ -17,6 +17,7 @@ router.post('/',[
     check('nombre_catalogo', 'El Catálogo es obligatorio').not().isEmpty(),
     check('nombre_catalogo', 'Solo se permite texto').isAlpha('es-ES', {ignore: ' '}),
     check('nombre_catalogo', 'El nombre del Catálogo debe estar en mayúscula').isUppercase(),
+    check("nombre_catalogo", "No se permite más de un espacio en blanco entre palabras").custom(validarDobleEspacio),
     check('nombre_catalogo', 'Máximo de caracteres: 100').isLength({ max: 100 }),
     existeCatalogo,
     validarCampos
@@ -25,8 +26,9 @@ router.post('/',[
 
 router.put('/editar-catalogo/:id',[
 
-    check('nombre_catalogo', 'El nombre del catálogo deben ser solo letras').if(body('nombre').exists()).if(body('nombre').not().equals('')).isAlpha('es-ES', {ignore: ' '}),
+    check('nombre_catalogo', 'El nombre del catálogo deben ser solo letras').if(body('nombre_catalogo').exists()).if(body('nombre_catalogo').not().equals('')).isAlpha('es-ES', {ignore: ' '}),
     check('nombre_catalogo', 'El nombre del Catálogo debe estar en mayúscula').isUppercase(),
+    check("nombre_catalogo", "No se permite más de un espacio en blanco entre palabras").custom(validarDobleEspacio),
     check('nombre_catalogo', 'Máximo de caracteres: 100').isLength({ max: 100 }),
     noExisteCatalogoPorId,
     existeCatalogo,
