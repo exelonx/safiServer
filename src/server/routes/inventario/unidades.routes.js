@@ -17,7 +17,7 @@ router.post('/', [
     // Validaciones de la unidad_medida
     check('unidad_medida', 'La unidad de medida es obligatoria').not().isEmpty(),
     check('unidad_medida', 'La unidad de medida debe estar en mayúscula').isUppercase(),
-    check('unidad_medida', 'Máximo de caracteres: 6').isLength({ max: 6 }),
+    check('unidad_medida', 'Máximo de caracteres: 4').isLength({ max: 4 }),
     existeUnidad,
     validarCampos
 ], postUnidad);
@@ -25,7 +25,7 @@ router.post('/', [
 router.put('/actualizar-unidad/:id', [
     //Validaciones de la unidad_medida
     check('unidad_medida', 'La unidad de medida debe estar en mayúscula').isUppercase(),
-    check('unidad_medida', 'Máximo de caracteres: 6').isLength({ max: 6 }),
+    check('unidad_medida', 'Máximo de caracteres: 4').isLength({ max: 4 }),
     // Validaciones de la unidad_medida
     noExisteUnidadPorId,
     validarCampos
