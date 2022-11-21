@@ -1,14 +1,20 @@
 const { DataTypes } = require('sequelize')
 
-const { db } = require('../../database/db-conexion')
+const { db } = require('../../../database/db-conexion')
 
 
-const Impuesto = db.define(`TBL_MP_TIPO_IMPUESTO`, {
+const ViewImpuesto = db.define(`VIEW_MP_TIPO_IMPUESTO`, {
 
+    ID: {
+        type: DataTypes.INTEGER
+    },
     NOMBRE: {
         type: DataTypes.STRING
     },
     PORCENTAJE: {
+        type: DataTypes.INTEGER
+    },
+    ID_CREADO_POR: {
         type: DataTypes.INTEGER
     },
     CREADO_POR: {
@@ -17,6 +23,9 @@ const Impuesto = db.define(`TBL_MP_TIPO_IMPUESTO`, {
     FECHA_CREACION: {
         type: DataTypes.DATE
     },
+    ID_MODIFICADO_POR: {
+        type: DataTypes.INTEGER
+    },
     MODIFICADO_POR: {
         type: DataTypes.STRING
     },
@@ -24,12 +33,10 @@ const Impuesto = db.define(`TBL_MP_TIPO_IMPUESTO`, {
         type: DataTypes.DATE
     }
 }, {
-    tableName: 'TBL_MP_TIPO_IMPUESTO',
-    timestamps: true,
-    createdAt: 'FECHA_CREACION',
-    updatedAt: 'FECHA_MODIFICACION'
+    tableName: 'VIEW_MP_TIPO_IMPUESTO',
+    timestamps: false,
 })
 
 
 //Para exportar el modelo
-module.exports = Impuesto;
+module.exports = ViewImpuesto;

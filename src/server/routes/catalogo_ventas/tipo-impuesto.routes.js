@@ -18,7 +18,7 @@ router.post('/',[
     check('nombre', 'Máximo de caracteres: 100').isLength({ max: 100 }),
     check("nombre", "No se permite más de un espacio en blanco entre palabras").custom(validarDobleEspacio),
     check('porcentaje', 'El porcentaje es obligatorio.').not().isEmpty(),
-    check('porcentaje', 'Solo se permiten números.').isDecimal(),
+    check('porcentaje', 'Solo se permiten números enteros.').isInt(),
     validarCampos
 ], postImpuesto);
 
@@ -30,7 +30,7 @@ router.put('/:id', [
     check('nombre', 'Máximo de caracteres: 100').isLength({ max: 100 }),
     check("nombre", "No se permite más de un espacio en blanco entre palabras").custom(validarDobleEspacio),
     check('porcentaje', 'El porcentaje es obligatorio.').not().isEmpty(),
-    check('porcentaje', 'Solo se permiten números.').isDecimal(),
+    check('porcentaje', 'Solo se permiten números enteros.').isInt(),
     validarCampos
 ], putImpuesto);
 

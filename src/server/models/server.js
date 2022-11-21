@@ -34,6 +34,7 @@ const routerKardex = require('../routes/inventario/kardex.routes');
 const routerCompra = require('../routes/inventario/compra.routes');
 const routerDireccion = require('../routes/direccion/direccion.routes');
 const routerImpuesto = require('../routes/catalogo_ventas/tipo-impuesto.routes');
+const routerEstado = require('../routes/pedido/estado.routes');
 
 // Jobs
 const { generarBackup } = require('../jobs/db-backup');
@@ -88,12 +89,15 @@ class Server {
             notificacion:     '/api/notificacion',
 
             // CATALOGO VENTA
-            catalogos:    '/api/catalogo-venta',
-            productos:    '/api/producto',
-            impuestos:    '/api/impuesto',
+            catalogos:        '/api/catalogo-venta',
+            productos:        '/api/producto',
+            impuestos:        '/api/impuesto',
 
             //DIRECCION
-            direccion:  '/api/direccion',
+            direccion:        '/api/direccion',
+
+            //PEDIDOS
+            estados:          '/api/estado',
         }
 
         // middlewares
@@ -168,6 +172,8 @@ class Server {
         this.app.use(this.apiPath.impuestos, routerImpuesto)
         // Direccion
         this.app.use(this.apiPath.direccion, routerDireccion)          // Direccion
+        //Pedidos
+        this.app.use(this.apiPath.estados, routerEstado)              //  Estados del pedido
     }
 
     async listen () {

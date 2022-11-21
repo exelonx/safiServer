@@ -4,10 +4,10 @@ const { Op, ForeignKeyConstraintError } = require('sequelize');
 const Parametro = require("../../models/seguridad/parametro");
 
 const { eventBitacora } = require('../../helpers/event-bitacora');
-const Impuesto = require('../../models/catalogo-ventas/tipo-impuesto');
-const ViewImpuesto = require('../../models/catalogo-ventas/sql-vistas/view_tipo-impuesto');
+const ViewEstado = require('../../models/pedido/sql-vista/view_estado');
+const Estado = require('../../models/pedido/estado');
 
-const getImpuestos = async (req = request, res = response) => {
+const getEstados = async (req = request, res = response) => {
     
     let { limite, desde = 0, buscar = "", quienBusco = "" } = req.query
 
@@ -24,14 +24,12 @@ const getImpuestos = async (req = request, res = response) => {
         }
 
         // Paginación
-        const impuestos = await ViewImpuesto.findAll({
+        const estados = await ViewEstado.findAll({
             limit: parseInt(limite, 10),
             offset: parseInt(desde, 10),
             where: {
                 [Op.or]: [{
-                    NOMBRE: { [Op.like]: `%${buscar.toUpperCase() }%`}
-                }, {
-                    PORCENTAJE: { [Op.like]: `%${buscar.toUpperCase()}%` }
+                    ESTADO: { [Op.like]: `%${buscar.toUpperCase() }%`}
                 }, {
                     MODIFICADO_POR: { [Op.like]: `%${buscar.toUpperCase()}%` }
                 }, {
@@ -41,11 +39,9 @@ const getImpuestos = async (req = request, res = response) => {
         });
 
         // Contar resultados total
-        const countImpuestos = await ViewImpuesto.count({where: {
+        const countEstados = await ViewEstado.count({where: {
                 [Op.or]: [{
-                    NOMBRE: { [Op.like]: `%${buscar.toUpperCase() }%`}
-                }, {
-                    PORCENTAJE: { [Op.like]: `%${buscar.toUpperCase()}%` }
+                    ESTADO: { [Op.like]: `%${buscar.toUpperCase() }%`}
                 }, {
                     MODIFICADO_POR: { [Op.like]: `%${buscar.toUpperCase()}%` }
                 }, {
@@ -56,11 +52,11 @@ const getImpuestos = async (req = request, res = response) => {
 
         // Guardar evento
         if( buscar !== "" && desde == 0) {
-            eventBitacora(new Date, quienBusco, 24, 'CONSULTA', `SE BUSCÓ EL IMPUESTO CON EL TÉRMINO: '${buscar}'`);
+            eventBitacora(new Date, quienBusco, 24, 'CONSULTA', `SE BUSCÓ EL ESTADO CON EL TÉRMINO: '${buscar}'`);
         }
 
         // Respuesta
-        res.json( {limite, countImpuestos, impuestos} )
+        res.json( {limite, countEstados, estados} )
 
     } catch (error) {
         console.log(error);
@@ -70,22 +66,22 @@ const getImpuestos = async (req = request, res = response) => {
     }
 }
 
-const getImpuesto = async (req = request, res = response) => {
+const getEstado = async (req = request, res = response) => {
      
     const { id } = req.params
 
     try {
         
-        const impuesto = await ViewImpuesto.findByPk( id );
+        const estado = await ViewEstado.findByPk( id );
 
         // Validar Existencia
-        if( !impuesto ){
+        if( !estado ){
             return res.status(404).json({
-                msg: 'No existe un impuesto con el id ' + id
+                msg: 'No existe un estado con el id ' + id
             })
         }
 
-        res.json({ impuesto })
+        res.json({ estado })
 
     } 
     catch (error) {
@@ -97,27 +93,27 @@ const getImpuesto = async (req = request, res = response) => {
 
 }
 
-const postImpuesto = async (req = request, res = response) => {
+const postEstado = async (req = request, res = response) => {
     //body
-    const { nombre = "", porcentaje = "", id_usuario = "" } = req.body;
+    const { estado = "", color = "", id_usuario = "" } = req.body;
     
     try {
  
         // Construir modelo
-        const nuevoImpuesto = await Impuesto.create({
-            NOMBRE: nombre,
-            PORCENTAJE: porcentaje,
+        const nuevoEstado = await Estado.create({
+            ESTADO: estado,
+            COLOR: color,
             CREADO_POR: id_usuario,
             MODIFICADO_POR: id_usuario
         });
  
         // Guardar evento
-        eventBitacora(new Date, id_usuario, 24, 'NUEVO', `SE CREÓ UN NUEVO TIPO DE IMPUESTO ${nuevoImpuesto.NOMBRE}`);
+        eventBitacora(new Date, id_usuario, 25, 'NUEVO', `SE CREÓ UN ESTADO  ${nuevoEstado.ESTADO}`);
 
         // Responder
         res.json( {
             ok: true,
-            msg: 'Impuesto: '+ nombre + ' ha sido creado con éxito'
+            msg: 'Estado '+ estado + ' ha sido creado con éxito'
         } );
 
     } catch (error) {
@@ -129,25 +125,25 @@ const postImpuesto = async (req = request, res = response) => {
     }
 }
 
-const putImpuesto = async (req = request, res = response) => {
+const putEstado = async (req = request, res = response) => {
     const { id } = req.params
-    const { nombre = "", porcentaje = "", id_usuario } = req.body;
+    const { estado = "", color = "", id_usuario } = req.body;
 
     try {
 
-        const impuesto = await Impuesto.findByPk(id);
+        const estado = await Estado.findByPk(id);
         
         // Si llega sin cambios
-        if(!((impuesto.NOMBRE == nombre || nombre === ""))) {
+        if(!((estado.ESTADO == estado || estado === ""))) {
 
-            eventBitacora(new Date, id_usuario, 24, 'ACTUALIZACION', `IMPUESTO ${impuesto.NOMBRE}, ACTUALIZADO A : ${nombre !== "" && impuesto.NOMBRE != nombre ? `${nombre}` : ""}`);
+            eventBitacora(new Date, id_usuario, 25, 'ACTUALIZACION', `IMPUESTO ${estado.ESTADO}, ACTUALIZADO A : ${estado !== "" && estado.ESTADO != estado ? `${estado}` : ""}`);
 
         }
 
         // Actualizar db Catálogo
-        await Impuesto.update({
-            NOMBRE: nombre !== "" ? nombre : Impuesto.NOMBRE,
-            PORCENTAJE: porcentaje !== "" ? porcentaje : Impuesto.PORCENTAJE,
+        await Estado.update({
+            ESTADO: estado !== "" ? estado : Estado.ESTADO,
+            COLOR: color !== "" ? estado : Estado.ESTADO,
         }, {
             where: {
                 id: id
@@ -156,7 +152,7 @@ const putImpuesto = async (req = request, res = response) => {
 
         res.json({
             ok: true,
-            msg: 'Impuesto: '+ impuesto.NOMBRE + ' ha sido actualizado con éxito'
+            msg: 'Estado: '+ estado.ESTADO + ' ha sido actualizado con éxito'
         });
 
     } catch (error) {
@@ -168,40 +164,40 @@ const putImpuesto = async (req = request, res = response) => {
     }
 }
 
-const deleteImpuesto = async (req = request, res = response) => {
-    const { id_impuesto } = req.params
+const deleteEstado = async (req = request, res = response) => {
+    const { id_estado } = req.params
     const { quienElimina } = req.query
 
     try {
 
         // Llamar el catálogo a borrar
-        const impuesto = await Impuesto.findByPk( id_impuesto );
+        const estado = await Estado.findByPk( id_estado );
 
-        if (!impuesto) {
+        if (!estado) {
             return res.status(404).json({
                 ok: false,
-                msg: 'No existe el impuesto'
+                msg: 'No existe el estado'
             })
         }
         // Extraer el nombre del catálogo
-        const { NOMBRE } = impuesto;
+        const { ESTADO } = estado;
 
         // Borrar catalogo
-        await impuesto.destroy();
+        await estado.destroy();
 
         // Guardar evento
-        eventBitacora(new Date, quienElimina, 24, 'BORRADO', `SE ELIMINÓ EL IMPUESTO ${NOMBRE}`);
+        eventBitacora(new Date, quienElimina, 24, 'BORRADO', `SE ELIMINÓ EL ESTADO ${ESTADO}`);
 
         res.json({
             ok: true,
-            msg: `El impuesto: ${NOMBRE} ha sido eliminado`
+            msg: `El estado: ${ESTADO} ha sido eliminado`
         });
 
     } catch (error) {
         if( error instanceof ForeignKeyConstraintError ) {
             res.status(403).json({
                 ok: false,
-                msg: `El impuesto no puede ser eliminado`
+                msg: `El estado no puede ser eliminado`
             })
         } else {
 
@@ -215,9 +211,9 @@ const deleteImpuesto = async (req = request, res = response) => {
 }
 
 module.exports = {
-    getImpuestos,
-    getImpuesto,
-    postImpuesto,
-    putImpuesto,
-    deleteImpuesto
+    getEstados,
+    getEstado,
+    postEstado,
+    putEstado,
+    deleteEstado
 }

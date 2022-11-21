@@ -3,13 +3,13 @@ const { DataTypes } = require('sequelize')
 const { db } = require('../../database/db-conexion')
 
 
-const Impuesto = db.define(`TBL_MP_TIPO_IMPUESTO`, {
+const Estado = db.define(`TBL_MP_ESTADO`, {
 
-    NOMBRE: {
+    ESTADO: {
         type: DataTypes.STRING
     },
-    PORCENTAJE: {
-        type: DataTypes.INTEGER
+    COLOR: {
+        type: DataTypes.STRING
     },
     CREADO_POR: {
         type: DataTypes.STRING
@@ -24,7 +24,7 @@ const Impuesto = db.define(`TBL_MP_TIPO_IMPUESTO`, {
         type: DataTypes.DATE
     }
 }, {
-    tableName: 'TBL_MP_TIPO_IMPUESTO',
+    tableName: 'TBL_MP_ESTADO',
     timestamps: true,
     createdAt: 'FECHA_CREACION',
     updatedAt: 'FECHA_MODIFICACION'
@@ -32,4 +32,4 @@ const Impuesto = db.define(`TBL_MP_TIPO_IMPUESTO`, {
 
 
 //Para exportar el modelo
-module.exports = Impuesto;
+module.exports = Estado;
