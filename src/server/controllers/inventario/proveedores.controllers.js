@@ -110,6 +110,19 @@ const postProveedor = async (req = request, res = response) => {
             DETALLE: detalle
         })
 
+        let telefonoCorrecto = /^\d{4}\-\d{4}$/;
+
+        for(let i=0; i < telefono.length; i++){
+            if(telefonoCorrecto.test(telefono)){
+                
+            } else {
+                return res.status(400).json({
+                    ok: false,
+                    msg: `No es un número de teléfono.`
+                })
+            }
+        }
+
         // Construir modelo de proveedor
         const nuevoProveedor = await Proveedor.create({
             NOMBRE: nombre,
@@ -160,9 +173,8 @@ const putProveedor = async (req = request, res = response) => {
                  ${telefono !== "" && proveedor.TELEFONO != telefono ? `${proveedor.TELEFONO} actualizado a ${telefono}` : ""}
                  ${id_direccion !=="" && proveedor.ID_DIRECCION != id_direccion ? `${proveedor.ID_DIRECCION} actualizado a ${id_direccion}` :""}`);
 
-        } 
-
-        /* `${departamento.NOMBRE}, ${municipio.NOMBRE}, ${direccion} ` */
+        }
+    
 
         await Direccion.update({
             DETALLE: direccion !=="" ? direccion: Direccion.DETALLE,
@@ -172,6 +184,19 @@ const putProveedor = async (req = request, res = response) => {
                 ID: id_direccion
             }
         })
+
+        let telefonoCorrecto = /^\d{4}\-\d{4}$/;
+
+        for(let i=0; i < telefono.length; i++){
+            if(telefonoCorrecto.test(telefono)){
+                
+            } else {
+                return res.status(400).json({
+                    ok: false,
+                    msg: `No es un número de teléfono.`
+                })
+            }
+        }
 
         // Actualizar db Proveedor
         await Proveedor.update({
