@@ -29,6 +29,9 @@ const getUnidades = async (req = request, res = response) => {
             where: {
                 [Op.or]: [{
                     UNIDAD_MEDIDA: { [Op.like]: `%${buscar.toUpperCase() }%`}
+                },
+                {
+                    NOMBRE: { [Op.like]: `%${buscar.toUpperCase() }%`}
                 }]
             }
         });
@@ -37,6 +40,9 @@ const getUnidades = async (req = request, res = response) => {
         const countUnidades = await Unidad.count({where: {
                 [Op.or]: [{
                     UNIDAD_MEDIDA: { [Op.like]: `%${buscar.toUpperCase() }%`}
+                },
+                {
+                    NOMBRE: { [Op.like]: `%${buscar.toUpperCase() }%`}
                 }]
             }
         });
@@ -86,8 +92,7 @@ const getUnidad = async (req = request, res = response) => {
 
 const postUnidad = async (req = request, res = response) => {
     //body
-    const { id_usuario } = req.query; 
-    const { unidad_medida = "", nombre = "" } = req.body;
+    const { id_usuario = "", unidad_medida = "", nombre = "" } = req.body;
     
     try {
  
