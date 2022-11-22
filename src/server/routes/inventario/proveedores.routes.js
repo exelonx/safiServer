@@ -1,6 +1,7 @@
 const { Router } = require('express');
 const { check, body } = require('express-validator');
 const { getProveedores, getProveedor, postProveedor, putProveedor, deleteProveedor } = require('../../controllers/inventario/proveedores.controllers');
+const { getReporteProveedor } = require('../../controllers/inventario/reporteria/proveedor.report.controller');
 
 const { validarCampos, validarDobleEspacio} = require('../../middlewares');
 const { validarEspaciosProveedor } = require('../../middlewares/validaciones-proveedores');
@@ -61,5 +62,7 @@ router.delete('/:id', [
     noExisteProveedorPorId,
     validarCampos
 ], deleteProveedor);
+
+router.post('/reporteria/proveedor', getReporteProveedor);
 
 module.exports = router;
