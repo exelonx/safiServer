@@ -1,5 +1,6 @@
 const { Router } = require('express');
 const { check, body } = require('express-validator');
+const { getReporteUnidad } = require('../../controllers/inventario/reporteria/unidad.report.controller');
 const { getUnidades, getUnidad, postUnidad, deleteUnidad, putUnidad } = require('../../controllers/inventario/unidades.controllers');
 
 const { validarCampos } = require('../../middlewares');
@@ -46,5 +47,7 @@ router.delete('/:id', [
     noExisteUnidadPorId,
     validarCampos
 ], deleteUnidad);
+
+router.post('/reporteria/unidad', getReporteUnidad);
 
 module.exports = router;
