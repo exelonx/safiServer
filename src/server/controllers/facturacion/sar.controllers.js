@@ -98,7 +98,7 @@ const getSAR = async (req = request, res = response) => {
 
 const postSAR = async (req = request, res = response) => {
     //body
-    const { cai = "", rango_minimo = "", rango_maximo = "", fecha_autorizado = "", fecha_limite_emision = "" } = req.body;
+    const { cai = "", rango_minimo = "", rango_maximo = "", fecha_autorizado = "", fecha_limite_emision = "", id_usuario = "" } = req.body;
     
     try {
 
@@ -167,49 +167,148 @@ const postSAR = async (req = request, res = response) => {
     }
 }
 
-// const deleteProveedor = async (req = request, res = response) => {
-//     const { id } = req.params
-//     const { quienElimina } = req.query
+const putSAR = async (req = request, res = response) => {
+    const { id } = req.params
+    const { cai = "", rango_minimo = "", rango_maximo = "", fecha_autorizado = "", fecha_limite_emision = "", numero_actual = "" } = req.body;
+    const { id_usuario = "" } = req.body;
 
-//     try {
+    try {
 
-//         // Llamar el proveedor a borrar
-//         const proveedor = await Proveedor.findByPk( id );
+        const sar = await Sar.findByPk(id);
+        // Si llega sin cambios
+        if(!((sar.CAI == cai || cai === "") 
+            && (sar.RANGO_MINIMO == rango_minimo || rango_minimo === "")
+            && (sar.RANGO_MAXIMO == rango_maximo || rango_maximo === "")
+            && (sar.FECHA_AUTORIZADO == fecha_autorizado || fecha_autorizado === "")
+            && (sar.FECHA_LIMITE_EMISION == fecha_limite_emision || fecha_limite_emision === "")
+            && (sar.NUMERO_ACTUAL == numero_actual || numero_actual === ""))) {
 
-//         // Extraer el nombre del proveedor
-//         const { NOMBRE } = proveedor;
+                eventBitacora(new Date, id_usuario, 27, 'ACTUALIZACION', 
+                `DATOS ACTUALIZADOS: ${cai !== "" && sar.CAI != cai ? `${sar.CAI} actualizado a ${cai}` : ""}
+                 ${rango_minimo !== "" && sar.RANGO_MINIMO != rango_minimo ? `${sar.RANGO_MINIMO} actualizado a ${rango_minimo}` : ""}
+                 ${rango_maximo !=="" && sar.RANGO_MAXIMO != rango_maximo ? `${sar.RANGO_MAXIMO} actualizado a ${rango_maximo}` :""}
+                 ${fecha_autorizado !=="" && sar.FECHA_AUTORIZADO != fecha_autorizado ? `${sar.FECHA_AUTORIZADO} actualizado a ${fecha_autorizado}` :""}
+                 ${fecha_limite_emision !=="" && sar.FECHA_LIMITE_EMISION != fecha_limite_emision ? `${sar.FECHA_LIMITE_EMISION} actualizado a ${fecha_limite_emision}` :""}
+                 ${numero_actual !=="" && sar.NUMERO_ACTUAL != numero_actual ? `${sar.NUMERO_ACTUAL} actualizado a ${numero_actual}` :""}`);
+        }
+    
 
-//         // Borrar Proveedor
-//         await proveedor.destroy();
+        let caiValido = /^([A-Z0-9]{6}\-){5}([A-Z0-9]{2})$/;
 
-//         // Guardar evento
-//         eventBitacora(new Date, quienElimina, 15, 'BORRADO', `SE ELIMINO EL PROVEEDOR ${NOMBRE}`);
+        for(let i=0; i < cai.length; i++){
+            if(caiValido.test(cai)){
+                
+            } else {
+                return res.status(400).json({
+                    ok: false,
+                    msg: `CAI inválido.`
+                })
+            }
+        }
 
-//         res.json({
-//             ok: true,
-//             msg: `El proveedor: ${NOMBRE} ha sido eliminado`
-//         });
+        let rango = /^(\d{3}\-){2}\d{2}\-\d{8}$/;
 
-//     } catch (error) {
-//         if( error instanceof ForeignKeyConstraintError ) {
-//             res.status(403).json({
-//                 ok: false,
-//                 msg: `El proveedor no puede ser eliminado`
-//             })
-//         } else {
+        for(let i=0; i < rango_minimo.length; i++){
+            if(rango.test(rango_minimo)){
+                
+            } else {
+                return res.status(400).json({
+                    ok: false,
+                    msg: `Rango mínimo inválido.`
+                })
+            }
+        }
 
-//             console.log(error);
-//             res.status(500).json({
-//                 msg: error.message
-//             })
+        for(let i=0; i < rango_maximo.length; i++){
+            if(rango.test(rango_maximo)){
+                
+            } else {
+                return res.status(400).json({
+                    ok: false,
+                    msg: `Rango máximo inválido.`
+                })
+            }
+        }
+        
+        if(numero_actual < sar.NUMERO_ACTUAL){
+            return res.status(400).json({
+                ok: false,
+                msg: `No puede ingresar un número anterior. Número actual: ${sar.NUMERO_ACTUAL}`
+            })
+        }
 
-//         }
-//     }  
-// }
+        // Actualizar db Proveedor
+        await Sar.update({
+            CAI: cai !== "" ? cai : sar.CAI,
+            RANGO_MINIMO: rango_minimo !== "" ? rango_minimo : sar.RANGO_MINIMO,
+            RANGO_MAXIMO: rango_maximo !== "" ? rango_maximo : sar.RANGO_MAXIMO,
+            FECHA_AUTORIZADO: fecha_autorizado !== "" ? fecha_autorizado : sar.FECHA_AUTORIZADO,
+            FECHA_LIMITE_EMISION: fecha_limite_emision !== "" ? fecha_limite_emision : sar.FECHA_LIMITE_EMISION,
+            NUMERO_ACTUAL: numero_actual !== "" ? numero_actual : sar.NUMERO_ACTUAL,
+        }, {
+            where: {
+                ID: id
+            }
+        })
+
+        res.json({
+            ok: true,
+            msg: 'CAI: '+ sar.CAI + ' ha sido actualizado con éxito'
+        });
+
+    } catch (error) {
+        console.log(error instanceof ForeignKeyConstraintError);
+        res.status(500).json({
+            ok: false,
+            msg: error.message
+        })
+    }
+}
+
+const deleteSAR = async (req = request, res = response) => {
+    const { id } = req.params
+    const { quienElimina } = req.query
+
+    try {
+
+        // Llamar el proveedor a borrar
+        const sar = await Sar.findByPk( id );
+
+        // Extraer el nombre del proveedor
+        const { CAI } = sar;
+
+        // Borrar Proveedor
+        await sar.destroy();
+
+        // Guardar evento
+        eventBitacora(new Date, quienElimina, 27, 'BORRADO', `SE ELIMINO EL CAI ${CAI}`);
+
+        res.json({
+            ok: true,
+            msg: `El CAI: ${CAI} ha sido eliminado`
+        });
+
+    } catch (error) {
+        if( error instanceof ForeignKeyConstraintError ) {
+            res.status(403).json({
+                ok: false,
+                msg: `El CAI no puede ser eliminado`
+            })
+        } else {
+
+            console.log(error);
+            res.status(500).json({
+                msg: error.message
+            })
+
+        }
+    }  
+}
 
 module.exports = {
     getAllSAR,
     getSAR,
     postSAR,
-    // deleteProveedor
+    putSAR,
+    deleteSAR
 }

@@ -22,7 +22,7 @@ const validarEspaciosCAI = ( req = request, res = response, next ) => {
 
     const { cai = "" } = req.body;
 
-    if ( cai.includes('') ) {
+    if ( cai.includes(' ') ) {
         return res.status(400).json({
             ok: false,
             msg: 'No se permiten espacios.'
