@@ -36,6 +36,8 @@ const routerDireccion = require('../routes/direccion/direccion.routes');
 const routerImpuesto = require('../routes/catalogo_ventas/tipo-impuesto.routes');
 const routerEstado = require('../routes/pedido/estado.routes');
 const routerSAR = require('../routes/facturacion/sar.routes')
+const routerMesa = require('../routes/pedido/mesa.routes');
+const routerPedido = require('../routes/pedido/pedido.routes');
 
 // Jobs
 const { generarBackup } = require('../jobs/db-backup');
@@ -99,6 +101,8 @@ class Server {
 
             //PEDIDOS
             estados:          '/api/estado',
+            mesa:             '/api/mesa',
+            pedido:           '/api/pedido',
 
             //FACTURACION
             sar:              '/api/SAR',
@@ -178,6 +182,8 @@ class Server {
         this.app.use(this.apiPath.direccion, routerDireccion)          // Direccion
         // Pedidos
         this.app.use(this.apiPath.estados, routerEstado)               // Estados del pedido
+        this.app.use(this.apiPath.mesa, routerMesa)                    // Mesas
+        this.app.use(this.apiPath.pedido, routerPedido)                // Pedido
         // Facturacion
         this.app.use(this.apiPath.sar, routerSAR)                      // SAR
     }
