@@ -7,7 +7,7 @@ const dayjs = require('dayjs');
 const localizedFormat = require('dayjs/plugin/localizedFormat');
 
 const { compilarTemplate } = require('../../../helpers/compilarTemplate');
-const ViewProveedor = require('../../../models/inventario/sql-vista/view_proveedor');
+const ViewProveedor = require('../../../models/inventario/sql-vista/view-proveedor');
 
 // Llamar todas los parametros
 const getReporteProveedor = async (req = request, res = response)=>{
@@ -19,7 +19,7 @@ const getReporteProveedor = async (req = request, res = response)=>{
         const buscador = await puppeteer.launch({headless: true});
         const pagina = await buscador.newPage();
 
-        const registros = await ViewRol.findAll({
+        const registros = await ViewProveedor.findAll({
 
             where: {
                 // WHERE COLUMNA1 LIKE %${BUSCAR}% OR COLUMNA2 LIKE %${BUSCAR}%
