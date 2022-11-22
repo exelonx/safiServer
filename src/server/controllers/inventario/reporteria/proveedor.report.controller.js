@@ -7,7 +7,7 @@ const dayjs = require('dayjs');
 const localizedFormat = require('dayjs/plugin/localizedFormat');
 
 const { compilarTemplate } = require('../../../helpers/compilarTemplate');
-const ViewProveedor = require('../../models/inventario/sql-vistas/view-proveedor');
+const ViewProveedor = require('../../../models/inventario/sql-vista/view_proveedor');
 
 // Llamar todas los parametros
 const getReporteProveedor = async (req = request, res = response)=>{
