@@ -18,11 +18,11 @@ const Sar = db.define(`TBL_MF_SAR`, {
     }
     ,
     FECHA_AUTORIZADO: {
-        type: DataTypes.STRING
+        type: DataTypes.DATE
     }
     ,
     FECHA_LIMITE_EMISION: {
-        type: DataTypes.STRING
+        type: DataTypes.DATE
     }
     ,
     NUMERO_ACTUAL: {

@@ -1,5 +1,6 @@
 const { Router } = require('express');
 const { check, body } = require('express-validator');
+const { getReporteSAR } = require('../../controllers/facturacion/reporteria/sar.report.controller');
 const { getAllSAR, getSAR, postSAR } = require('../../controllers/facturacion/sar.controllers');
 const { validarCampos } = require('../../middlewares');
 const { validarEspaciosCAI } = require('../../middlewares/validaciones-cai');
@@ -31,5 +32,7 @@ router.post('/', [
     check('fecha_limite_emision', 'La fecha límite de emisión es obligatoria').not().isEmpty(),
     validarCampos
 ], postSAR);
+
+router.post('/reporteria/cai', getReporteSAR);
 
 module.exports = router;
