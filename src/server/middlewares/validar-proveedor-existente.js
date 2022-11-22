@@ -26,7 +26,7 @@ const existeProveedorPut = async(req = request, res = response, next) => {
 
     const { id } = req.params
     const { nombre } = req.body;
-    // Validar que no exista rol repetido
+    // Validar que no exista el proveedor repetido
     const nombreRepetido = await Proveedor.findOne({
         where: {
             NOMBRE: nombre,

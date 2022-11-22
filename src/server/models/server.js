@@ -35,6 +35,7 @@ const routerCompra = require('../routes/inventario/compra.routes');
 const routerDireccion = require('../routes/direccion/direccion.routes');
 const routerImpuesto = require('../routes/catalogo_ventas/tipo-impuesto.routes');
 const routerEstado = require('../routes/pedido/estado.routes');
+const routerSAR = require('../routes/facturacion/sar.routes')
 
 // Jobs
 const { generarBackup } = require('../jobs/db-backup');
@@ -98,6 +99,9 @@ class Server {
 
             //PEDIDOS
             estados:          '/api/estado',
+
+            //FACTURACION
+            sar:              '/api/SAR',
         }
 
         // middlewares
@@ -172,8 +176,10 @@ class Server {
         this.app.use(this.apiPath.impuestos, routerImpuesto)
         // Direccion
         this.app.use(this.apiPath.direccion, routerDireccion)          // Direccion
-        //Pedidos
-        this.app.use(this.apiPath.estados, routerEstado)              //  Estados del pedido
+        // Pedidos
+        this.app.use(this.apiPath.estados, routerEstado)               // Estados del pedido
+        // Facturacion
+        this.app.use(this.apiPath.sar, routerSAR)                      // SAR
     }
 
     async listen () {

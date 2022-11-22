@@ -206,8 +206,4 @@ module.exports = {
     postCatalogo,
     putCatalogo,
     deleteCatalogo
-   /*  getUnidad,
-    postUnidad,
-    putUnidad,
-    deleteUnidad */
 }
