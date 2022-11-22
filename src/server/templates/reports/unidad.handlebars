@@ -8,7 +8,7 @@
 
     <link rel="stylesheet" href="style.css">
     <link rel="shortcut icon" href="/img/favicon.ico">
-    <title>Reporte Proveedor</title>
+    <title>Reporte Unidad</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -26,21 +26,15 @@
             <tr>
                 <th scope="col">#</th>
                 <th scope="col">Nombre</th>
-                <th scope="col">Creador Por</th>
-                <th scope="col">Fecha de Creación</th>
-                <th scope="col">Modificado Por</th>
-                <th scope="col">Fecha de Modificación</th>
+                <th scope="col">Unidad de Medida</th>
             </tr>
         </thead>
         <tbody>
-            {{#each proveedor}}
+            {{#each unidad}}
             <tr>
                 <td>{{inc @index}}</td>
                 <td>{{NOMBRE}}</td>
-                <td>{{CREADO_POR}}</td>
-                <td>{{FECHA_CREACION}}</td>
-                <td>{{MODIFICACION_POR}}</td>
-                <td>{{FECHA_MODIFICACION}}</td>
+                <td>{{UNIDAD_MEDIDA}}</td>
             </tr>
             {{/each}}
         </tbody>
