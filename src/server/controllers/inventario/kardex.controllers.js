@@ -7,9 +7,9 @@ const ViewKardex = require('../../models/inventario/sql-vista/view_kardex');
 const ViewInsumo = require('../../models/inventario/sql-vista/view-insumo');
 
 const getKardex = async (req = request, res = response) => {
-    let { limite, desde = 0, buscar = "", id_usuario, fechaInicial ="", fechaFinal="", id_insumo = "" } = req.query
+    let { limite, desde = 0, buscar = "", id_usuario, fechaInicial ="", fechaFinal="", id_insumo = 0 } = req.query
     let filtrarPorFecha = {}
-
+    let filtrarInsumo = {}
     try {
 
         // Definir el número de objetos a mostrar
@@ -31,6 +31,12 @@ const getKardex = async (req = request, res = response) => {
             }
         }
 
+        if( id_insumo != 0) {
+            filtrarInsumo = {ID_INSUMO: id_insumo}
+        }
+
+        console.log(filtrarInsumo)
+
         const registros = await ViewKardex.findAll({
             limit: parseInt(limite, 10),
             offset: parseInt(desde, 10),
@@ -41,7 +47,7 @@ const getKardex = async (req = request, res = response) => {
                 }, {
                     TIPO_MOVIMIENTO: { [Op.like]: `%${buscar.toUpperCase()}%`}
                 }],
-                [Op.and]: [filtrarPorFecha, {ID_INSUMO: id_insumo}]
+                [Op.and]: [filtrarPorFecha, filtrarInsumo]
             }
         });
 
@@ -55,7 +61,7 @@ const getKardex = async (req = request, res = response) => {
             }, {
                 TIPO_MOVIMIENTO: { [Op.like]: `%${buscar.toUpperCase()}%`}
             }],
-            [Op.and]: [filtrarPorFecha, {ID_INSUMO: id_insumo}]
+            [Op.and]: [filtrarPorFecha, filtrarInsumo]
         }})
 
         // Guardar evento
@@ -75,14 +81,14 @@ const getKardex = async (req = request, res = response) => {
 }
 
 const validarIdInsumoKardex = async (req = request, res = response) => {
-    const {id_insumo} = req.params;
+    const {id_insumo = 0} = req.params;
     
     try {
         
         // Instanciar el insumo
         const insumo = await ViewInsumo.findByPk(id_insumo);
 
-        if(insumo) {
+        if(insumo || id_insumo == 0) {
             return res.json(true)
         } else {
             return res.json(false)

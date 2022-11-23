@@ -3,37 +3,34 @@ const { DataTypes } = require('sequelize')
 const { db } = require('../../../database/db-conexion')
 
 
-const ViewKardex = db.define(`VIEW_MI_KARDEX`, {
+const ViewMesa = db.define(`VIEW_MP_MESA`, {
     ID: {
-        type: DataTypes.NUMBER
-    },
-    ID_USUARIO: {
         type: DataTypes.INTEGER
     },
-    USUARIO: {
+    ID_ESTADO: {
+        type: DataTypes.INTEGER
+    },
+    ESTADO: {
         type: DataTypes.STRING
     },
-    ID_INSUMO: {
+    COLOR: {
         type: DataTypes.INTEGER
     },
     NOMBRE: {
         type: DataTypes.STRING
     },
-    UNIDAD_MEDIDA: {
+    INFORMACION: {
+        type: DataTypes.BOOLEAN
+    },
+    TIPO: {
+        type: DataTypes.INTEGER
+    },
+    FECHA: {
         type: DataTypes.STRING
-    },
-    CANTIDAD: {
-        type: DataTypes.DECIMAL
-    },
-    TIPO_MOVIMIENTO: {
-        type: DataTypes.STRING
-    },
-    FECHA_Y_HORA: {
-        type: DataTypes.DATE
     }
 }, {
-    tableName: 'VIEW_MI_KARDEX',
+    tableName: 'VIEW_MP_MESA',
     timestamps: false,
 })
 
-module.exports = ViewKardex;
+module.exports = ViewMesa;
