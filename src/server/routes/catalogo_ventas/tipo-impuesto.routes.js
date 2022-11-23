@@ -37,10 +37,3 @@ router.put('/:id', [
 router.delete('/:id_impuesto', deleteImpuesto);
 
 module.exports = router;
-
-
-
-
-
-
-module.exports = router
