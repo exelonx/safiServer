@@ -37,6 +37,7 @@ const routerImpuesto = require('../routes/catalogo_ventas/tipo-impuesto.routes')
 const routerEstado = require('../routes/pedido/estado.routes');
 const routerSAR = require('../routes/facturacion/sar.routes')
 const routerTipoProducto = require('../routes/catalogo_ventas/tipoProducto.routes');
+const routerInventarios = require('../routes/inventario/inventario.routes');
 
 // Jobs
 const { generarBackup } = require('../jobs/db-backup');
@@ -83,6 +84,7 @@ class Server {
             proveedores:      '/api/proveedor',
             unidades:         '/api/unidad',
             insumos:          '/api/insumo',
+            inventario:       '/api/inventario',
             kardex:           '/api/kardex',
             compra:           '/api/compra',
             compraDetalle:    '/api/compra-detalle',
@@ -168,6 +170,7 @@ class Server {
         this.app.use(this.apiPath.proveedores, routerProveedores)      // Proveedores
         this.app.use(this.apiPath.unidades, routerUnidades)            // Unidades
         this.app.use(this.apiPath.insumos, routerInsumos)              // Insumos
+        this.app.use(this.apiPath.insumos, routerInventarios)          // Insumos
         this.app.use(this.apiPath.kardex, routerKardex)                // Kardex
         this.app.use(this.apiPath.compra, routerCompra)                // Compra              
         // Notificacion
