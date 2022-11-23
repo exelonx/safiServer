@@ -26,19 +26,21 @@
             <tr>
                 <th scope="col">#</th>
                 <th scope="col">Nombre</th>
-                <th scope="col">Creador Por</th>
+                <th scope="col">Creado Por</th>
+                <th scope="col">Fecha de Creación</th>
                 <th scope="col">Modificado Por</th>
-                <th scope="col">Dirección</th>
+                <th scope="col">Fecha de Modificación</th>
             </tr>
         </thead>
         <tbody>
-            {{#each proveedor}}
+            {{#each catalogo}}
             <tr>
                 <td>{{inc @index}}</td>
                 <td>{{NOMBRE}}</td>
                 <td>{{CREADO_POR}}</td>
-                <td>{{MODIFICACION_POR}}</td>
-                <td>{{DEPARTAMENTO}},{{MUNICIPIO}},{{DETALLE}}</td>
+                <td>{{FECHA_CREACION}}</td>
+                <td>{{MODIFICADO_POR}}</td>
+                <td>{{FECHA_MODIFICACION}}</td>
             </tr>
             {{/each}}
         </tbody>
