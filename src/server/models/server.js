@@ -36,6 +36,7 @@ const routerDireccion = require('../routes/direccion/direccion.routes');
 const routerImpuesto = require('../routes/catalogo_ventas/tipo-impuesto.routes');
 const routerEstado = require('../routes/pedido/estado.routes');
 const routerSAR = require('../routes/facturacion/sar.routes')
+const routerTipoProducto = require('../routes/catalogo_ventas/tipoProducto.routes');
 
 // Jobs
 const { generarBackup } = require('../jobs/db-backup');
@@ -93,6 +94,7 @@ class Server {
             catalogos:        '/api/catalogo-venta',
             productos:        '/api/producto',
             impuestos:        '/api/impuesto',
+            tipoProducto:     '/api/tipo-producto',
 
             //DIRECCION
             direccion:        '/api/direccion',
@@ -174,6 +176,7 @@ class Server {
         this.app.use(this.apiPath.catalogos, routerCatalogo)
         this.app.use(this.apiPath.productos, routerProducto)
         this.app.use(this.apiPath.impuestos, routerImpuesto)
+        this.app.use(this.apiPath.tipoProducto, routerTipoProducto)
         // Direccion
         this.app.use(this.apiPath.direccion, routerDireccion)          // Direccion
         // Pedidos

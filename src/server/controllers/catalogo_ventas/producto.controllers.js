@@ -10,7 +10,7 @@ const ViewProducto = require('../../models/catalogo-ventas/sql-vistas/view_produ
 // Llamar todas las preguntas paginadas
 const getProductos = async (req = request, res = response) => {
 
-    let { limite, desde = 0, buscar = "", quienBusco = "" } = req.query
+    let { limite, desde = 0, buscar = "", quienBusco = "", idTipoProducto = 1 } = req.query
 
     try {
 
@@ -29,32 +29,27 @@ const getProductos = async (req = request, res = response) => {
             limit: parseInt(limite, 10),
             offset: parseInt(desde, 10),
             where: {
-                [Op.or]: [
-                    {
-                        PORCENTAJE: { [Op.like]: `%${buscar.toUpperCase()}%` }
-                    },
-                    {
-                        NOMBRE: { [Op.like]: `%${buscar.toUpperCase()}%` }
-                    },
-                    {
-                        TIPO_PRODUCTO: { [Op.like]: `%${buscar.toUpperCase()}%` }
-                    },
-                    {
-                        PRECIO: { [Op.like]: `%${buscar.toUpperCase()}%` }
-                    },
-                    {
-                        FECHA_INICIO: { [Op.like]: `%${buscar.toUpperCase()}%` }
-                    },
-                    {
-                        FECHA_FINAL: { [Op.like]: `%${buscar.toUpperCase()}%` }
-                    },
-                    {
-                        CREADO_POR: { [Op.like]: `%${buscar.toUpperCase()}%` }
-                    },
-                    {
-                        MODIFICACION_POR: { [Op.like]: `%${buscar.toUpperCase()}%` }
-                    }
-                ]
+                [Op.or]: [{
+                    PORCENTAJE: { [Op.like]: `%${buscar.toUpperCase()}%` }
+                },
+                {
+                    NOMBRE: { [Op.like]: `%${buscar.toUpperCase()}%` }
+                },
+                {
+                    PRECIO: { [Op.like]: `%${buscar.toUpperCase()}%` }
+                },
+                {
+                    CREADO_POR: { [Op.like]: `%${buscar.toUpperCase()}%` }
+                },
+                {
+                    MODIFICACION_POR: { [Op.like]: `%${buscar.toUpperCase()}%` }
+                }],
+                [Op.not]: [{
+                    ESTADO: false 
+                }],
+                [Op.and]: [{
+                    ID_TIPO_PRODUCTO: idTipoProducto
+                }]
             }
         });
 
@@ -68,22 +63,19 @@ const getProductos = async (req = request, res = response) => {
                     NOMBRE: { [Op.like]: `%${buscar.toUpperCase()}%` }
                 },
                 {
-                    TIPO_PRODUCTO: { [Op.like]: `%${buscar.toUpperCase()}%` }
-                },
-                {
                     PRECIO: { [Op.like]: `%${buscar.toUpperCase()}%` }
-                },
-                {
-                    FECHA_INICIO: { [Op.like]: `%${buscar.toUpperCase()}%` }
-                },
-                {
-                    FECHA_FINAL: { [Op.like]: `%${buscar.toUpperCase()}%` }
                 },
                 {
                     CREADO_POR: { [Op.like]: `%${buscar.toUpperCase()}%` }
                 },
                 {
                     MODIFICACION_POR: { [Op.like]: `%${buscar.toUpperCase()}%` }
+                }],
+                [Op.not]: [{
+                    ESTADO: false 
+                }],
+                [Op.and]: [{
+                    ID_TIPO_PRODUCTO: idTipoProducto
                 }]
             }
         });

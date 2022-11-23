@@ -29,6 +29,9 @@ const Producto = db.define(`TBL_MP_PRODUCTO`, {
     FECHA_FINAL: {
         type: DataTypes.DATE
     },
+    ESTADO: {
+        type: DataTypes.BOOLEAN
+    },
     SIN_ESTADO: {
         type: DataTypes.BOOLEAN
     },
