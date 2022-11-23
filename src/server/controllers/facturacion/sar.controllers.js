@@ -76,16 +76,16 @@ const getSAR = async (req = request, res = response) => {
 
     try {
         
-        const sar = await Sar.findByPk( id );
+        const unSar = await Sar.findByPk( id );
 
         // Validar Existencia
-        if( !sar ){
+        if( !unSar ){
             return res.status(404).json({
                 msg: 'No existe un CAI con el id ' + id
             })
         }
 
-        res.json({ sar })
+        res.json({ unSar })
 
     } catch (error) {
         console.log(error);
@@ -118,7 +118,7 @@ const postSAR = async (req = request, res = response) => {
         let rango = /^(\d{3}\-){2}\d{2}\-\d{8}$/;
 
         for(let i=0; i < rango_minimo.length; i++){
-            if(caiValido.test(rango_minimo)){
+            if(rango.test(rango_minimo)){
                 
             } else {
                 return res.status(400).json({
@@ -129,13 +129,42 @@ const postSAR = async (req = request, res = response) => {
         }
 
         for(let i=0; i < rango_maximo.length; i++){
-            if(caiValido.test(rango_maximo)){
+            if(rango.test(rango_maximo)){
                 
             } else {
                 return res.status(400).json({
                     ok: false,
                     msg: `Rango máximo inválido.`
                 })
+            }
+        } 
+
+        if (fecha_limite_emision < fecha_autorizado ) {
+            return res.status(400).json({
+                ok: false,
+                msg: `La fecha límite no puede ser menor a la fecha de autorización.`
+            })
+        }
+
+        if(rango_minimo > rango_maximo){
+            return res.status(400).json({
+                ok: false,
+                msg: `El rango mínimo debe ser menor al rango máximo.`
+            })
+        }
+
+        const todosLosCai = await Sar.findAll();
+
+        for await (let cai of todosLosCai ){
+            let rango_minimo = cai.RANGO_MAXIMO;
+            let numero_actual = cai.NUMERO_ACTUAL;
+
+            //Comparar rango minimo con rango maximo
+            if (rango_minimo !== numero_actual) {
+                return res.status(400).json({
+                    ok: false,
+                    msg: `Ya existe un CAI en uso.`
+                })              
             }
         }
 
@@ -229,13 +258,42 @@ const putSAR = async (req = request, res = response) => {
                 })
             }
         }
-        
+
         if(numero_actual < sar.NUMERO_ACTUAL){
             return res.status(400).json({
                 ok: false,
                 msg: `No puede ingresar un número anterior. Número actual: ${sar.NUMERO_ACTUAL}`
             })
         }
+        
+        if (fecha_limite_emision < fecha_autorizado ) {
+            return res.status(400).json({
+                ok: false,
+                msg: `La fecha límite no puede ser menor a la fecha de autorización.`
+            })
+        }
+
+        if(rango_minimo > rango_maximo){
+            return res.status(400).json({
+                ok: false,
+                msg: `El rango mínimo debe ser menor al rango máximo.`
+            })
+        }
+
+        // const todosLosCai = await Sar.findAll();
+
+        // for await (let cai of todosLosCai ){
+        //     let rango_minimo = cai.RANGO_MAXIMO;
+        //     let numero_actual = cai.NUMERO_ACTUAL;
+
+        //     //Comparar rango minimo con rango maximo
+        //     if (rango_minimo !== numero_actual) {
+        //         return res.status(400).json({
+        //             ok: false,
+        //             msg: `Ya existe un CAI en uso.`
+        //         })              
+        //     }
+        // }
 
         // Actualizar db Proveedor
         await Sar.update({

@@ -1,5 +1,6 @@
 const { Router } = require('express');
 const { check, body } = require('express-validator');
+const { getReporteSAR } = require('../../controllers/facturacion/reporteria/sar.report.controller');
 const { getAllSAR, getSAR, postSAR, putSAR, deleteSAR } = require('../../controllers/facturacion/sar.controllers');
 const { validarCampos } = require('../../middlewares');
 const { validarEspaciosCAI } = require('../../middlewares/validaciones-cai');
@@ -22,13 +23,11 @@ router.post('/', [
     existeCAI,
     // Validaciones del rango mínimo
     check('rango_minimo', 'El rango mínimo es obligatorio').not().isEmpty(),
-    check('rango_minimo', 'Solo se permiten números en el rango mínimo').not().isNumeric(),
-    check('rango_minimo', 'Máximo de caracteres del rango mímino: 19').isLength({ max: 19 }),
+    check('rango_minimo', 'Máximo de caracteres del rango mímino: 45').isLength({ max: 45 }),
     existeRangoMinimo,
     // Validaciones del rango mínimo
     check('rango_maximo', 'El rango máximo es obligatorio').not().isEmpty(),
-    check('rango_maximo', 'Solo se permiten números en el rango máximo').not().isNumeric(),
-    check('rango_maximo', 'Máximo de caracteres del rango máximo: 19').isLength({ max: 19 }),
+    check('rango_maximo', 'Máximo de caracteres del rango máximo: 45').isLength({ max: 45 }),
     existeRangoMaximo,
     // Validación de fechas
     check('fecha_autorizado', 'La fecha autorizada es obligatoria').not().isEmpty(),
@@ -65,5 +64,7 @@ router.delete('/:id', [
     noExisteCAIPorId,
     validarCampos
 ], deleteSAR);
+
+router.post('/reporteria/cai', getReporteSAR )
 
 module.exports = router;

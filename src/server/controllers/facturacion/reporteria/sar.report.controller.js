@@ -38,8 +38,8 @@ const getReporteSAR = async (req = request, res = response) => {
                 CAI: sar.CAI,
                 RANGO_MINIMO: sar.RANGO_MINIMO,
                 RANGO_MAXIMO: sar.RANGO_MAXIMO,
-                FECHA_AUTORIZADO: dayjs(sar.FECHA_AUTORIZADO).format('D MMM, YYYY, h:mm A'),
-                FECHA_LIMITE_EMISION: dayjs(sar.FECHA_LIMITE_EMISION).format('D MMM, YYYY, h:mm A'),
+                FECHA_AUTORIZADO: dayjs(sar.FECHA_AUTORIZADO).format('D MMM, YYYY'),
+                FECHA_LIMITE_EMISION: dayjs(sar.FECHA_LIMITE_EMISION).format('D MMM, YYYY'),
                 NUMERO_ACTUAL: sar.NUMERO_ACTUAL
             }
         })
