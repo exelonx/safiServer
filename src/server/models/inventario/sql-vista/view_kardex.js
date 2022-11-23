@@ -19,6 +19,9 @@ const ViewKardex = db.define(`VIEW_MI_KARDEX`, {
     NOMBRE: {
         type: DataTypes.STRING
     },
+    UNIDAD_MEDIDA: {
+        type: DataTypes.STRING
+    },
     CANTIDAD: {
         type: DataTypes.DECIMAL
     },
