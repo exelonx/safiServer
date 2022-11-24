@@ -40,6 +40,7 @@ const routerMesa = require('../routes/pedido/mesa.routes');
 const routerPedido = require('../routes/pedido/pedido.routes');
 const routerTipoProducto = require('../routes/catalogo_ventas/tipoProducto.routes');
 const routerInventarios = require('../routes/inventario/inventario.routes');
+const routerCaja = require('../routes/administracion/caja.router')
 
 // Jobs
 const { generarBackup } = require('../jobs/db-backup');
@@ -78,6 +79,7 @@ class Server {
             // ADMINISTRACION
             bitacora:         '/api/bitacora',
             dbBackup:         '/api/db-backup',
+            caja:             '/api/caja',
 
             // REPORTERÍA
             reporteria:       '/api/reporteria',
@@ -168,6 +170,7 @@ class Server {
         // Administracion
         this.app.use(this.apiPath.bitacora, routerBitacora)
         this.app.use(this.apiPath.dbBackup, routerBackup)              // Backups
+        this.app.use(this.apiPath.caja, routerCaja)
         // Reportería
         this.app.use(this.apiPath.reporteria, routerReporteria)
         // Inventario

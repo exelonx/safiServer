@@ -17,6 +17,9 @@ const Caja = db.define(`TBL_MA_CAJA`, {
     SALDO_CIERRE: {
         type: DataTypes.DECIMAL
     },
+    FECHA_APERTURA : {
+        type: DataTypes.DATE
+    },
     FECHA_CIERRE : {
         type: DataTypes.DATE
     }
