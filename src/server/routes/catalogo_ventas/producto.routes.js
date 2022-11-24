@@ -1,6 +1,6 @@
 const { Router } = require('express');
 const { check, body } = require('express-validator');
-const { getProductos, getProducto, postProducto, deleteProducto, putProducto, postCombo } = require('../../controllers/catalogo_ventas/producto.controllers');
+const { getProductos, getProducto, postProducto, deleteProducto, putProducto, postCombo, postPromocion } = require('../../controllers/catalogo_ventas/producto.controllers');
 const { validarCampos } = require('../../middlewares');
 const { existeProducto, noExisteProductoPorId } = require('../../middlewares/validar-producto-existente');
 
@@ -13,7 +13,7 @@ router.get('/:id', getProducto);
 
 router.post('/', postProducto);
 router.post('/combo/', postCombo);
-router.post('/promocion');
+router.post('/promocion', postPromocion);
 
 // router.post('/',[
 //     check('id_usuario', 'El id es obligatorio.').not().isEmpty(),
