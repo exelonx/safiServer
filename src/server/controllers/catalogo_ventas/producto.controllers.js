@@ -235,7 +235,7 @@ const postCombo = async (req = request, res = response) => {
 
 const postPromocion = async (req = request, res = response) => {
     //body
-    const { nombre, precio, impuesto, descripcion, sinEstado, arregloProductos = [], arregloCategoria = [], id_usuario } = req.body;
+    const { nombre, precio, impuesto, descripcion, sinEstado, arregloProductos = [], arregloCategoria = [], id_usuario, fecha_final, fecha_inicio } = req.body;
 
     try {
 
@@ -249,6 +249,8 @@ const postPromocion = async (req = request, res = response) => {
             DESCRIPCION: descripcion,
             SIN_ESTADO: sinEstado,
             BEBIDA: false,
+            FECHA_INICIO: fecha_inicio,
+            FECHA_FINAL: fecha_final,
             CREADO_POR: id_usuario,
             MODIFICADO_POR: id_usuario
         });
