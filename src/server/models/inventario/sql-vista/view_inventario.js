@@ -12,6 +12,9 @@ const ViewInventario = db.define(`VIEW_MI_INVENTARIO`, {
     NOMBRE: {
         type: DataTypes.STRING
     },
+    UNIDAD_MEDIDA: {
+        type: DataTypes.STRING
+    },
     EXISTENCIA: {
         type: DataTypes.DECIMAL
     },
