@@ -58,11 +58,11 @@ router.post('/promocion', postPromocion);
 //     validarCampos
 // ],putProducto);
 
-// router.delete('/:id',[
-//     check('quienElimina', 'El id es obligatorio').not().isEmpty(),
-//     noExisteProductoPorId,
-//     validarCampos
-// ],deleteProducto);
+router.delete('/:id',[
+    check('quienElimina', 'El id es obligatorio').not().isEmpty(),
+    noExisteProductoPorId,
+    validarCampos
+],deleteProducto);
 
 
 

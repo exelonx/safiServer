@@ -371,8 +371,11 @@ const putProducto = async (req = request, res = response) => {
 }
 
 const deleteProducto = async (req = request, res = response) => {
-    const { id } = req.params
-    const { quienElimina } = req.query
+
+    const { id } = req.params;
+    const { quienElimina } = req.query;
+    const mensaje = "";
+    const respuesta = "";
 
     try {
 
@@ -383,14 +386,27 @@ const deleteProducto = async (req = request, res = response) => {
         const { NOMBRE } = producto;
 
         // Borrar producto
-        await producto.destroy();
+        producto.update({
+            ESTADO: false
+        })
+
+        if(producto.ID_TIPO_PRODUCTO == 1) {
+            mensaje = 'EL PRODUCTO'
+            respuesta = 'El producto'
+        } else if(producto.ID_TIPO_PRODUCTO == 2){
+            mensaje = 'EL COMBO'
+            respuesta = 'El combo'
+        } else {
+            mensaje = 'LA PROMOCIÓN'
+            respuesta = 'La promoción'
+        }
 
         // Guardar evento
-        eventBitacora(new Date, quienElimina, 18, 'BORRADO', `SE ELIMINO EL PRODUCTO ${NOMBRE}`);
+        eventBitacora(new Date, quienElimina, 18, 'BORRADO', `SE ELIMINO ${mensaje} ${NOMBRE}`);
 
         res.json({
             ok: true,
-            msg: `El producto: ${NOMBRE} ha sido eliminado`
+            msg: `${respuesta}: ${NOMBRE} ha sido eliminado`
         });
 
     } catch (error) {
