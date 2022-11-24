@@ -6,6 +6,8 @@ const Parametro = require("../../models/seguridad/parametro");
 const Producto = require('../../models/catalogo-ventas/producto');
 const { eventBitacora } = require('../../helpers/event-bitacora');
 const ViewProducto = require('../../models/catalogo-ventas/sql-vistas/view_producto');
+const InsumoProducto = require('../../models/catalogo-ventas/insumoProducto');
+const CatalogoProducto = require('../../models/catalogo-ventas/categoriaProducto');
 
 // Llamar todas las preguntas paginadas
 const getProductos = async (req = request, res = response) => {
@@ -125,31 +127,46 @@ const getProducto = async (req = request, res = response) => {
 
 const postProducto = async (req = request, res = response) => {
     //body
-    const { id_usuario = "", id_impuesto = "", id_tipo_producto = "", nombre = "", precio = "", exenta = "", descripcion = "", fecha_inicio = "", fecha_final = "", sin_estado = "", bebida = "", imagen = "" } = req.body;
-    
+    const { nombre, precio, impuesto, descripcion, exenta, esBebida, sinEstado, arregloInsumo = [], arregloCategoria = [], id_usuario } = req.body;
+
     try {
  
-        // Construir modelo
-        const nuevoProducto = await Producto.build({
-            ID_IMPUESTO: id_impuesto,
-            ID_TIPO_PRODUCTO: id_tipo_producto,
+        //Construir modelo e insertar
+        const nuevoProducto = await Producto.create({
+            ID_IMPUESTO: impuesto,
+            ID_TIPO_PRODUCTO: 1,
             NOMBRE: nombre,
             PRECIO: precio,
             EXENTA: exenta,
             DESCRIPCION: descripcion,
-            FECHA_INICIO: fecha_inicio,
-            FECHA_FINAL: fecha_final,
-            SIN_ESTADO: sin_estado,
-            BEBIDA: bebida,
-            IMAGEN: imagen,
+            SIN_ESTADO: sinEstado,
+            BEBIDA: esBebida,
             CREADO_POR: id_usuario,
             MODIFICADO_POR: id_usuario
         });
-        // Insertar a DB
-        await nuevoProducto.save();   
+
+        for await(let insumo of arregloInsumo) {
+            await InsumoProducto.create({
+                ID_INSUMO: insumo.insumo,
+                ID_PRODUCTO: nuevoProducto.id,
+                CANTIDAD: insumo.cantidad
+            })
+        }
+
+        for await(let categoria of arregloCategoria) {
+            await CatalogoProducto.create({
+                ID_PRODUCTO: nuevoProducto.id,
+                ID_CATALOGO: categoria
+            })
+        }
+        // const insumoProducto = await InsumoProducto.create({
+        //     ID_INSUMO
+        // })
+        // // Insertar a DB
+        // await nuevoProducto.save();   
         
-        // Guardar evento
-        eventBitacora(new Date, id_usuario, 18, 'NUEVO', `SE CREO UN NUEVO PRODUCTO ${nuevoProducto.NOMBRE}`);
+        // // Guardar evento
+        // eventBitacora(new Date, id_usuario, 18, 'NUEVO', `SE CREO UN NUEVO PRODUCTO ${nuevoProducto.NOMBRE}`);
 
         // Responder
         res.json( {
