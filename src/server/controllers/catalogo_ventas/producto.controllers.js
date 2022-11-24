@@ -188,7 +188,7 @@ const postCombo = async (req = request, res = response) => {
         //Construir modelo e insertar
         const nuevoProducto = await Producto.create({
             ID_IMPUESTO: impuesto,
-            ID_TIPO_PRODUCTO: 1,
+            ID_TIPO_PRODUCTO: 2,
             NOMBRE: nombre,
             PRECIO: precio,
             EXENTA: false,
@@ -201,7 +201,7 @@ const postCombo = async (req = request, res = response) => {
 
         for await(let producto of arregloProductos) {
             await ComboProducto.create({
-                ID_COMBO: producto.insumo,
+                ID_COMBO: producto.producto,
                 ID_PRODUCTO: nuevoProducto.id,
                 CANTIDAD: producto.cantidad
             })
