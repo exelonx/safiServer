@@ -174,7 +174,7 @@ class Server {
         this.app.use(this.apiPath.proveedores, routerProveedores)      // Proveedores
         this.app.use(this.apiPath.unidades, routerUnidades)            // Unidades
         this.app.use(this.apiPath.insumos, routerInsumos)              // Insumos
-        this.app.use(this.apiPath.insumos, routerInventarios)          // Insumos
+        this.app.use(this.apiPath.inventario, routerInventarios)          // Insumos
         this.app.use(this.apiPath.kardex, routerKardex)                // Kardex
         this.app.use(this.apiPath.compra, routerCompra)                // Compra              
         // Notificacion

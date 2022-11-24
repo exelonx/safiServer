@@ -12,13 +12,16 @@ const ViewInventario = db.define(`VIEW_MI_INVENTARIO`, {
     NOMBRE: {
         type: DataTypes.STRING
     },
+    UNIDAD_MEDIDA: {
+        type: DataTypes.STRING
+    },
     EXISTENCIA: {
         type: DataTypes.DECIMAL
     },
-    EXISTENCIA_MAXIMA: {
+    CANTIDAD_MAXIMA: {
         type: DataTypes.INTEGER
     },
-    EXISTENCIA_MINIMA: {
+    CANTIDAD_MINIMA: {
         type: DataTypes.INTEGER
     }
 }, {

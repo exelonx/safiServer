@@ -1,9 +1,9 @@
 const { Router } = require('express');
-const { getInsumos, getInsumo, postInsumo, deleteInsumo, putInsumo } = require('../../controllers/inventario/insumo.controllers');
+const { getInventarios } = require('../../controllers/inventario/inventario.controllers');
 
 
 const router = Router();
 
-router.get('/', getInsumos);
+router.get('/', getInventarios);
 
 module.exports = router;
