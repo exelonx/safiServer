@@ -26,6 +26,7 @@ const getAllSAR = async (req = request, res = response) => {
         const sar = await Sar.findAll({
             limit: parseInt(limite, 10),
             offset: parseInt(desde, 10),
+            order: [['ID', 'DESC']],
             where: {
                 [Op.or]: [{
                     CAI: { [Op.like]: `%${buscar.toUpperCase() }%`}
@@ -270,12 +271,12 @@ const putSAR = async (req = request, res = response) => {
             }
         }
 
-        if(numero_actual < sar.NUMERO_ACTUAL){
-            return res.status(400).json({
-                ok: false,
-                msg: `No puede ingresar un número anterior. Número actual: ${sar.NUMERO_ACTUAL}`
-            })
-        }
+        // if(numero_actual < sar.NUMERO_ACTUAL){
+        //     return res.status(400).json({
+        //         ok: false,
+        //         msg: `No puede ingresar un número anterior. Número actual: ${sar.NUMERO_ACTUAL}`
+        //     })
+        // }
         
         if (fecha_limite_emision < fecha_autorizado ) {
             return res.status(400).json({ 
@@ -291,6 +292,41 @@ const putSAR = async (req = request, res = response) => {
             })
         }
 
+
+        const todosLosCai = await Sar.findAll({
+            where: {
+                ID: {
+                    [Op.not]: id 
+                }                  
+            }
+        });
+
+        for await (let cai of todosLosCai ){
+            let rango_maximo = cai.RANGO_MAXIMO;
+
+            if ((rango_maximo > rango_minimo) || (rango_maximo == rango_minimo))  {
+                console.log(todosLosCai)
+                return res.status(400).json({
+                    ok: false,
+                    msg: `Rango en uso.`
+                })   
+            }
+        }
+
+        if (numero_actual > sar.RANGO_MAXIMO) {
+            return res.status(400).json({
+                ok: false,
+                msg: `Número actual no puede ser mayor a rango máximo.`
+            })   
+        }
+        
+        if (rango_minimo > numero_actual) {
+            return res.status(400).json({
+                ok: false,
+                msg: `Número actual no puede ser menor a rango mínimo.`
+            }) 
+            
+        }
         // const todosLosCai = await Sar.findAll();
 
         // for await (let cai of todosLosCai ){
@@ -346,11 +382,18 @@ const deleteSAR = async (req = request, res = response) => {
         // Extraer el nombre del proveedor
         const { CAI } = sar;
 
+        if (sar.NUMERO_ACTUAL < sar.RANGO_MAXIMO)   {
+            return res.status(400).json({
+                ok: false,
+                msg: `No se puede eliminar, el CAI está en uso.`
+            })  
+        }
+
         // Borrar Proveedor
         await sar.destroy();
 
         // Guardar evento
-        eventBitacora(new Date, quienElimina, 27, 'BORRADO', `SE ELIMINO EL CAI ${CAI}`);
+        eventBitacora(new Date, quienElimina, 27, 'BORRADO', `SE ELIMINÓ EL CAI ${CAI}`);
 
         res.json({
             ok: true,

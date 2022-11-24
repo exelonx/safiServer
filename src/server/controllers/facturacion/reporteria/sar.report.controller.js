@@ -19,6 +19,7 @@ const getReporteSAR = async (req = request, res = response) => {
         const pagina = await buscador.newPage();
 
         const sar = await Sar.findAll({
+            order: [['ID', 'DESC']],
             where: {
                 [Op.or]: [{
                     CAI: { [Op.like]: `%${buscar.toUpperCase() }%`}
