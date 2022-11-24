@@ -242,7 +242,7 @@ const postPromocion = async (req = request, res = response) => {
         //Construir modelo e insertar
         const nuevoPromocion = await Producto.create({
             ID_IMPUESTO: impuesto,
-            ID_TIPO_PRODUCTO: 2,
+            ID_TIPO_PRODUCTO: 3,
             NOMBRE: nombre,
             PRECIO: precio,
             EXENTA: false,
