@@ -5,6 +5,9 @@ const { db } = require('../../../database/db-conexion')
 
 const ViewProducto = db.define(`VIEW_MP_PRODUCTO`, {
 
+    ID: {
+        type: DataTypes.INTEGER
+    },
     ID_IMPUESTO: {
         type: DataTypes.INTEGER
     },
