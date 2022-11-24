@@ -46,13 +46,37 @@ const existeCaiPut = async(req = request, res = response, next) => {
     next()
 }
 
+const existeRangoMinimoPut = async(req = request, res = response, next) => {
+
+    const { id } = req.params;
+    const { rango_minimo } = req.body;
+    // Validar que no exista rango mínimo repetido
+    const rangoMinimoRepetido = await Sar.findOne({
+        where: {
+            RANGO_MINIMO: rango_minimo,
+            [Op.not] : [
+                {ID: id}
+            ]
+        }
+    })
+
+    if ( rangoMinimoRepetido ) {
+        return res.status(400).json({
+            ok: false,
+            msg: `El rango mínimo: ${ rango_minimo }, ya existe`
+        }) 
+    }
+
+    next()
+}
+
 const existeRangoMinimo = async(req = request, res = response, next) => {
 
     const { rango_minimo } = req.body;
     // Validar que no exista rango mínimo repetido
     const rangoMinimoRepetido = await Sar.findOne({
         where: {
-            RANGO_MINIMO: rango_minimo
+            RANGO_MINIMO: rango_minimo,
         }
     })
 
@@ -72,7 +96,32 @@ const existeRangoMaximo = async(req = request, res = response, next) => {
     // Validar que no exista rango máximo repetido
     const rangoMaximoRepetido = await Sar.findOne({
         where: {
-            RANGO_MAXIMO: rango_maximo
+            RANGO_MAXIMO: rango_maximo,
+            
+        }
+    })
+
+    if ( rangoMaximoRepetido ) {
+        return res.status(400).json({
+            ok: false,
+            msg: `El rango máximo: ${ rango_maximo }, ya existe`
+        }) 
+    }
+
+    next()
+}
+
+const existeRangoMaximoPut = async(req = request, res = response, next) => {
+
+    const { id } = req.params;
+    const { rango_maximo } = req.body;
+    // Validar que no exista rango máximo repetido
+    const rangoMaximoRepetido = await Sar.findOne({
+        where: {
+            RANGO_MAXIMO: rango_maximo,
+            [Op.not] : [
+                {ID: id}
+            ]
         }
     })
 
@@ -107,6 +156,8 @@ module.exports = {
     existeCAI,
     existeCaiPut,
     existeRangoMinimo,
+    existeRangoMinimoPut,
     existeRangoMaximo,
+    existeRangoMaximoPut,
     noExisteCAIPorId
 }

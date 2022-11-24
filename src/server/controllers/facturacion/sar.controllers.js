@@ -102,6 +102,9 @@ const postSAR = async (req = request, res = response) => {
     
     try {
 
+        console.log("Fecha autorizada post: " + fecha_autorizado )
+            console.log("Fecha limite post: " +fecha_limite_emision)
+
         let caiValido = /^([A-Z0-9]{6}\-){5}([A-Z0-9]{2})$/;
 
         for(let i=0; i < cai.length; i++){
@@ -156,17 +159,25 @@ const postSAR = async (req = request, res = response) => {
         const todosLosCai = await Sar.findAll();
 
         for await (let cai of todosLosCai ){
-            let rango_minimo = cai.RANGO_MAXIMO;
+            let rango_maximo = cai.RANGO_MAXIMO;
             let numero_actual = cai.NUMERO_ACTUAL;
 
             //Comparar rango minimo con rango maximo
-            if (rango_minimo !== numero_actual) {
+            if (rango_maximo !== numero_actual) {
                 return res.status(400).json({
                     ok: false,
                     msg: `Ya existe un CAI en uso.`
                 })              
             }
+
+            if ((rango_maximo > rango_minimo) || (rango_maximo == rango_minimo))  {
+                return res.status(400).json({
+                    ok: false,
+                    msg: `Rango en uso.`
+                })   
+            }
         }
+
 
         // Construir modole de direccion
         const nuevoSAR = await Sar.create({
@@ -198,10 +209,15 @@ const postSAR = async (req = request, res = response) => {
 
 const putSAR = async (req = request, res = response) => {
     const { id } = req.params
-    const { cai = "", rango_minimo = "", rango_maximo = "", fecha_autorizado = "", fecha_limite_emision = "", numero_actual = "" } = req.body;
+    const { cai = "", rango_minimo = "", rango_maximo = "", _fecha_autorizado = "", _fecha_limite_emision = "", numero_actual = "" } = req.body;
     const { id_usuario = "" } = req.body;
 
     try {
+
+            const fecha_autorizado = new Date(_fecha_autorizado)
+            const fecha_limite_emision = new Date(_fecha_limite_emision)
+            console.log("Fecha autorizada: " + _fecha_autorizado )
+            console.log("Fecha limite: " + _fecha_limite_emision)
 
         const sar = await Sar.findByPk(id);
         // Si llega sin cambios
@@ -267,11 +283,11 @@ const putSAR = async (req = request, res = response) => {
         }
         
         if (fecha_limite_emision < fecha_autorizado ) {
-            return res.status(400).json({
+            return res.status(400).json({ 
                 ok: false,
                 msg: `La fecha límite no puede ser menor a la fecha de autorización.`
             })
-        }
+        } 
 
         if(rango_minimo > rango_maximo){
             return res.status(400).json({
