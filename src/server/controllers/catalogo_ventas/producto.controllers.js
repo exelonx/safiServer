@@ -6,6 +6,10 @@ const Parametro = require("../../models/seguridad/parametro");
 const Producto = require('../../models/catalogo-ventas/producto');
 const { eventBitacora } = require('../../helpers/event-bitacora');
 const ViewProducto = require('../../models/catalogo-ventas/sql-vistas/view_producto');
+const InsumoProducto = require('../../models/catalogo-ventas/insumoProducto');
+const CatalogoProducto = require('../../models/catalogo-ventas/categoriaProducto');
+const ComboProducto = require('../../models/catalogo-ventas/comboProducto');
+const PromocionProducto = require('../../models/catalogo-ventas/promocionProducto');
 
 // Llamar todas las preguntas paginadas
 const getProductos = async (req = request, res = response) => {
@@ -125,28 +129,38 @@ const getProducto = async (req = request, res = response) => {
 
 const postProducto = async (req = request, res = response) => {
     //body
-    const { id_usuario = "", id_impuesto = "", id_tipo_producto = "", nombre = "", precio = "", exenta = "", descripcion = "", fecha_inicio = "", fecha_final = "", sin_estado = "", bebida = "", imagen = "" } = req.body;
-    
+    const { nombre, precio, impuesto, descripcion, exenta, esBebida, sinEstado, arregloInsumo = [], arregloCategoria = [], id_usuario } = req.body;
+
     try {
  
-        // Construir modelo
-        const nuevoProducto = await Producto.build({
-            ID_IMPUESTO: id_impuesto,
-            ID_TIPO_PRODUCTO: id_tipo_producto,
+        //Construir modelo e insertar
+        const nuevoProducto = await Producto.create({
+            ID_IMPUESTO: impuesto,
+            ID_TIPO_PRODUCTO: 1,
             NOMBRE: nombre,
             PRECIO: precio,
             EXENTA: exenta,
             DESCRIPCION: descripcion,
-            FECHA_INICIO: fecha_inicio,
-            FECHA_FINAL: fecha_final,
-            SIN_ESTADO: sin_estado,
-            BEBIDA: bebida,
-            IMAGEN: imagen,
+            SIN_ESTADO: sinEstado,
+            BEBIDA: esBebida,
             CREADO_POR: id_usuario,
             MODIFICADO_POR: id_usuario
         });
-        // Insertar a DB
-        await nuevoProducto.save();   
+
+        for await(let insumo of arregloInsumo) {
+            await InsumoProducto.create({
+                ID_INSUMO: insumo.insumo,
+                ID_PRODUCTO: nuevoProducto.id,
+                CANTIDAD: insumo.cantidad
+            })
+        }
+
+        for await(let categoria of arregloCategoria) {
+            await CatalogoProducto.create({
+                ID_PRODUCTO: nuevoProducto.id,
+                ID_CATALOGO: categoria
+            })
+        }
         
         // Guardar evento
         eventBitacora(new Date, id_usuario, 18, 'NUEVO', `SE CREO UN NUEVO PRODUCTO ${nuevoProducto.NOMBRE}`);
@@ -155,6 +169,114 @@ const postProducto = async (req = request, res = response) => {
         res.json( {
             ok: true,
             msg: 'Producto: '+ nombre + ' ha sido creada con éxito'
+        } );
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            ok: false,
+            msg: error.message
+        })
+    }
+}
+
+const postCombo = async (req = request, res = response) => {
+    //body
+    const { nombre, precio, impuesto, descripcion, sinEstado, arregloProductos = [], arregloCategoria = [], id_usuario } = req.body;
+
+    try {
+
+        //Construir modelo e insertar
+        const nuevoCombo = await Producto.create({
+            ID_IMPUESTO: impuesto,
+            ID_TIPO_PRODUCTO: 2,
+            NOMBRE: nombre,
+            PRECIO: precio,
+            EXENTA: false,
+            DESCRIPCION: descripcion,
+            SIN_ESTADO: sinEstado,
+            BEBIDA: false,
+            CREADO_POR: id_usuario,
+            MODIFICADO_POR: id_usuario
+        });
+
+        for await(let producto of arregloProductos) {
+            await ComboProducto.create({
+                ID_COMBO: producto.producto,
+                ID_PRODUCTO: nuevoCombo.id,
+                CANTIDAD: producto.cantidad
+            })
+        }
+
+        for await(let categoria of arregloCategoria) {
+            await CatalogoProducto.create({
+                ID_PRODUCTO: nuevoCombo.id,
+                ID_CATALOGO: categoria
+            })
+        }
+
+        // Guardar evento
+        eventBitacora(new Date, id_usuario, 18, 'NUEVO', `SE CREO UN NUEVO COMBO ${nuevoCombo.NOMBRE}`);
+
+        // Responder
+        res.json( {
+            ok: true,
+            msg: 'Combo: '+ nombre + ' ha sido creada con éxito'
+        } );
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            ok: false,
+            msg: error.message
+        })
+    }
+}
+
+const postPromocion = async (req = request, res = response) => {
+    //body
+    const { nombre, precio, impuesto, descripcion, sinEstado, arregloProductos = [], arregloCategoria = [], id_usuario, fecha_final, fecha_inicio } = req.body;
+
+    try {
+
+        //Construir modelo e insertar
+        const nuevoPromocion = await Producto.create({
+            ID_IMPUESTO: impuesto,
+            ID_TIPO_PRODUCTO: 2,
+            NOMBRE: nombre,
+            PRECIO: precio,
+            EXENTA: false,
+            DESCRIPCION: descripcion,
+            SIN_ESTADO: sinEstado,
+            BEBIDA: false,
+            FECHA_INICIO: fecha_inicio,
+            FECHA_FINAL: fecha_final,
+            CREADO_POR: id_usuario,
+            MODIFICADO_POR: id_usuario
+        });
+
+        for await(let producto of arregloProductos) {
+            await PromocionProducto.create({
+                ID_PROMOCION: producto.producto,
+                ID_PRODUCTO: nuevoPromocion.id,
+                CANTIDAD: producto.cantidad
+            })
+        }
+
+        for await(let categoria of arregloCategoria) {
+            await CatalogoProducto.create({
+                ID_PRODUCTO: nuevoPromocion.id,
+                ID_CATALOGO: categoria
+            })
+        }
+
+        // Guardar evento
+        eventBitacora(new Date, id_usuario, 18, 'NUEVO', `SE CREO UNA NUEVA PROMOCION ${nuevoPromocion.NOMBRE}`);
+
+        // Responder
+        res.json( {
+            ok: true,
+            msg: 'Promoción: '+ nombre + ' ha sido creada con éxito'
         } );
 
     } catch (error) {
@@ -290,6 +412,8 @@ module.exports = {
     getProductos,
     getProducto,
     postProducto,
+    postCombo,
+    postPromocion,
     putProducto,
     deleteProducto
 }
