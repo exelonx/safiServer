@@ -209,15 +209,10 @@ const postSAR = async (req = request, res = response) => {
 
 const putSAR = async (req = request, res = response) => {
     const { id } = req.params
-    const { cai = "", rango_minimo = "", rango_maximo = "", _fecha_autorizado = "", _fecha_limite_emision = "", numero_actual = "" } = req.body;
+    const { cai = "", rango_minimo = "", rango_maximo = "", fecha_autorizado = "", fecha_limite_emision = "", numero_actual = "" } = req.body;
     const { id_usuario = "" } = req.body;
 
     try {
-
-            const fecha_autorizado = new Date(_fecha_autorizado)
-            const fecha_limite_emision = new Date(_fecha_limite_emision)
-            console.log("Fecha autorizada: " + _fecha_autorizado )
-            console.log("Fecha limite: " + _fecha_limite_emision)
 
         const sar = await Sar.findByPk(id);
         // Si llega sin cambios
