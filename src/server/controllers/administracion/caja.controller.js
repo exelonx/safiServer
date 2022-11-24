@@ -26,13 +26,14 @@ const getCajas = async (req = request, res = response) => {
         // Validar si llegaron fechas
         if( fechaFinal !== '' && fechaInicial !== '') {
             filtrarPorFecha = { 
-                [Op.between]:[{FECHA_APERTURA: fechaInicial}, {FECHA_CIERRE: fechaFinal}]
-                    
+                FECHA_APERTURA:{
+                    [Op.between]:[new Date(fechaInicial), new Date(fechaFinal)]
+                } 
             }
         }
 
         // Paginación
-        const caja = await Caja.findAll({
+        const cajas = await Caja.findAll({
             limit: parseInt(limite, 10),
             offset: parseInt(desde, 10),
             where: {
@@ -55,7 +56,7 @@ const getCajas = async (req = request, res = response) => {
         // }
 
         // Respuesta
-        res.json( {limite, countCajas, caja} )
+        res.json( {limite, countCajas, cajas} )
 
     } catch (error) {
         console.log(error);
