@@ -1,6 +1,6 @@
 const { Router } = require('express');
 const { check, body } = require('express-validator');
-const { getCaja, getCajas, getCajaAbierta, postCaja } = require('../../controllers/administracion/caja.controller');
+const { getCaja, getCajas, getCajaAbierta, postCaja, deleteCaja, putCaja } = require('../../controllers/administracion/caja.controller');
 
 const { validarCampos } = require('../../middlewares');
 
@@ -20,5 +20,16 @@ router.post('/crear/',[
     check('saldo_apertura', 'Solo se permiten números en el saldo de apertura').isNumeric(),
     validarCampos
 ], postCaja)
+
+router.put('/:id', [
+    // Validar usuario quien lo creo
+    check('id_usuario', 'El id es obligatorio').not().isEmpty(),
+],putCaja)
+
+router.delete('/:id', [
+    // Validar existencia
+    check('quienElimina', 'El id del usuario es obligatorio').not().isEmpty(),
+    validarCampos
+], deleteCaja);
 
 module.exports = router;

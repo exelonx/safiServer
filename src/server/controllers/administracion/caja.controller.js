@@ -26,14 +26,13 @@ const getCajas = async (req = request, res = response) => {
         // Validar si llegaron fechas
         if( fechaFinal !== '' && fechaInicial !== '') {
             filtrarPorFecha = { 
-                FECHA_APERTURA:{
-                    [Op.between]:[new Date(fechaInicial), new Date(fechaFinal)]
-                } 
+                [Op.between]:[{FECHA_APERTURA: fechaInicial}, {FECHA_CIERRE: fechaFinal}]
+                    
             }
         }
 
         // Paginación
-        const cajas = await Caja.findAll({
+        const caja = await Caja.findAll({
             limit: parseInt(limite, 10),
             offset: parseInt(desde, 10),
             where: {
@@ -56,7 +55,7 @@ const getCajas = async (req = request, res = response) => {
         // }
 
         // Respuesta
-        res.json( {limite, countCajas, cajas} )
+        res.json( {limite, countCajas, caja} )
 
     } catch (error) {
         console.log(error);
@@ -136,11 +135,12 @@ const postCaja = async (req = request, res = response) => {
  
         // Construir modelo
         const nuevaCaja = await Caja.create({
-            SALDO_APERTURA: saldo_apertura
+            SALDO_APERTURA: saldo_apertura,
+            ESTADO: '1'
         }); 
         
         // // Guardar evento
-        // eventBitacora(new Date, id_usuario, 16, 'NUEVO', `SE CREO UNA NUEVA UNIDAD ${nuevaUnidad.UNIDAD_MEDIDA}`);
+        // eventBitacora(new Date, id_usuario, 26, 'NUEVO', `SE CREO UNA NUEVA CAJA CON UN SALDO INICIAL DE ${cajaAbierta.SALDO_APERTURA}`);
 
         // Responder
         res.json( {
@@ -157,89 +157,80 @@ const postCaja = async (req = request, res = response) => {
     }
 }
 
-// const putUnidad = async (req = request, res = response) => {
-//     const { id } = req.params
-//     const { id_usuario = "", unidad_medida = "" , nombre = ""} = req.body;
+const putCaja = async (req = request, res = response) => {
+    const { id } = req.params
+    const { id_usuario = "" } = req.body;
     
-//     try {
-
-//         const unidad = await Unidad.findByPk(id);
+    try {
         
-//         // Si llega sin cambios
-//         if(!((unidad.UNIDAD_MEDIDA == unidad_medida || unidad_medida === ""))
-//             && (unidad.NOMBRE == nombre || nombre === "") ) {
+        // Actualizar db Rol
+        await Caja.update({
+            SALDO_CIERRE: '0',
+            FECHA_CIERRE: new Date(),
+            ESTADO: '0'
+        }, {
+            where: {
+                ESTADO: '1'
+            }
+        })
 
-//                 eventBitacora(new Date, id_usuario, 16, 'ACTUALIZACION', `DATOS ACTUALIZADOS: ${unidad_medida !== "" ? 'UNIDAD_MEDIDA' : ""}`);
+        const caja = await Caja.findAll(id);
 
-//         }
+        eventBitacora(new Date, id_usuario, 16, 'ACTUALIZACION', `DATOS ACTUALIZADOS: ${`Estado caja:`, caja.ESTADO `,` `Fecha de cierre: `, caja.FECHA_CIERRE }`);
 
-//         // Actualizar db Rol
-//         await Unidad.update({
-//             UNIDAD_MEDIDA: unidad_medida !== "" ? unidad_medida : Unidad.UNIDAD_MEDIDA,
-//             NOMBRE: nombre !== "" ? nombre : Unidad.NOMBRE,
-//         }, {
-//             where: {
-//                 ID: id
-//             }
-//         })
+        res.json({
+            ok: true,
+            msg: 'La caja se ha cerrado.'
+        });
 
-//         res.json({
-//             ok: true,
-//             msg: 'Unidad: '+ unidad.UNIDAD_MEDIDA + ' ha sido actualizada con éxito'
-//         });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            ok: false,
+            msg: error.message
+        })
+    }
+}
 
-//     } catch (error) {
-//         console.log(error);
-//         res.status(500).json({
-//             ok: false,
-//             msg: error.message
-//         })
-//     }
-// }
+const deleteCaja = async (req = request, res = response) => {
+    const { id } = req.params
+    const { quienElimina } = req.query
 
-// const deleteUnidad = async (req = request, res = response) => {
-//     const { id } = req.params
-//     const { quienElimina } = req.query
+    try {
 
-//     try {
+        // Llamar el proveedor a borrar
+        const caja = await Caja.findByPk( id );
 
-//         // Llamar el proveedor a borrar
-//         const unidad = await Unidad.findByPk( id );
+        // Guardar evento
+        eventBitacora(new Date, quienElimina, 26, 'BORRADO', `INTENTÓ ELIMINAR LA CAJA NÚMERO: ${id}`);
 
-//         // Extraer el nombre de la unidad
-//         const { UNIDAD_MEDIDA } = unidad;
+        res.json({
+            ok: false,
+            msg: `La caja no se puede eliminar`
+        });
 
-//         // Borrar unidad
-//         await unidad.destroy();
+    } catch (error) {
+        if( error instanceof ForeignKeyConstraintError ) {
+            res.status(403).json({
+                ok: false,
+                msg: `La caja no se puede eliminar`
+            })
+        } else {
 
-//         // Guardar evento
-//         eventBitacora(new Date, quienElimina, 16, 'BORRADO', `SE ELIMINO LA UNIDAD ${UNIDAD_MEDIDA}`);
+            console.log(error);
+            res.status(500).json({
+                msg: error.message
+            })
 
-//         res.json({
-//             ok: true,
-//             msg: `La unidad: ${UNIDAD_MEDIDA} ha sido eliminado`
-//         });
-
-//     } catch (error) {
-//         if( error instanceof ForeignKeyConstraintError ) {
-//             res.status(403).json({
-//                 ok: false,
-//                 msg: `La unidad de medida no puede ser eliminada`
-//             })
-//         } else {
-
-//             console.log(error);
-//             res.status(500).json({
-//                 msg: error.message
-//             })
-
-//         }
-//     }  
-// }
+        }
+    }  
+}
 
 module.exports = {
     getCajas,
     getCaja,
     getCajaAbierta,
-    postCaja
+    postCaja,
+    putCaja,
+    deleteCaja
 }
