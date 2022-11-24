@@ -374,8 +374,8 @@ const deleteProducto = async (req = request, res = response) => {
 
     const { id } = req.params;
     const { quienElimina } = req.query;
-    const mensaje = "";
-    const respuesta = "";
+    let mensaje = "";
+    let respuesta = "";
 
     try {
 
