@@ -73,6 +73,12 @@ const getReporteUsuario = async (req = request, res = response) => {
         const parametroLogo = await Parametro.findOne({
             where: { PARAMETRO: 'LOGO'}
         })
+
+        // Traer nombre de la empresa
+        const nombreEmpresa = await Parametro.findOne({
+            where: { PARAMETRO: 'NOMBRE_EMPRESA'}
+        })
+
         // Convertir logo a base 64
         const logo = await base64.encode(parametroLogo.VALOR, options);
 
@@ -90,7 +96,7 @@ const getReporteUsuario = async (req = request, res = response) => {
             headerTemplate: `
             <div style="font-size:10px; margin: 0 auto; margin-left: 20px; margin-right: 20px;  width: 100%; display: flex; align-items: center; justify-content: space-between;" >  
             <div style="color: #d12609; width: 22%;"><p>Fecha: <span class="date"></span></p></div>   
-            <div style="display: flex; width: 60%; margin: 0 auto; align-items: center; justify-content: center; flex-direction: column"><div style="font-weight: bold; font-size: 20px;">Dr. Burger</div> <div style="color: #d12609; font-size: 20px;">Reporte de Usuarios</div></div>   
+            <div style="display: flex; width: 60%; margin: 0 auto; align-items: center; justify-content: center; flex-direction: column"><div style="font-weight: bold; font-size: 20px;">${nombreEmpresa.VALOR}</div> <div style="color: #d12609; font-size: 20px;">Reporte de Usuarios</div></div>   
             <div style=" display: flex; justify-content: end;  width: 20%;">
             <img class="logo" alt="title" src="data:image/png;base64,${logo}" width="40"/>
             </div></div>`,
