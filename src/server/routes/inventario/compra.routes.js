@@ -1,6 +1,6 @@
 const { Router } = require('express');
 const { check, body } = require('express-validator');
-const { getCompras, postCompra, getCompra, putAddInsumoCompraExistente, putMasInsumosEnDetalle, deleteUnDetalle } = require('../../controllers/inventario/compra.controllers');
+const { getCompras, postCompra, getCompra, putAddInsumoCompraExistente, putMasInsumosEnDetalle, deleteUnDetalle, putNombreProveedor, anularCompra } = require('../../controllers/inventario/compra.controllers');
 
 
 const router = Router();
@@ -16,5 +16,9 @@ router.put('/editar/detalle/:id_detalle', putAddInsumoCompraExistente)
 router.post('/editar/ingreso/:id_compra', putMasInsumosEnDetalle);
 
 router.delete('/editar/detalle/:id_detalle', deleteUnDetalle)
+
+router.put('/editar/proveedor/:id_compra', putNombreProveedor);
+
+router.put('/anular/:id_compra', anularCompra);
 
 module.exports = router;

@@ -6,7 +6,9 @@ const { eventBitacora } = require('../../helpers/event-bitacora');
 const ViewInsumo = require('../../models/inventario/sql-vista/view-insumo');
 const Insumo = require('../../models/inventario/insumo');
 const Inventario = require('../../models/inventario/inventario');
-
+const InsumoProducto = require('../../models/catalogo-ventas/insumoProducto');
+const DetalleCompra = require('../../models/inventario/detalle-compra');
+const Kardex = require('../../models/inventario/kardex');
 
 const getInsumos = async (req = request, res = response) => {
 
@@ -100,6 +102,13 @@ const postInsumo = async (req = request, res = response) => {
     const { nombre = "", id_unidad = "", cantidad_maxima = "", cantidad_minima = "", creado_por = "" } = req.body;
     
     try {
+
+        if(cantidad_maxima <= cantidad_minima) {
+            return res.status(400).json({
+                ok: false,
+                msg: `La cantidad máxima no puede ser inferior o igual a la mínima.`
+            })
+        }
  
         // Construir modelo
         const nuevoInsumo = await Insumo.create({
@@ -190,8 +199,13 @@ const deleteInsumo = async (req = request, res = response) => {
             where: { ID_INSUMO: id_insumo }
         })
 
+        // Traer todas las tablas que tengan relación
+        const insumoProducto = await InsumoProducto.count({where:{ ID_INSUMO: id_insumo}});
+        const detalleCompra = await DetalleCompra.count({where:{ ID_INSUMO: id_insumo}});
+        const kardex = await Kardex.count({where:{ ID_INSUMO: id_insumo}});
+
         //Si el inventario tiene existencia no va dejar borrarlo
-        if (inventario.EXISTENCIA == 0.00) {
+        if (inventario.EXISTENCIA == 0.00 && insumoProducto == 0 && detalleCompra == 0 && kardex == 0) {
             await inventario.destroy()
         }
         

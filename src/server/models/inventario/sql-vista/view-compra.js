@@ -19,6 +19,9 @@ const ViewCompra = db.define(`VIEW_MI_COMPRA`, {
     FECHA: {
         type: DataTypes.DATE
     },
+    ESTADO: {
+        type: DataTypes.BOOLEAN
+    },
     CREADO_POR: {
         type: DataTypes.STRING
     },

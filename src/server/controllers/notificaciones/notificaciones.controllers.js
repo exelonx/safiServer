@@ -1,6 +1,7 @@
 const { request, response } = require('express');
 const jwt = require('jsonwebtoken')
 const { Op } = require('sequelize');
+const { eventBitacora } = require('../../helpers/event-bitacora');
 const { instanciarServidor } = require('../../helpers/instanciarServer');
 const Notificacion = require('../../models/notificacion/notificacion');
 const NotificacionUsuario = require('../../models/notificacion/notificacion_usuario');
@@ -97,26 +98,43 @@ const postNotificacion = async (req = request, res = response) => {
         // Recorrer todos los permisos que tienen permiso
         for await ( let permiso of permisos ) {
     
-            // Traer todos los usuarios que tengan el rol con permiso y que esten activos
-            let usuarios = await Usuarios.findAll( 
-                {where: 
-                    { 
-                        ID_ROL: permiso.ID_ROL, 
-                        ESTADO_USUARIO: {[Op.or]: ['ACTIVO', 'BLOQUEADO']} // Deben estar activos o bloqueados para recibir notificaciones
-                    } 
-                }
-            )
-            
-            // Recorrer cada uno de los usuarios
-            for await ( let usuario of usuarios ) {
+            if (permiso.ID_ROL != 2) {
+              // Creara a todos menos a los default
+              // Traer todos los usuarios que tengan el rol con permiso y que esten activos
+              let usuarios = await Usuarios.findAll({
+                where: {
+                  ID_ROL: permiso.ID_ROL,
+                  ESTADO_USUARIO: { [Op.or]: ["ACTIVO", "BLOQUEADO"] }, // Deben estar activos o bloqueados para recibir notificaciones
+                },
+              });
+
+              // Recorrer cada uno de los usuarios
+              for await (let usuario of usuarios) {
                 // Crear notificación para cada usuario con privilegio
                 NotificacionUsuario.create({
-                    ID_USUARIO: usuario.ID_USUARIO,
-                    ID_NOTIFICACION: notificacion.id
-                })
+                  ID_USUARIO: usuario.ID_USUARIO,
+                  ID_NOTIFICACION: notificacion.id,
+                });
+              }
             }
         }
 
+        // Si no se le crea una notificación al usuario Root se le creara la notificación
+        const notificacionesCreadas = await NotificacionUsuario.findOne({
+            where: {
+                ID_USUARIO: 1,
+                ID_NOTIFICACION: notificacion.id
+            }
+        })
+        if(!notificacionesCreadas) {    // Solo si no existe
+            NotificacionUsuario.create({
+                ID_USUARIO: 1,
+                ID_NOTIFICACION: notificacion.id
+            })
+        }
+
+
+        // Preparar payload para enviar a usuarios
         const id_notificacion = notificacion.id
 
         const payload = {
@@ -380,6 +398,86 @@ const getPermisosNotificaciones = async (req = request, res = response) => {
     }
 }
 
+const getPermisoNotificacion = async (req = request, res = response) => {
+    const { id_permiso } = req.params;
+  
+    try {
+      const permiso = await ViewPermisoNotificacion.findByPk(id_permiso);
+  
+      // Validar Existencia
+      if (!permiso) {
+        return res.status(404).json({
+          msg: `No existe el permiso con el id` + id_permiso,
+        });
+      }
+  
+      res.json(permiso);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({
+        msg: error.message,
+      });
+    }
+};
+
+const putPermisos = async (req = request, res = response) => {
+    const { id_permiso } = req.params;
+    const {
+      permisoNuevo = "",
+      id_usuario
+    } = req.body;
+  
+    try {
+      // const usuario = await Usuarios.findByPk(id_usuario);
+  
+      // if(usuario.ID_ROL) {}
+  
+      const permiso = await ViewPermisoNotificacion.findByPk(id_permiso);
+  
+      await PermisoNotificacion.update(
+        {
+            RECIBIR_NOTIFICACION:
+            permisoNuevo !== ""
+              ? permisoNuevo
+              : PermisoNotificacion.RECIBIR_NOTIFICACION,
+        },
+        {
+          where: {
+            ID: id_permiso,
+          },
+        }
+      );
+  
+      // Si llega con cambios se registran cambios y manda correo
+      if (
+        !(
+          (permiso.RECIBIR_NOTIFICACION == permisoNuevo ||
+            permisoNuevo === "")
+        )
+      ) {
+        eventBitacora(
+          new Date(),
+          id_usuario,
+          9,
+          "ACTUALIZACION",
+          `PERMISOS DE NOTIFICACION DEL ROL ${permiso.ROL} ACTUALIZADOS: ${
+            permisoNuevo 
+              ? "`RECIBIR`"
+              : "`NO RECIBIR`"
+          }`
+        );
+      }
+  
+      res.json({ ok: true, msg: "Permiso actualizado con éxito" });
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({
+        ok: false,
+        msg: error.message,
+      });
+    }
+  };
+
 module.exports = {
     getNotificacionesCampana,
     postNotificacion,
@@ -387,5 +485,7 @@ module.exports = {
     configPermisosInicialesNoti,
     verNotificacion,
     getTipoNotificacion,
-    getPermisosNotificaciones
+    getPermisosNotificaciones,
+    getPermisoNotificacion,
+    putPermisos
 }
