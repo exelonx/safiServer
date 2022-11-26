@@ -11,6 +11,9 @@ const Caja = db.define(`TBL_MA_CAJA`, {
     SALDO_APERTURA: {
         type: DataTypes.DECIMAL
     },
+    SALDO_ACTUAL: {
+        type: DataTypes.DECIMAL
+    },
     ESTADO: {
         type: DataTypes.BOOLEAN
     },

@@ -32,7 +32,7 @@ const getCajas = async (req = request, res = response) => {
         }
 
         // Paginación
-        const caja = await Caja.findAll({
+        const cajas = await Caja.findAll({
             limit: parseInt(limite, 10),
             offset: parseInt(desde, 10),
             where: {
@@ -55,7 +55,7 @@ const getCajas = async (req = request, res = response) => {
         // }
 
         // Respuesta
-        res.json( {limite, countCajas, caja} )
+        res.json( {limite, countCajas, cajas} )
 
     } catch (error) {
         console.log(error);
@@ -96,7 +96,7 @@ const getCajaAbierta = async (req = request, res = response) => {
 
     try {
 
-        const cajaAbierta = await Caja.findAll({
+        const cajaAbierta = await Caja.findOne({
             where: {
                 ESTADO: '1'
             }

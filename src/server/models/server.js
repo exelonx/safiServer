@@ -40,7 +40,7 @@ const routerMesa = require('../routes/pedido/mesa.routes');
 const routerPedido = require('../routes/pedido/pedido.routes');
 const routerTipoProducto = require('../routes/catalogo_ventas/tipoProducto.routes');
 const routerInventarios = require('../routes/inventario/inventario.routes');
-const routerCaja = require('../routes/administracion/caja.router')
+const routerCaja = require('../routes/administracion/caja.routes')
 
 // Jobs
 const { generarBackup } = require('../jobs/db-backup');
