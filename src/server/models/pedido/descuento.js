@@ -16,7 +16,8 @@ const Descuento = db.define(`TBL_MF_DESCUENTO`, {
     }
 }, {
     tableName: 'TBL_MF_DESCUENTO',
-    timestamps: true
+    timestamps: false,
+    
 })
 
 

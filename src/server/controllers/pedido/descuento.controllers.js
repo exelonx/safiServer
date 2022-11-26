@@ -88,17 +88,17 @@ const getDescuento = async (req = request, res = response) => {
 
 const postDescuento = async (req = request, res = response) => {
     //body
-    const { nombre = "", porcentaje = "", fijo = "", cantidad = "", id_usuario = "" } = req.body;
+    const { nombre = "", id_descuento = "", cantidad = "", id_usuario = "" } = req.body;
     
     try {
  
+        console.log(id_descuento)
+        
         // Construir modelo
         const nuevoDescuento = await Descuento.create({
             NOMBRE: nombre,
-            PORCENTAJE: porcentaje,
-            FIJO: fijo,
-            CANTIDAD: cantidad,
-            CREADO_POR: id_usuario
+            ID_TIPO_DESCUENTO: id_descuento,
+            CANTIDAD: cantidad
         });
  
         // Guardar evento
@@ -107,7 +107,7 @@ const postDescuento = async (req = request, res = response) => {
         // Responder
         res.json( {
             ok: true,
-            msg: 'Descuento '+ descuento + ' ha sido creado con éxito'
+            msg: 'Descuento '+ nombre + ' ha sido creado con éxito'
         } );
 
     } catch (error) {
