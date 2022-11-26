@@ -26,8 +26,13 @@ const getCajas = async (req = request, res = response) => {
         // Validar si llegaron fechas
         if( fechaFinal !== '' && fechaInicial !== '') {
             filtrarPorFecha = { 
-                [Op.between]:[{FECHA_APERTURA: fechaInicial}, {FECHA_CIERRE: fechaFinal}]
-                    
+                
+                FECHA_APERTURA: {
+
+                    [Op.between]:[new Date(fechaInicial), new Date(fechaFinal)]
+
+                }
+ 
             }
         }
 
@@ -50,9 +55,9 @@ const getCajas = async (req = request, res = response) => {
         });
 
         // Guardar evento
-        // if( buscar !== "" && desde == 0) {
-        //     eventBitacora(new Date, quienBusco, 26, 'CONSULTA', `SE BUSCO LAS UNIDADES CON EL TERMINO '${buscar}'`);
-        // }
+        if(desde == 0) {
+            eventBitacora(new Date, quienBusco, 26, 'CONSULTA', `SE BUSCÓ LAS CAJAS DE LA FECHA'${filtrarPorFecha}'`);
+        }
 
         // Respuesta
         res.json( {limite, countCajas, cajas} )
