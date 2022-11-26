@@ -3,53 +3,45 @@ const puppeteer = require('puppeteer');
 const { Op } = require('sequelize');
 const base64 = require('node-base64-image');
 
-// Importar librerias de fechas
-const dayjs = require('dayjs');
-const localizedFormat = require('dayjs/plugin/localizedFormat');
-
-const { compilarTemplate } = require('../../../helpers/compilarTemplate');
-const ViewProveedor = require('../../../models/inventario/sql-vista/view-proveedor');
+const ViewImpuesto = require('../../../models/catalogo-ventas/sql-vistas/view_tipo-impuesto');
 const Parametro = require('../../../models/seguridad/parametro');
 
-// Llamar todas los parametros
-const getReporteProveedor = async (req = request, res = response)=>{
+const { compilarTemplate } = require('../../../helpers/compilarTemplate');
 
-    let{buscar = ""} = req.body
+const getReporteImpuesto = async (req = request, res = response) => {
+
+    let { buscar = ""} = req.body
 
     try {
-        
+
         const buscador = await puppeteer.launch({headless: true});
         const pagina = await buscador.newPage();
 
-        const registros = await ViewProveedor.findAll({
-
+        const impuestos = await ViewImpuesto.findAll({
             where: {
-                // WHERE COLUMNA1 LIKE %${BUSCAR}% OR COLUMNA2 LIKE %${BUSCAR}%
+                // WHERE PREGUNTA LIKE %${BUSCAR}% OR LIKE %${BUSCAR}%
                 [Op.or]: [{
                     NOMBRE: { [Op.like]: `%${buscar.toUpperCase() }%`}
                 }, {
-                    CREADO_POR: { [Op.like]: `%${buscar.toUpperCase()}%`}
-                }, {
-                    MODIFICACION_POR: { [Op.like]: `%${buscar.toUpperCase()}%`}
+                    PORCENTAJE: { [Op.like]: `%${buscar.toUpperCase()}%`}
                 }]
             }
-
         })
 
-        const regristrosMapped = registros.map(( registro )=> {
+        
+        const impuestoMapped = impuestos.map(( impuesto )=> {
             return {
-                NOMBRE: registro.NOMBRE,
-                CREADO_POR: registro.CREADO_POR,
-                MODIFICACION_POR: registro.MODIFICACION_POR,
-                DETALLE: registro.DETALLE,
-                MUNICIPIO: registro.MUNICIPIO,
-                DEPARTAMENTO: registro.DEPARTAMENTO,
-
+                NOMBRE: impuesto.NOMBRE,
+                PORCENTAJE: impuesto.PORCENTAJE,                
+                CREADO_POR: impuesto.CREADO_POR,
+                FECHA_CREACION: impuesto.FECHA_CREACION,
+                MODIFICADO_POR: impuesto.MODIFICADO_POR,
+                FECHA_MODIFICACION: impuesto.FECHA_MODIFICACION
             }
         })
 
-        const content = await compilarTemplate('proveedor', {proveedor: regristrosMapped})
-
+        const content = await compilarTemplate('impuesto', {impuesto: impuestoMapped})
+    
         await pagina.setContent(content)
         const options = {
             string: true,
@@ -85,7 +77,7 @@ const getReporteProveedor = async (req = request, res = response)=>{
             headerTemplate: `
             <div style="font-size:10px; margin: 0 auto; margin-left: 20px; margin-right: 20px;  width: 100%; display: flex; align-items: center; justify-content: space-between;" >  
             <div style="color: #d12609; width: 22%;"><p>Fecha: <span class="date"></span></p></div>   
-            <div style="display: flex; width: 60%; margin: 0 auto; align-items: center; justify-content: center; flex-direction: column"><div style="font-weight: bold; font-size: 20px;">${nombreEmpresa.VALOR}</div> <div style="color: #d12609; font-size: 20px;">Reporte de Proveedores</div></div>   
+            <div style="display: flex; width: 60%; margin: 0 auto; align-items: center; justify-content: center; flex-direction: column"><div style="font-weight: bold; font-size: 20px;">${nombreEmpresa.VALOR}</div> <div style="color: #d12609; font-size: 20px;">Reporte de Impuestos</div></div>   
             <div style=" display: flex; justify-content: end;  width: 20%;">
             <img class="logo" alt="title" src="data:image/png;base64,${logo}" width="40"/>
             </div></div>`,
@@ -99,18 +91,15 @@ const getReporteProveedor = async (req = request, res = response)=>{
 
         res.contentType("application/pdf");
         res.send(pdf);
-
     } catch (error) {
-
         console.log(error);
         res.status(500).json({
             msg: error.message
         })
-        
     }
 
 }
 
 module.exports = {
-    getReporteProveedor
+    getReporteImpuesto
 }

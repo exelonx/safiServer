@@ -8,11 +8,11 @@ const dayjs = require('dayjs');
 const localizedFormat = require('dayjs/plugin/localizedFormat');
 
 const { compilarTemplate } = require('../../../helpers/compilarTemplate');
-const ViewProveedor = require('../../../models/inventario/sql-vista/view-proveedor');
+const ViewInsumo = require('../../../models/inventario/sql-vista/view-insumo');
 const Parametro = require('../../../models/seguridad/parametro');
 
 // Llamar todas los parametros
-const getReporteProveedor = async (req = request, res = response)=>{
+const getReporteInsumo = async (req = request, res = response)=>{
 
     let{buscar = ""} = req.body
 
@@ -21,16 +21,18 @@ const getReporteProveedor = async (req = request, res = response)=>{
         const buscador = await puppeteer.launch({headless: true});
         const pagina = await buscador.newPage();
 
-        const registros = await ViewProveedor.findAll({
+        const registros = await ViewInsumo.findAll({
 
             where: {
                 // WHERE COLUMNA1 LIKE %${BUSCAR}% OR COLUMNA2 LIKE %${BUSCAR}%
                 [Op.or]: [{
                     NOMBRE: { [Op.like]: `%${buscar.toUpperCase() }%`}
                 }, {
-                    CREADO_POR: { [Op.like]: `%${buscar.toUpperCase()}%`}
+                    UNIDAD_MEDIDA: { [Op.like]: `%${buscar.toUpperCase()}%`}
                 }, {
-                    MODIFICACION_POR: { [Op.like]: `%${buscar.toUpperCase()}%`}
+                    CANTIDAD_MAXIMA: { [Op.like]: `%${buscar.toUpperCase()}%`}
+                }, {
+                    CANTIDAD_MINIMA: { [Op.like]: `%${buscar.toUpperCase()}%`}
                 }]
             }
 
@@ -39,16 +41,18 @@ const getReporteProveedor = async (req = request, res = response)=>{
         const regristrosMapped = registros.map(( registro )=> {
             return {
                 NOMBRE: registro.NOMBRE,
+                UNIDAD_MEDIDA: registro.UNIDAD_MEDIDA,
+                CANTIDAD_MAXIMA: registro.CANTIDAD_MAXIMA,
+                CANTIDAD_MINIMA: registro.CANTIDAD_MINIMA,
                 CREADO_POR: registro.CREADO_POR,
-                MODIFICACION_POR: registro.MODIFICACION_POR,
-                DETALLE: registro.DETALLE,
-                MUNICIPIO: registro.MUNICIPIO,
-                DEPARTAMENTO: registro.DEPARTAMENTO,
+                FECHA_CREACION: registro.FECHA_CREACION,
+                MODIFICADO_POR: registro.MODIFICADO_POR,
+                FECHA_MODIFICACION: registro.FECHA_MODIFICACION
 
             }
         })
 
-        const content = await compilarTemplate('proveedor', {proveedor: regristrosMapped})
+        const content = await compilarTemplate('insumo', {registro: regristrosMapped})
 
         await pagina.setContent(content)
         const options = {
@@ -85,7 +89,7 @@ const getReporteProveedor = async (req = request, res = response)=>{
             headerTemplate: `
             <div style="font-size:10px; margin: 0 auto; margin-left: 20px; margin-right: 20px;  width: 100%; display: flex; align-items: center; justify-content: space-between;" >  
             <div style="color: #d12609; width: 22%;"><p>Fecha: <span class="date"></span></p></div>   
-            <div style="display: flex; width: 60%; margin: 0 auto; align-items: center; justify-content: center; flex-direction: column"><div style="font-weight: bold; font-size: 20px;">${nombreEmpresa.VALOR}</div> <div style="color: #d12609; font-size: 20px;">Reporte de Proveedores</div></div>   
+            <div style="display: flex; width: 60%; margin: 0 auto; align-items: center; justify-content: center; flex-direction: column"><div style="font-weight: bold; font-size: 20px;">${nombreEmpresa.VALOR}</div> <div style="color: #d12609; font-size: 20px;">Reporte de Insumos</div></div>   
             <div style=" display: flex; justify-content: end;  width: 20%;">
             <img class="logo" alt="title" src="data:image/png;base64,${logo}" width="40"/>
             </div></div>`,
@@ -112,5 +116,5 @@ const getReporteProveedor = async (req = request, res = response)=>{
 }
 
 module.exports = {
-    getReporteProveedor
+    getReporteInsumo
 }

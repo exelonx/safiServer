@@ -8,64 +8,62 @@ const dayjs = require('dayjs');
 const localizedFormat = require('dayjs/plugin/localizedFormat');
 
 const { compilarTemplate } = require('../../../helpers/compilarTemplate');
-const ViewProveedor = require('../../../models/inventario/sql-vista/view-proveedor');
+const ViewCatalogo = require('../../../models/catalogo-ventas/sql-vistas/view_catalogo');
 const Parametro = require('../../../models/seguridad/parametro');
 
 // Llamar todas los parametros
-const getReporteProveedor = async (req = request, res = response)=>{
+const getReporteCatalogo = async (req = request, res = response) => {
 
-    let{buscar = ""} = req.body
+    let { buscar = "" } = req.body
 
     try {
-        
-        const buscador = await puppeteer.launch({headless: true});
+
+        const buscador = await puppeteer.launch({ headless: true });
         const pagina = await buscador.newPage();
 
-        const registros = await ViewProveedor.findAll({
+        const registros = await ViewCatalogo.findAll({
 
             where: {
                 // WHERE COLUMNA1 LIKE %${BUSCAR}% OR COLUMNA2 LIKE %${BUSCAR}%
                 [Op.or]: [{
-                    NOMBRE: { [Op.like]: `%${buscar.toUpperCase() }%`}
+                    NOMBRE: { [Op.like]: `%${buscar.toUpperCase()}%` }
                 }, {
-                    CREADO_POR: { [Op.like]: `%${buscar.toUpperCase()}%`}
+                    CREADO_POR: { [Op.like]: `%${buscar.toUpperCase()}%` }
                 }, {
-                    MODIFICACION_POR: { [Op.like]: `%${buscar.toUpperCase()}%`}
+                    MODIFICADO_POR: { [Op.like]: `%${buscar.toUpperCase()}%` }
                 }]
             }
 
         })
 
-        const regristrosMapped = registros.map(( registro )=> {
+        const regristrosMapped = registros.map((registro) => {
             return {
                 NOMBRE: registro.NOMBRE,
                 CREADO_POR: registro.CREADO_POR,
-                MODIFICACION_POR: registro.MODIFICACION_POR,
-                DETALLE: registro.DETALLE,
-                MUNICIPIO: registro.MUNICIPIO,
-                DEPARTAMENTO: registro.DEPARTAMENTO,
-
+                FECHA_CREACION: dayjs(registro.FECHA_CREACION).format('D MMM, YYYY, h:mm A'),
+                MODIFICADO_POR: registro.MODIFICADO_POR,
+                FECHA_MODIFICACION: dayjs(registro.FECHA_MODIFICACION).format('D MMM, YYYY, h:mm A')
             }
         })
 
-        const content = await compilarTemplate('proveedor', {proveedor: regristrosMapped})
+        const content = await compilarTemplate('catalogo', { catalogo: regristrosMapped })
 
         await pagina.setContent(content)
         const options = {
             string: true,
             headers: {
-              "User-Agent": "my-app"
+                "User-Agent": "my-app"
             }
-          };
+        };
 
         // Traer enlace del loco
         const parametroLogo = await Parametro.findOne({
-            where: { PARAMETRO: 'LOGO'}
+            where: { PARAMETRO: 'LOGO' }
         })
 
         // Traer nombre de la empresa
         const nombreEmpresa = await Parametro.findOne({
-            where: { PARAMETRO: 'NOMBRE_EMPRESA'}
+            where: { PARAMETRO: 'NOMBRE_EMPRESA' }
         })
 
         // Convertir logo a base 64
@@ -85,7 +83,7 @@ const getReporteProveedor = async (req = request, res = response)=>{
             headerTemplate: `
             <div style="font-size:10px; margin: 0 auto; margin-left: 20px; margin-right: 20px;  width: 100%; display: flex; align-items: center; justify-content: space-between;" >  
             <div style="color: #d12609; width: 22%;"><p>Fecha: <span class="date"></span></p></div>   
-            <div style="display: flex; width: 60%; margin: 0 auto; align-items: center; justify-content: center; flex-direction: column"><div style="font-weight: bold; font-size: 20px;">${nombreEmpresa.VALOR}</div> <div style="color: #d12609; font-size: 20px;">Reporte de Proveedores</div></div>   
+            <div style="display: flex; width: 60%; margin: 0 auto; align-items: center; justify-content: center; flex-direction: column"><div style="font-weight: bold; font-size: 20px;">${nombreEmpresa.VALOR}</div> <div style="color: #d12609; font-size: 20px;">Reporte de Catálogos</div></div>   
             <div style=" display: flex; justify-content: end;  width: 20%;">
             <img class="logo" alt="title" src="data:image/png;base64,${logo}" width="40"/>
             </div></div>`,
@@ -106,11 +104,11 @@ const getReporteProveedor = async (req = request, res = response)=>{
         res.status(500).json({
             msg: error.message
         })
-        
+
     }
 
 }
 
 module.exports = {
-    getReporteProveedor
+    getReporteCatalogo
 }

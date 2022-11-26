@@ -1,6 +1,7 @@
 const { Router } = require('express');
 const { check, body } = require('express-validator');
 const { getProductos, getProducto, postProducto, deleteProducto, putProducto, postCombo, postPromocion } = require('../../controllers/catalogo_ventas/producto.controllers');
+const { getReporteProducto } = require('../../controllers/catalogo_ventas/reporteria/producto.report.controller');
 const { validarCampos } = require('../../middlewares');
 const { existeProducto, noExisteProductoPorId } = require('../../middlewares/validar-producto-existente');
 
@@ -64,7 +65,7 @@ router.delete('/:id',[
     validarCampos
 ],deleteProducto);
 
-
+router.post('/reporteria/producto', getReporteProducto);
 
 
 module.exports = router

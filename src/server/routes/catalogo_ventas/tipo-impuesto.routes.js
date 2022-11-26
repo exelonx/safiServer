@@ -1,5 +1,6 @@
 const { Router } = require('express');
 const { check, body } = require('express-validator');
+const { getReporteImpuesto } = require('../../controllers/catalogo_ventas/reporteria/tipo-impuesto.report.controller');
 const { getImpuestos, getImpuesto, postImpuesto, putImpuesto, deleteImpuesto } = require('../../controllers/catalogo_ventas/tipo-impuesto.controllers');
 const { validarCampos, validarDobleEspacio } = require('../../middlewares');
 
@@ -35,5 +36,7 @@ router.put('/:id', [
 ], putImpuesto);
 
 router.delete('/:id_impuesto', deleteImpuesto);
+
+router.post('/reporteria/impuesto', getReporteImpuesto);
 
 module.exports = router;

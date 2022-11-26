@@ -1,7 +1,7 @@
 const { Router } = require('express');
 const { check, body } = require('express-validator');
 const { getCatalogos, getCatalogo, postCatalogo, deleteCatalogo, putCatalogo } = require('../../controllers/catalogo_ventas/catalogo.controllers');
-const { getReporteCatalogo } = require('../../controllers/catalogo_ventas/catalogo.report.controller');
+const { getReporteCatalogo } = require('../../controllers/catalogo_ventas/reporteria/catalogo.report.controller');
 const { validarCampos, validarDobleEspacio } = require('../../middlewares');
 const { existeCatalogo, noExisteCatalogoPorId } = require('../../middlewares/validar-catalogo-existente');
 

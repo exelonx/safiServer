@@ -1,6 +1,7 @@
 const { Router } = require('express');
 const { check, body } = require('express-validator');
 const { getInsumos, getInsumo, postInsumo, deleteInsumo, putInsumo } = require('../../controllers/inventario/insumo.controllers');
+const { getReporteInsumo } = require('../../controllers/inventario/reporteria/insumo.report.controller');
 
 const { validarCampos, validarEspacio, validarDobleEspacio } = require('../../middlewares');
 const { validarEspaciosProveedor } = require('../../middlewares/validaciones-proveedores');
@@ -51,5 +52,7 @@ router.put('/:id_insumo', [
 ], putInsumo);
 
 router.delete('/:id_insumo', deleteInsumo)
+
+router.post('/reporteria/insumo', getReporteInsumo);
 
 module.exports = router;
