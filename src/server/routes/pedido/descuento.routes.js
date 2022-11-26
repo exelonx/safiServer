@@ -26,7 +26,7 @@ router.post('/', [
 
 router.put('/:id', [
     //Validaciones para el nombre del insumo
-    check("nombre", "El nombre de insumo es obligatorio").not().isEmpty(), 
+    check("nombre", "El nombre del descuento es obligatorio").not().isEmpty(), 
     check("nombre", "El nombre sólo permite letras").isAlpha("es-ES", {ignore: ' '}),
     check("nombre", 'El nombre debe estar en mayúscula').isUppercase(),
     check("nombre", "No se permite más de un espacio en blanco entre palabras").custom(validarDobleEspacio),
@@ -38,7 +38,7 @@ router.put('/:id', [
     validarCampos
 ], putDescuento);
 
-router.delete('/:id', [
+router.delete('/:id_descuento', [
     // Validar existencia
     check('quienElimina', 'El id del usuario es obligatorio').not().isEmpty(),
     validarCampos

@@ -91,8 +91,6 @@ const postDescuento = async (req = request, res = response) => {
     const { nombre = "", id_descuento = "", cantidad = "", id_usuario = "" } = req.body;
     
     try {
- 
-        console.log(id_descuento)
         
         // Construir modelo
         const nuevoDescuento = await Descuento.create({
@@ -121,24 +119,23 @@ const postDescuento = async (req = request, res = response) => {
 
 const putDescuento = async (req = request, res = response) => {
     const { id } = req.params
-    const { nombre = "", porcentaje = "", fijo = "", cantidad = "", id_usuario } = req.body;
+    const { nombre = "", id_descuento = "", cantidad = "", id_usuario = "" } = req.body;
 
     try {
 
         const descuento = await Descuento.findByPk(id);
-        
+
         // Si llega sin cambios
         if(!((descuento.NOMBRE == nombre || nombre === ""))) {
 
-            eventBitacora(new Date, id_usuario, 25, 'ACTUALIZACION', `ESTADO ${descuento.NOMBRE}, ACTUALIZADO A : ${nombre !== "" && descuento.NOMBRE != descuento ? `${descuento}` : ""}`);
+            eventBitacora(new Date, id_usuario, 29, 'ACTUALIZACION', `ESTADO ${descuento.NOMBRE}, ACTUALIZADO A : ${nombre !== "" && descuento.NOMBRE != descuento ? `${descuento}` : ""}`);
 
         }
 
         // Actualizar db Catálogo
         await Descuento.update({
             NOMBRE: nombre !== "" ? nombre : Descuento.NOMBRE,
-            PORCENTAJE: porcentaje !== "" ? porcentaje : Descuento.PORCENTAJE,
-            FIJO: fijo !== "" ? fijo : Descuento.FIJO,
+            ID_TIPO_DESCUENTO: id_descuento !== "" ? id_descuento : Descuento.ID_TIPO_DESCUENTO,
             CANTIDAD: cantidad !== "" ? cantidad : Descuento.CANTIDAD
         }, {
             where: {
@@ -148,7 +145,7 @@ const putDescuento = async (req = request, res = response) => {
 
         res.json({
             ok: true,
-            msg: 'Descuento: '+ descuento.NOMBRE + ' ha sido actualizado con éxito'
+            msg: 'Descuento: '+ nombre + ' ha sido actualizado con éxito'
         });
 
     } catch (error) {
@@ -161,7 +158,7 @@ const putDescuento = async (req = request, res = response) => {
 }
 
 const deleteDescuento = async (req = request, res = response) => {
-    const { id_descuento} = req.params
+    const { id_descuento } = req.params
     const { quienElimina } = req.query
 
     try {
@@ -176,17 +173,17 @@ const deleteDescuento = async (req = request, res = response) => {
             })
         }
         // Extraer el nombre del catálogo
-        const { DESCUENTO } = descuento;
+        const { NOMBRE } = descuento;
 
         // Borrar catalogo
         await descuento.destroy();
 
         // Guardar evento
-        eventBitacora(new Date, quienElimina, 29, 'BORRADO', `SE ELIMINÓ EL DESCUENTO ${DESCUENTO}`);
+        eventBitacora(new Date, quienElimina, 29, 'BORRADO', `SE ELIMINÓ EL DESCUENTO ${NOMBRE}`);
 
         res.json({
             ok: true,
-            msg: `El descuento: ${DESCUENTO} ha sido eliminado`
+            msg: `El descuento: ${NOMBRE} ha sido eliminado`
         });
 
     } catch (error) {
