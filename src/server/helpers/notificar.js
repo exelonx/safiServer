@@ -26,24 +26,39 @@ const notificar = async ( idTipoNotificacion, accion, detalle, id_responsable, i
         // Recorrer todos los permisos que tienen permiso
         for await ( let permiso of permisos ) {
     
-            // Traer todos los usuarios que tengan el rol con permiso y que esten activos
-            let usuarios = await Usuarios.findAll( 
-                {where: 
-                    { 
-                        ID_ROL: permiso.ID_ROL, 
-                        ESTADO_USUARIO: {[Op.or]: ['ACTIVO', 'BLOQUEADO']} // Deben estar activos o bloqueados para recibir notificaciones
-                    } 
-                }
-            )
-            
-            // Recorrer cada uno de los usuarios
-            for await ( let usuario of usuarios ) {
-                // Crear notificación para cada usuario con privilegio
-                NotificacionUsuario.create({
+            if (permiso.ID_ROL != 2) {
+                // Creara a todos menos a los default
+                // Traer todos los usuarios que tengan el rol con permiso y que esten activos
+                let usuarios = await Usuarios.findAll({
+                  where: {
+                    ID_ROL: permiso.ID_ROL,
+                    ESTADO_USUARIO: { [Op.or]: ["ACTIVO", "BLOQUEADO"] }, // Deben estar activos o bloqueados para recibir notificaciones
+                  },
+                });
+  
+                // Recorrer cada uno de los usuarios
+                for await (let usuario of usuarios) {
+                  // Crear notificación para cada usuario con privilegio
+                  NotificacionUsuario.create({
                     ID_USUARIO: usuario.ID_USUARIO,
-                    ID_NOTIFICACION: notificacion.id
-                })
+                    ID_NOTIFICACION: notificacion.id,
+                  });
+                }
+              }
+        }
+
+        // Si no se le crea una notificación al usuario Root se le creara la notificación
+        const notificacionesCreadas = await NotificacionUsuario.findOne({
+            where: {
+                ID_USUARIO: 1,
+                ID_NOTIFICACION: notificacion.id
             }
+        })
+        if(!notificacionesCreadas) {    // Solo si no existe
+            NotificacionUsuario.create({
+                ID_USUARIO: 1,
+                ID_NOTIFICACION: notificacion.id
+            })
         }
 
         // Armar el payload

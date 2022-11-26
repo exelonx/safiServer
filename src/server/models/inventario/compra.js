@@ -13,6 +13,9 @@ const Compra = db.define(`TBL_MI_COMPRA`, {
     FECHA: {
         type: DataTypes.DATE
     },
+    ESTADO: {
+        type: DataTypes.BOOLEAN
+    },
     CREADO_POR: {
         type: DataTypes.INTEGER
     },

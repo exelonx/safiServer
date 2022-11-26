@@ -6,12 +6,11 @@ const { eventBitacora } = require('../../helpers/event-bitacora');
 const ViewCompra = require('../../models/inventario/sql-vista/view-compra');
 const Compra = require('../../models/inventario/compra');
 const CompraDetalle = require('../../models/inventario/detalle-compra');
-const Inventario = require('../../models/inventario/inventario');
 const ViewInsumo = require('../../models/inventario/sql-vista/view-insumo');
-const { instanciarServidor } = require('../../helpers/instanciarServer');
 const { notificar } = require('../../helpers/notificar');
 const jwt = require('jsonwebtoken');
 const Kardex = require('../../models/inventario/kardex');
+const Proveedor = require('../../models/inventario/proveedor');
 
 const getCompras = async (req = request, res = response) => {
     let { limite = 10, desde = 0, buscar = "", id_usuario = "" } = req.query
@@ -35,6 +34,9 @@ const getCompras = async (req = request, res = response) => {
             where: {
                 [Op.or]: [{
                     PROVEEDOR: { [Op.like]: `%${buscar.toUpperCase()}%` }
+                }],
+                [Op.not]: [{
+                    ESTADO: false 
                 }]
             }
         });
@@ -44,6 +46,9 @@ const getCompras = async (req = request, res = response) => {
             where: {
                 [Op.or]: [{
                     PROVEEDOR: { [Op.like]: `%${buscar.toUpperCase()}%` }
+                }],
+                [Op.not]: [{
+                    ESTADO: false 
                 }]
             }
         });
@@ -158,14 +163,6 @@ const postCompra = async (req = request, res = response) => {
             // Registrar en bitacora
             eventBitacora(new Date, id_usuario, 23, 'NUEVO', `SE REALIZÓ UNA NUEVA COMPRA DE ${detalle.CANTIDAD} ${insumo.UNIDAD_MEDIDA} DE ${insumo.NOMBRE}`);
 
-            // Verificar si la compra del insumo esta en limites correctos
-            if( insumo.CANTIDAD_MAXIMA < insumo.EXISTENCIA) {   // Por encima del limite
-                
-                // Notificar a los usuarios
-                await notificar(1, `Exceso de ${insumo.NOMBRE.toLowerCase()}`, `Existencia de ${insumo.NOMBRE.toLowerCase()} esta por encima de la cantidad máxima. Cantidad Máxima: ${insumo.CANTIDAD_MAXIMA} ${insumo.UNIDAD_MEDIDA}, Existencia actual: ${insumo.EXISTENCIA} ${insumo.UNIDAD_MEDIDA}`, '', insumo.ID)
-
-            }
-
             if( insumo.CANTIDAD_MINIMA > insumo.EXISTENCIA) {   // Por debajo del limite
                 
                 // Notificar a los usuarios
@@ -183,11 +180,15 @@ const postCompra = async (req = request, res = response) => {
     }
 }
 
+const imprimirFactura = async (req = request, res = response) => {
+
+}
+
 const putAddInsumoCompraExistente = async (req = request, res = response) => {
     const token = req.header('x-token');
     const { id_detalle } = req.params;
     const { nuevo_insumo = 0, nueva_cantidad = 0.00, nuevo_precio = '' } = req.body;
-    let mensajeNotificacion = "";
+
     try {
         // Extraer el id del usuario
         const { uid } = jwt.verify( token, process.env.SEMILLA_SECRETA_JWT_LOGIN );
@@ -221,8 +222,6 @@ const putAddInsumoCompraExistente = async (req = request, res = response) => {
             });
 
             eventBitacora(new Date, uid, 23, 'ACTUALIZACION', `Cambio en el precio unitario de la compra de ${insumo.NOMBRE}, precio anterior: ${detalle.PRECIO_COMPRA} Lps, nuevo precio: ${parseFloat(nueva_cantidad).toFixed(2)}`); 
-
-            mensajeNotificacion = `Cambio en el precio unitario de la compra, precio anterior: ${detalle.PRECIO_COMPRA} Lps, nuevo precio: ${parseFloat(nueva_cantidad).toFixed(2)}.`
 
             // Actualizar precio del insumo
             detalle.update({
@@ -266,7 +265,6 @@ const putAddInsumoCompraExistente = async (req = request, res = response) => {
             })
 
             eventBitacora(new Date, uid, 23, 'ACTUALIZACION', `Devolución de ${detalle.CANTIDAD} ${anteriorInsumo.UNIDAD_MEDIDA} de ${anteriorInsumo.NOMBRE}, ingreso de ${nueva_cantidad.toFixed(2)} ${nuevoInsumo.UNIDAD_MEDIDA} de ${nuevoInsumo.NOMBRE}`);
-            mensajeNotificacion = `${mensajeNotificacion.length>0 ? `${mensajeNotificacion}` : ""}Devolución de ${detalle.CANTIDAD} ${anteriorInsumo.UNIDAD_MEDIDA} de ${anteriorInsumo.NOMBRE}, ingreso de ${nueva_cantidad.toFixed(2)} ${nuevoInsumo.UNIDAD_MEDIDA} de ${nuevoInsumo.NOMBRE}.`
 
         } else {    // ES EL MISMO INSUMO
 
@@ -283,7 +281,6 @@ const putAddInsumoCompraExistente = async (req = request, res = response) => {
                 }) 
 
                 eventBitacora(new Date, uid, 23, 'ACTUALIZACION', `DEVOLUCIÓN DE ${detalle.CANTIDAD - nueva_cantidad} ${insumo.UNIDAD_MEDIDA} DE ${insumo.NOMBRE}`); 
-                mensajeNotificacion = `${mensajeNotificacion.length>0 ? `${mensajeNotificacion} ` : ""}Devolución de ${detalle.CANTIDAD - nueva_cantidad} ${insumo.UNIDAD_MEDIDA} de ${insumo.NOMBRE}.`
 
                 // Actualizar Detalle
                 detalle.update({
@@ -304,7 +301,6 @@ const putAddInsumoCompraExistente = async (req = request, res = response) => {
                 }) 
 
                 eventBitacora(new Date, uid, 23, 'ACTUALIZACION', `ENTRADA DE ${nueva_cantidad - detalle.CANTIDAD} ${insumo.UNIDAD_MEDIDA} DE ${insumo.NOMBRE}`); 
-                mensajeNotificacion = `Entrada de ${nueva_cantidad - detalle.CANTIDAD} ${insumo.UNIDAD_MEDIDA} de ${insumo.NOMBRE}`
 
                 // Actualizar Detalle
                 detalle.update({
@@ -324,12 +320,16 @@ const putAddInsumoCompraExistente = async (req = request, res = response) => {
             compra
         })
 
-        // Notificar a los usuarios
-        if(mensajeNotificacion !== "") {
+        // ======================================= NOTIFICAR =========================================
+        const insumo = await ViewInsumo.findByPk(detalle.ID_INSUMO)
 
-            await notificar(1, `Actualización de compra # ${compra.id}`, mensajeNotificacion, '', detalle.ID_INSUMO)
+        if( insumo.CANTIDAD_MINIMA > insumo.EXISTENCIA) {   // Por debajo del limite
+            
+            // Notificar a los usuarios
+            await notificar(1, `Necesitan más ${insumo.NOMBRE.toLowerCase()}`, `Aún queda poca existencia de ${insumo.NOMBRE.toLowerCase()}, la cantidad existente es inferior a la cantidad mínima. Cantidad Mínima: ${insumo.CANTIDAD_MINIMA} ${insumo.UNIDAD_MEDIDA}, Existencia actual: ${insumo.EXISTENCIA} ${insumo.UNIDAD_MEDIDA}`, '', insumo.ID)
 
         }
+
         
     } catch (error) {
         console.log(error);
@@ -413,12 +413,6 @@ const putMasInsumosEnDetalle = async (req = request, res = response) => {
             eventBitacora(new Date, uid, 23, 'ACTUALIZACION', `SE AGREGÓ UNA NUEVA COMPRA DE ${detalle.CANTIDAD} ${insumo.UNIDAD_MEDIDA} DE ${insumo.NOMBRE} A LA COMPRA # ${id_compra}`);
 
             // Verificar si la compra del insumo esta en limites correctos
-            if( insumo.CANTIDAD_MAXIMA < insumo.EXISTENCIA) {   // Por encima del limite
-                
-                // Notificar a los usuarios
-                await notificar(1, `Exceso de ${insumo.NOMBRE.toLowerCase()}`, `Existencia de ${insumo.NOMBRE.toLowerCase()} esta por encima de la cantidad máxima. Cantidad Máxima: ${insumo.CANTIDAD_MAXIMA} ${insumo.UNIDAD_MEDIDA}, Existencia actual: ${insumo.EXISTENCIA} ${insumo.UNIDAD_MEDIDA}`, '', insumo.ID)
-
-            }
 
             if( insumo.CANTIDAD_MINIMA > insumo.EXISTENCIA) {   // Por debajo del limite
                 
@@ -428,6 +422,49 @@ const putMasInsumosEnDetalle = async (req = request, res = response) => {
             }
         }
 
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            ok: false,
+            msg: error.message
+        })
+    }
+}
+
+const putNombreProveedor = async (req = request, res = response) => {
+    
+    const { id_compra } = req.params
+    const { id_proveedor, uid } = req.body
+
+    try {
+
+        console.log(id_proveedor)
+        // Validar existencia del proveedor
+        const proveedor = Proveedor.findByPk(id_proveedor);
+        console.log(proveedor)
+        if(!proveedor) {
+            return res.status(404).json({
+                ok: false,
+                msg: 'No existe el proveedor con el id: '+id_proveedor
+            })
+        }
+
+        // Instanciar compra
+        const compra = await Compra.findByPk(id_compra);
+
+        compra.update({
+            ID_PROVEEDOR: id_proveedor,
+            MODIFICADO_POR: uid
+        })
+
+        eventBitacora(new Date, uid, 23, 'ACTUALIZACION', `EL PROVEEDOR DE LA COMPRA # ${compra.id} HA SIDO ACTUALIZADO`);
+
+        res.json({
+            ok: true,
+            msg: 'El proveedor de la compra # '+ compra.id+ " ha sido actualizado"
+        })
+        
+        
     } catch (error) {
         console.log(error);
         res.status(500).json({
@@ -484,15 +521,6 @@ const deleteUnDetalle = async (req = request, res = response) => {
             msg: 'Insumo ha sido eliminado del detalle'
         })
 
-        // NOTIFICAR
-        // Verificar si la compra del insumo esta en limites correctos
-        if( insumo.CANTIDAD_MAXIMA < insumo.EXISTENCIA) {   // Por encima del limite
-            
-            // Notificar a los usuarios
-            await notificar(1, `Exceso de ${insumo.NOMBRE.toLowerCase()}`, `Existencia de ${insumo.NOMBRE.toLowerCase()} esta por encima de la cantidad máxima. Cantidad Máxima: ${insumo.CANTIDAD_MAXIMA} ${insumo.UNIDAD_MEDIDA}, Existencia actual: ${insumo.EXISTENCIA} ${insumo.UNIDAD_MEDIDA}`, '', insumo.ID)
-
-        }
-
         if( insumo.CANTIDAD_MINIMA > insumo.EXISTENCIA) {   // Por debajo del limite
             
             // Notificar a los usuarios
@@ -509,11 +537,73 @@ const deleteUnDetalle = async (req = request, res = response) => {
     }
 }
 
+const anularCompra = async (req = request, res = response) => {
+
+    const { id_compra } = req.params;
+    const { id_usuario } = req.body;
+
+    try {
+        // Instanciar detalle para disminuir en inventario
+        const detalles = await CompraDetalle.findAll({where: {ID_COMPRA: id_compra}});
+
+        // Cambiar estado de la compra
+        const compra = await Compra.findByPk(id_compra);
+        await compra.update({
+            ESTADO: false
+        })
+
+        // Guardar en bitácora la eliminación
+        eventBitacora(new Date, id_usuario, 23, 'BORRADO', `LA COMPRA # ${compra.id} HA SIDO ANULADA.`);
+
+        // Responder
+        res.json({
+            ok: true,
+            msg: 'Compra # '+compra.id+ " ha sido anulada."
+        })
+
+        // Por cada objeto en la compra, devolver
+        for await(let detalle of detalles) {
+
+            await Kardex.create({   // DEVOLUCIÓN
+                ID_USUARIO: id_usuario,
+                ID_INSUMO: detalle.ID_INSUMO,
+                CANTIDAD: detalle.CANTIDAD,
+                TIPO_MOVIMIENTO: 'DEVOLUCIÓN'
+            }) 
+
+            const insumo = await ViewInsumo.findByPk(detalle.ID_INSUMO);
+
+            // Guardar en bitácora la devolución
+            eventBitacora(new Date, id_usuario, 23, 'ACTUALIZACION', `DEVOLUCIÓN DE ${detalle.CANTIDAD} ${insumo.UNIDAD_MEDIDA} DE ${insumo.NOMBRE}`);
+
+            // Notificar
+            if( insumo.CANTIDAD_MINIMA > insumo.EXISTENCIA) {   // Por debajo del limite
+                
+                // Notificar a los usuarios
+                await notificar(1, `Necesitan más ${insumo.NOMBRE.toLowerCase()}`, `Aún queda poca existencia de ${insumo.NOMBRE.toLowerCase()}, la cantidad existente es inferior a la cantidad mínima. Cantidad Mínima: ${insumo.CANTIDAD_MINIMA} ${insumo.UNIDAD_MEDIDA}, Existencia actual: ${insumo.EXISTENCIA} ${insumo.UNIDAD_MEDIDA}`, '', insumo.ID)
+
+            }
+
+        }
+
+
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            ok: false,
+            msg: error.message
+        })
+    }
+}
+
 module.exports = {
     getCompras,
     getCompra,
     postCompra,
     putAddInsumoCompraExistente,
     putMasInsumosEnDetalle,
-    deleteUnDetalle
+    deleteUnDetalle,
+    putNombreProveedor,
+    anularCompra
 }
