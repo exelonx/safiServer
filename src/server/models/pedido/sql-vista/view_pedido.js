@@ -13,6 +13,9 @@ const ViewPedido = db.define(`VIEW_MP_PEDIDO`, {
     USUARIO: {
         type: DataTypes.STRING
     },
+    NOMBRE_USUARIO: {
+        type: DataTypes.STRING
+    },
     ID_ESTADO: {
         type: DataTypes.INTEGER
     },

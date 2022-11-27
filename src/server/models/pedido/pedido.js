@@ -27,7 +27,7 @@ const Pedido = db.define(`TBL_MP_PEDIDO`, {
         type: DataTypes.DATE
     },
     MODIFICADO_POR: {
-        type: DataTypes.STRING
+        type: DataTypes.INTEGER
     }
 }, {
     tableName: 'TBL_MP_PEDIDO',

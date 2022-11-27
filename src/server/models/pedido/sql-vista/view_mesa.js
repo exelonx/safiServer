@@ -14,19 +14,19 @@ const ViewMesa = db.define(`VIEW_MP_MESA`, {
         type: DataTypes.STRING
     },
     COLOR: {
-        type: DataTypes.INTEGER
+        type: DataTypes.STRING
     },
     NOMBRE: {
         type: DataTypes.STRING
     },
     INFORMACION: {
-        type: DataTypes.BOOLEAN
+        type: DataTypes.STRING
     },
     TIPO: {
         type: DataTypes.INTEGER
     },
     FECHA: {
-        type: DataTypes.STRING
+        type: DataTypes.DATE
     }
 }, {
     tableName: 'VIEW_MP_MESA',

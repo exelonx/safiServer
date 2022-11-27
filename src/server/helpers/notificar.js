@@ -86,7 +86,18 @@ const emitEventoInventario = async ( evento ) => {
     server.io.emit('recargarInventario')
 }
 
+const emit = async ( evento, payload = {} ) => {
+
+    try {
+        const server = instanciarServidor();
+        server.io.emit(evento, payload)
+    } catch (error) {
+        console.log(error)
+    }
+}
+
 module.exports = {
     notificar,
-    emitEventoInventario
+    emitEventoInventario,
+    emit
 }
