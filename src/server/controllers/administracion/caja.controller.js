@@ -23,6 +23,9 @@ const getCajas = async (req = request, res = response) => {
             desde = 0;
         }
 
+
+        console.log(fechaFinal, fechaInicial);
+
         // Validar si llegaron fechas
         if( fechaFinal !== '' && fechaInicial !== '') {
             filtrarPorFecha = { 
@@ -41,17 +44,21 @@ const getCajas = async (req = request, res = response) => {
             limit: parseInt(limite, 10),
             offset: parseInt(desde, 10),
             where: {
-                ESTADO: '0'
+                ESTADO: '0',
+
+                [Op.and]: [filtrarPorFecha]
             },
-            [Op.or]: [filtrarPorFecha]
+            
         });
 
         // Contar resultados total
         const countCajas = await Caja.count({
             where: {
-                ESTADO: '0'
+                ESTADO: '0',
+
+                [Op.and]: [filtrarPorFecha]
             },
-            [Op.or]: [filtrarPorFecha]
+            
         });
 
         // Guardar evento
@@ -123,7 +130,7 @@ const postCaja = async (req = request, res = response) => {
     
     try {
 
-        const cajaAbierta = await Caja.findAll({where: {ESTADO: '1'}});
+        const cajaAbierta = await Caja.findOne({where: {ESTADO: '1'}});
         if(saldo_apertura < 0){
             return res.status(400).json({
                 ok: false,
@@ -141,6 +148,8 @@ const postCaja = async (req = request, res = response) => {
         // Construir modelo
         const nuevaCaja = await Caja.create({
             SALDO_APERTURA: saldo_apertura,
+            SALDO_ACTUAL: saldo_apertura,
+            ID_USUARIO: id_usuario,
             ESTADO: '1'
         }); 
         
@@ -179,9 +188,9 @@ const putCaja = async (req = request, res = response) => {
             }
         })
 
-        const caja = await Caja.findAll(id);
+        const caja = await Caja.findByPk(id);
 
-        eventBitacora(new Date, id_usuario, 16, 'ACTUALIZACION', `DATOS ACTUALIZADOS: ${`Estado caja:`, caja.ESTADO `,` `Fecha de cierre: `, caja.FECHA_CIERRE }`);
+        eventBitacora(new Date, id_usuario, 16, 'ACTUALIZACION', `DATOS ACTUALIZADOS: \`Estado caja:\`, ${caja.ESTADO} , \`Fecha de cierre: \`, ${caja.FECHA_CIERRE}`);
 
         res.json({
             ok: true,
