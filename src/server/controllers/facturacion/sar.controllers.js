@@ -225,12 +225,12 @@ const putSAR = async (req = request, res = response) => {
             && (sar.NUMERO_ACTUAL == numero_actual || numero_actual === ""))) {
 
                 eventBitacora(new Date, id_usuario, 27, 'ACTUALIZACION', 
-                `DATOS ACTUALIZADOS: ${cai !== "" && sar.CAI != cai ? `${sar.CAI} actualizado a ${cai}` : ""}
-                 ${rango_minimo !== "" && sar.RANGO_MINIMO != rango_minimo ? `${sar.RANGO_MINIMO} actualizado a ${rango_minimo}` : ""}
-                 ${rango_maximo !=="" && sar.RANGO_MAXIMO != rango_maximo ? `${sar.RANGO_MAXIMO} actualizado a ${rango_maximo}` :""}
-                 ${fecha_autorizado !=="" && sar.FECHA_AUTORIZADO != fecha_autorizado ? `${sar.FECHA_AUTORIZADO} actualizado a ${fecha_autorizado}` :""}
-                 ${fecha_limite_emision !=="" && sar.FECHA_LIMITE_EMISION != fecha_limite_emision ? `${sar.FECHA_LIMITE_EMISION} actualizado a ${fecha_limite_emision}` :""}
-                 ${numero_actual !=="" && sar.NUMERO_ACTUAL != numero_actual ? `${sar.NUMERO_ACTUAL} actualizado a ${numero_actual}` :""}`);
+                `DATOS ACTUALIZADOS AL SAR ${sar.CAI}: ${(cai !== "" && sar.CAI != cai) ? "`CAI`" : "" }
+                 ${(rango_minimo !== "" && sar.RANGO_MINIMO != rango_minimo) ? "`RANGO MÍNIMO`" : "" }
+                 ${(rango_maximo !== "" && sar.RANGO_MAXIMO != rango_maximo) ? "`RANGO MÁXIMO`" : "" }
+                 ${(fecha_autorizado !== "" && sar.FECHA_AUTORIZADO != fecha_autorizado) ? "`FECHA AUTORIZADO`"  : "" }
+                 ${(fecha_limite_emision !== "" && sar.FECHA_LIMITE_EMISION != fecha_limite_emision) ? "`FECHA LÍMITE EMISIÓN`" : "" }
+                 ${(numero_actual !== "" && sar.NUMERO_ACTUAL != numero_actual) ? "`NÚMERO ACTUAL`" : "" }`);
         }
     
 
