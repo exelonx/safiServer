@@ -1,6 +1,7 @@
 const { Router } = require('express');
 const { check, body } = require('express-validator');
 const { getDescuentos, getDescuento, postDescuento, putDescuento, deleteDescuento } = require('../../controllers/pedido/descuento.controllers');
+const { getReporteDescuento } = require('../../controllers/pedido/reporteria/descuento.report.controller');
 
 const { validarCampos, validarEspacio, validarDobleEspacio } = require('../../middlewares');
 
@@ -43,5 +44,7 @@ router.delete('/:id_descuento', [
     check('quienElimina', 'El id del usuario es obligatorio').not().isEmpty(),
     validarCampos
 ], deleteDescuento);
+
+router.post('/reporteria/descuento', getReporteDescuento);
 
 module.exports = router;
