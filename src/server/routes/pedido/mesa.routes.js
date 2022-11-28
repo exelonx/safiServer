@@ -1,6 +1,6 @@
 const { Router } = require('express');
 const { check, body } = require('express-validator');
-const { postMesaPedido, validarCaja, getMesas, getPedidosPorMesa, getDetalleDelPedido, getProductosParaAgregar, getBebidas, getMesa, postDetalle } = require('../../controllers/pedido/mesa.controllers');
+const { postMesaPedido, validarCaja, getMesas, getPedidosPorMesa, getDetalleDelPedido, getProductosParaAgregar, getBebidas, getMesa, postDetalle, putEstadoDetalle } = require('../../controllers/pedido/mesa.controllers');
 const { validarEspacio, validarCampos, validarDobleEspacio } = require('../../middlewares');
 
 const router = Router();
@@ -30,5 +30,7 @@ router.post('/', [
 router.post('/detalle', postDetalle)
 
 router.get('/validarCaja', validarCaja)
+
+router.put('/detalle/:id_detalle', putEstadoDetalle)
 
 module.exports = router;

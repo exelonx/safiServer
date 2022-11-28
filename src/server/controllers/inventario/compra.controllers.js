@@ -163,7 +163,7 @@ const postCompra = async (req = request, res = response) => {
             // Registrar en bitacora
             eventBitacora(new Date, id_usuario, 23, 'NUEVO', `SE REALIZÓ UNA NUEVA COMPRA DE ${detalle.CANTIDAD} ${insumo.UNIDAD_MEDIDA} DE ${insumo.NOMBRE}`);
 
-            if( insumo.CANTIDAD_MINIMA > insumo.EXISTENCIA) {   // Por debajo del limite
+            if( insumo.CANTIDAD_MINIMA >= insumo.EXISTENCIA) {   // Por debajo del limite
                 
                 // Notificar a los usuarios
                 await notificar(1, `Necesitan más ${insumo.NOMBRE.toLowerCase()}`, `Aún queda poca existencia de ${insumo.NOMBRE.toLowerCase()}, la cantidad existente es inferior a la cantidad mínima. Cantidad Mínima: ${insumo.CANTIDAD_MINIMA} ${insumo.UNIDAD_MEDIDA}, Existencia actual: ${insumo.EXISTENCIA} ${insumo.UNIDAD_MEDIDA}`, '', insumo.ID)
@@ -323,7 +323,7 @@ const putAddInsumoCompraExistente = async (req = request, res = response) => {
         // ======================================= NOTIFICAR =========================================
         const insumo = await ViewInsumo.findByPk(detalle.ID_INSUMO)
 
-        if( insumo.CANTIDAD_MINIMA > insumo.EXISTENCIA) {   // Por debajo del limite
+        if( insumo.CANTIDAD_MINIMA >= insumo.EXISTENCIA) {   // Por debajo del limite
             
             // Notificar a los usuarios
             await notificar(1, `Necesitan más ${insumo.NOMBRE.toLowerCase()}`, `Aún queda poca existencia de ${insumo.NOMBRE.toLowerCase()}, la cantidad existente es inferior a la cantidad mínima. Cantidad Mínima: ${insumo.CANTIDAD_MINIMA} ${insumo.UNIDAD_MEDIDA}, Existencia actual: ${insumo.EXISTENCIA} ${insumo.UNIDAD_MEDIDA}`, '', insumo.ID)
@@ -414,7 +414,7 @@ const putMasInsumosEnDetalle = async (req = request, res = response) => {
 
             // Verificar si la compra del insumo esta en limites correctos
 
-            if( insumo.CANTIDAD_MINIMA > insumo.EXISTENCIA) {   // Por debajo del limite
+            if( insumo.CANTIDAD_MINIMA >= insumo.EXISTENCIA) {   // Por debajo del limite
                 
                 // Notificar a los usuarios
                 await notificar(1, `Necesitan más ${insumo.NOMBRE.toLowerCase()}`, `Aún queda poca existencia de ${insumo.NOMBRE.toLowerCase()}, la cantidad existente es inferior a la cantidad mínima. Cantidad Mínima: ${insumo.CANTIDAD_MINIMA} ${insumo.UNIDAD_MEDIDA}, Existencia actual: ${insumo.EXISTENCIA} ${insumo.UNIDAD_MEDIDA}`, '', insumo.ID)
@@ -521,7 +521,7 @@ const deleteUnDetalle = async (req = request, res = response) => {
             msg: 'Insumo ha sido eliminado del detalle'
         })
 
-        if( insumo.CANTIDAD_MINIMA > insumo.EXISTENCIA) {   // Por debajo del limite
+        if( insumo.CANTIDAD_MINIMA >= insumo.EXISTENCIA) {   // Por debajo del limite
             
             // Notificar a los usuarios
             await notificar(1, `Necesitan más ${insumo.NOMBRE.toLowerCase()}`, `Aún queda poca existencia de ${insumo.NOMBRE.toLowerCase()}, la cantidad existente es inferior a la cantidad mínima. Cantidad Mínima: ${insumo.CANTIDAD_MINIMA} ${insumo.UNIDAD_MEDIDA}, Existencia actual: ${insumo.EXISTENCIA} ${insumo.UNIDAD_MEDIDA}`, '', insumo.ID)
@@ -577,7 +577,7 @@ const anularCompra = async (req = request, res = response) => {
             eventBitacora(new Date, id_usuario, 23, 'ACTUALIZACION', `DEVOLUCIÓN DE ${detalle.CANTIDAD} ${insumo.UNIDAD_MEDIDA} DE ${insumo.NOMBRE}`);
 
             // Notificar
-            if( insumo.CANTIDAD_MINIMA > insumo.EXISTENCIA) {   // Por debajo del limite
+            if( insumo.CANTIDAD_MINIMA >= insumo.EXISTENCIA) {   // Por debajo del limite
                 
                 // Notificar a los usuarios
                 await notificar(1, `Necesitan más ${insumo.NOMBRE.toLowerCase()}`, `Aún queda poca existencia de ${insumo.NOMBRE.toLowerCase()}, la cantidad existente es inferior a la cantidad mínima. Cantidad Mínima: ${insumo.CANTIDAD_MINIMA} ${insumo.UNIDAD_MEDIDA}, Existencia actual: ${insumo.EXISTENCIA} ${insumo.UNIDAD_MEDIDA}`, '', insumo.ID)

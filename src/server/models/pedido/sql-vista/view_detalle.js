@@ -49,6 +49,9 @@ const ViewDetallePedido = db.define(`VIEW_MP_PEDIDO_DETALLE`, {
     },
     PORCENTAJE_IMPUESTO: {
         type: DataTypes.INTEGER
+    },
+    ID_IMPUESTO: {
+        type: DataTypes.INTEGER
     }
 }, {
     tableName: 'VIEW_MP_PEDIDO_DETALLE',

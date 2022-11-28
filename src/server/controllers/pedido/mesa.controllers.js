@@ -11,8 +11,14 @@ const ViewPedido = require('../../models/pedido/sql-vista/view_pedido');
 const ViewDetallePedido = require('../../models/pedido/sql-vista/view_detalle');
 const ViewProducto = require('../../models/catalogo-ventas/sql-vistas/view_producto');
 const ViewCatalogoVenta = require('../../models/pedido/sql-vista/view_catalogo_ventas');
-const { emit } = require('../../helpers/notificar');
+const { emit, notificar } = require('../../helpers/notificar');
 const DetallePedido = require('../../models/pedido/detallePedido');
+const Producto = require('../../models/catalogo-ventas/producto');
+const InsumoProducto = require('../../models/catalogo-ventas/insumoProducto');
+const ComboProducto = require('../../models/catalogo-ventas/comboProducto');
+const ViewInsumo = require('../../models/inventario/sql-vista/view-insumo');
+const PromocionProducto = require('../../models/catalogo-ventas/promocionProducto');
+const Kardex = require('../../models/inventario/kardex');
 
 const getMesas = async (req = request, res = response) => {
     try {
@@ -322,11 +328,16 @@ const postDetalle = async (req = request, res = response) => {
         // Agregar cada uno de los productos al detalle
         for await(let producto of arregloProductos) {
             let precio = parseFloat(producto.producto.PRECIO) / (1.00 + parseFloat(producto.producto.PORCENTAJE/100));
-            let totalImpuesto = parseFloat(precio) * (parseFloat(producto.producto.PORCENTAJE/100));
 
-            subTotal += (parseFloat(precio.toFixed(2)) + parseFloat(totalImpuesto.toFixed(2)))*producto.cantidad
+            let totalImpuesto = 0;
 
-            console.log(producto.producto)
+            if(!producto.EXENTA) {
+
+                totalImpuesto = parseFloat(precio) * (parseFloat(producto.producto.PORCENTAJE/100));
+            }
+
+            subTotal += (parseFloat(precio.toFixed(2)))*producto.cantidad
+
             await DetallePedido.create({
                 ID_PEDIDO: id_pedido,
                 ID_PRODUCTO: producto.producto.ID,
@@ -350,15 +361,474 @@ const postDetalle = async (req = request, res = response) => {
             }
         }) 
 
+        // Actualizar estado de mesa
+        await Mesa.update({
+            ID_ESTADO: 1
+        }, {
+            where: {
+                id: pedido.ID_MESA
+            }
+        })
+
         let pedidoPayload = await ViewPedido.findByPk(id_pedido);
+        let mesaVista = await ViewMesa.findByPk(pedido.ID_MESA)
 
         // Mandar el id para que solo se refresque la tabla correspondiente
         emit('productoAgregado', {id_pedido, pedidoPayload});
+
+        let idMesa = pedido.ID_MESA
+        emit('actualizarMesa', {idMesa, mesaVista})
 
         res.json({
             ok: true,
             msg: `${arregloProductos.length} ${arregloProductos.length > 1 ? 'productos agregados': 'producto agregado'} al pedido de ${pedido.NOMBRE_CLIENTE}`
         })
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: error.message
+        })
+    }
+
+}
+
+const putEstadoDetalle = async (req = request, res = response) => {
+    const { id_detalle } = req.params
+    const { id_usuario } = req.body
+    try {
+      // Instanciar todos los objetos
+      const detalleVista = await ViewDetallePedido.findByPk(id_detalle);
+      const detalle = await DetallePedido.findByPk(id_detalle);
+      const producto = await Producto.findByPk(detalle.ID_PRODUCTO);
+      const pedido = await Pedido.findByPk(detalle.ID_PEDIDO);
+
+      switch (detalleVista.ID_ESTADO) {
+        case 1: // Pendiente
+          // Verificar si el producto tiene estado
+          if (producto.SIN_ESTADO) {
+            // Actualizar pedido
+            await detalle.update({
+              ID_ESTADO: 4,
+            });
+
+            // ----------------------------------------- CONTROLAR INVENTARIO ------------------------------------
+
+            // Comprobar si es un producto o combo o promocion
+            if (producto.ID_TIPO_PRODUCTO == 1) {
+              // Producto
+              // Instanciar la cantidad de insumo usada
+              const insumos = await InsumoProducto.findAll({
+                where: { ID_PRODUCTO: detalle.ID_PRODUCTO },
+              });
+
+              for await (let insumo of insumos) {
+                // Reducir existencia
+                await Kardex.create({
+                  ID_USUARIO: id_usuario,
+                  ID_INSUMO: insumo.ID_INSUMO,
+                  CANTIDAD: insumo.CANTIDAD,
+                  TIPO_MOVIMIENTO: "SERVIDO",
+                });
+
+                // Notificar si es menor en existencia
+                // Traer insumo
+                const insumoVista = await ViewInsumo.findByPk(insumo.ID_INSUMO);
+
+                if (insumoVista.CANTIDAD_MINIMA >= insumoVista.EXISTENCIA) {
+                  // Por debajo del limite
+
+                  // Notificar a los usuarios
+                  await notificar(
+                    1,
+                    `Necesitan más ${insumoVista.NOMBRE.toLowerCase()}`,
+                    `Aún queda poca existencia de ${insumoVista.NOMBRE.toLowerCase()}, la cantidad existente es inferior a la cantidad mínima. Cantidad Mínima: ${
+                      insumoVista.CANTIDAD_MINIMA
+                    } ${insumoVista.UNIDAD_MEDIDA}, Existencia actual: ${
+                      insumoVista.EXISTENCIA
+                    } ${insumoVista.UNIDAD_MEDIDA}`,
+                    "",
+                    insumoVista.ID
+                  );
+                }
+              }
+            }
+
+            if (producto.ID_TIPO_PRODUCTO == 2) {
+              // COMBO
+              // Traer todos los productos del combo
+              const productos = await ComboProducto.findAll({
+                where: { ID_COMBO: detalle.ID_PRODUCTO },
+              });
+
+              // Recorrer todos los productos
+              for await (let productoCombo of productos) {
+                if (productoCombo.ESTADO) {
+                  // Verificar que todavia exista
+
+                  // Instanciar la cantidad de insumo usada
+                  const insumos = await InsumoProducto.findAll({
+                    where: { ID_PRODUCTO: productoCombo.id },
+                  });
+
+                  //recorrer cada insumo
+                  for await (let insumo of insumos) {
+                    // Reducir existencia
+                    await Kardex.create({
+                      ID_USUARIO: id_usuario,
+                      ID_INSUMO: insumo.ID_INSUMO,
+                      CANTIDAD:
+                        parseFloat(insumo.CANTIDAD) * productoCombo.CANTIDAD, // Reducir por la cantidad de productos usados
+                      TIPO_MOVIMIENTO: "SERVIDO",
+                    });
+
+                    // Notificar si es menor en existencia
+                    // Traer insumo
+                    const insumoVista = await ViewInsumo.findByPk(
+                      insumo.ID_INSUMO
+                    );
+
+                    if (insumoVista.CANTIDAD_MINIMA >= insumoVista.EXISTENCIA) {
+                      // Por debajo del limite
+
+                      // Notificar a los usuarios
+                      await notificar(
+                        1,
+                        `Necesitan más ${insumoVista.NOMBRE.toLowerCase()}`,
+                        `Aún queda poca existencia de ${insumoVista.NOMBRE.toLowerCase()}, la cantidad existente es inferior a la cantidad mínima. Cantidad Mínima: ${
+                          insumoVista.CANTIDAD_MINIMA
+                        } ${insumoVista.UNIDAD_MEDIDA}, Existencia actual: ${
+                          insumoVista.EXISTENCIA
+                        } ${insumoVista.UNIDAD_MEDIDA}`,
+                        "",
+                        insumoVista.ID
+                      );
+                    }
+                  }
+                }
+              }
+            }
+
+            if (producto.ID_TIPO_PRODUCTO == 3) {
+              // PROMOCION
+
+              // Traer todos los productos de la promoción
+              const productos = await PromocionProducto.findAll({
+                where: { ID_PROMOCION: detalle.ID_PRODUCTO },
+              });
+
+              // Recorrer todos los productos
+              for await (let productoPromo of productos) {
+                if (productoPromo.ESTADO) {
+                  // Verificar que todavia exista
+                  // Instanciar la cantidad de insumo usada
+                  const insumos = await InsumoProducto.findAll({
+                    where: { ID_PRODUCTO: productoPromo.id },
+                  });
+                  //recorrer cada insumo
+                  for await (let insumo of insumos) {
+                    // Reducir existencia
+                    await Kardex.create({
+                      ID_USUARIO: id_usuario,
+                      ID_INSUMO: insumo.ID_INSUMO,
+                      CANTIDAD:
+                        parseFloat(insumo.CANTIDAD) * productoPromo.CANTIDAD,
+                      TIPO_MOVIMIENTO: "SERVIDO",
+                    });
+
+                    // Notificar si es menor en existencia
+                    // Traer insumo
+                    const insumoVista = await ViewInsumo.findByPk(
+                      insumo.ID_INSUMO
+                    );
+
+                    if (insumoVista.CANTIDAD_MINIMA >= insumoVista.EXISTENCIA) {
+                      // Por debajo del limite
+
+                      // Notificar a los usuarios
+                      await notificar(
+                        1,
+                        `Necesitan más ${insumoVista.NOMBRE.toLowerCase()}`,
+                        `Aún queda poca existencia de ${insumoVista.NOMBRE.toLowerCase()}, la cantidad existente es inferior a la cantidad mínima. Cantidad Mínima: ${
+                          insumoVista.CANTIDAD_MINIMA
+                        } ${insumoVista.UNIDAD_MEDIDA}, Existencia actual: ${
+                          insumoVista.EXISTENCIA
+                        } ${insumoVista.UNIDAD_MEDIDA}`,
+                        "",
+                        insumoVista.ID
+                      );
+                    }
+                  }
+                }
+              }
+            }
+
+          } else {
+            // Actualizar pedido
+            await detalle.update({
+              ID_ESTADO: 2,
+            });
+
+          }
+
+          break;
+
+        case 2: // Cocinando
+          // Actualizar pedido
+          await detalle.update({
+            ID_ESTADO: 3, // LISTO!!!!
+          });
+
+          // ----------------------------------------- CONTROLAR INVENTARIO ------------------------------------
+
+          // Comprobar si es un producto o combo o promocion
+          if (producto.ID_TIPO_PRODUCTO == 1) {
+            // Producto
+            // Instanciar la cantidad de insumo usada
+            const insumos = await InsumoProducto.findAll({
+              where: { ID_PRODUCTO: detalle.ID_PRODUCTO },
+            });
+
+            for await (let insumo of insumos) {
+              // Reducir existencia
+              await Kardex.create({
+                ID_USUARIO: id_usuario,
+                ID_INSUMO: insumo.ID_INSUMO,
+                CANTIDAD: insumo.CANTIDAD,
+                TIPO_MOVIMIENTO: "UTILIZADO",
+              });
+
+              // Notificar si es menor en existencia
+              // Traer insumo
+              const insumoVista = await ViewInsumo.findByPk(insumo.ID_INSUMO);
+
+              if (insumoVista.CANTIDAD_MINIMA >= insumoVista.EXISTENCIA) {
+                // Por debajo del limite
+
+                // Notificar a los usuarios
+                await notificar(
+                  1,
+                  `Necesitan más ${insumoVista.NOMBRE.toLowerCase()}`,
+                  `Aún queda poca existencia de ${insumoVista.NOMBRE.toLowerCase()}, la cantidad existente es inferior a la cantidad mínima. Cantidad Mínima: ${
+                    insumoVista.CANTIDAD_MINIMA
+                  } ${insumoVista.UNIDAD_MEDIDA}, Existencia actual: ${
+                    insumoVista.EXISTENCIA
+                  } ${insumoVista.UNIDAD_MEDIDA}`,
+                  "",
+                  insumoVista.ID
+                );
+              }
+            }
+          }
+
+          if (producto.ID_TIPO_PRODUCTO == 2) {
+            // COMBO
+            // Traer todos los productos del combo
+            const productos = await ComboProducto.findAll({
+              where: { ID_COMBO: detalle.ID_PRODUCTO },
+            });
+
+            // Recorrer todos los productos
+            for await (let productoCombo of productos) {
+              
+                // Verificar que todavia exista
+
+                // Instanciar la cantidad de insumo usada
+                const insumos = await InsumoProducto.findAll({
+                  where: { ID_PRODUCTO: productoCombo.ID_PRODUCTO },
+                });
+
+                //recorrer cada insumo
+                for await (let insumo of insumos) {
+                  // Reducir existencia
+                  await Kardex.create({
+                    ID_USUARIO: id_usuario,
+                    ID_INSUMO: insumo.ID_INSUMO,
+                    CANTIDAD:
+                      parseFloat(insumo.CANTIDAD) * productoCombo.CANTIDAD, // Reducir por la cantidad de productos usados
+                    TIPO_MOVIMIENTO: "UTILIZADO",
+                  });
+
+                  // Notificar si es menor en existencia
+                  // Traer insumo
+                  const insumoVista = await ViewInsumo.findByPk(
+                    insumo.ID_INSUMO
+                  );
+
+                  if (insumoVista.CANTIDAD_MINIMA >= insumoVista.EXISTENCIA) {
+                    // Por debajo del limite
+
+                    // Notificar a los usuarios
+                    await notificar(
+                      1,
+                      `Necesitan más ${insumoVista.NOMBRE.toLowerCase()}`,
+                      `Aún queda poca existencia de ${insumoVista.NOMBRE.toLowerCase()}, la cantidad existente es inferior a la cantidad mínima. Cantidad Mínima: ${
+                        insumoVista.CANTIDAD_MINIMA
+                      } ${insumoVista.UNIDAD_MEDIDA}, Existencia actual: ${
+                        insumoVista.EXISTENCIA
+                      } ${insumoVista.UNIDAD_MEDIDA}`,
+                      "",
+                      insumoVista.ID
+                    );
+                  }
+                
+              }
+            }
+          }
+
+          if (producto.ID_TIPO_PRODUCTO == 3) {
+            // PROMOCION
+
+            // Traer todos los productos de la promoción
+            const productos = await PromocionProducto.findAll({
+              where: { ID_PROMOCION: detalle.ID_PRODUCTO },
+            });
+
+            // Recorrer todos los productos
+            for await (let productoPromo of productos) {
+              
+                // Verificar que todavia exista
+                // Instanciar la cantidad de insumo usada
+                const insumos = await InsumoProducto.findAll({
+                  where: { ID_PRODUCTO: productoPromo.ID_PRODUCTO },
+                });
+                //recorrer cada insumo
+                for await (let insumo of insumos) {
+                  // Reducir existencia
+                  await Kardex.create({
+                    ID_USUARIO: id_usuario,
+                    ID_INSUMO: insumo.ID_INSUMO,
+                    CANTIDAD:
+                      parseFloat(insumo.CANTIDAD) * productoPromo.CANTIDAD,
+                    TIPO_MOVIMIENTO: "UTILIZADO",
+                  });
+
+                  // Notificar si es menor en existencia
+                  // Traer insumo
+                  const insumoVista = await ViewInsumo.findByPk(
+                    insumo.ID_INSUMO
+                  );
+
+                  if (insumoVista.CANTIDAD_MINIMA >= insumoVista.EXISTENCIA) {
+                    // Por debajo del limite
+
+                    // Notificar a los usuarios
+                    await notificar(
+                      1,
+                      `Necesitan más ${insumoVista.NOMBRE.toLowerCase()}`,
+                      `Aún queda poca existencia de ${insumoVista.NOMBRE.toLowerCase()}, la cantidad existente es inferior a la cantidad mínima. Cantidad Mínima: ${
+                        insumoVista.CANTIDAD_MINIMA
+                      } ${insumoVista.UNIDAD_MEDIDA}, Existencia actual: ${
+                        insumoVista.EXISTENCIA
+                      } ${insumoVista.UNIDAD_MEDIDA}`,
+                      "",
+                      insumoVista.ID
+                    );
+                  }
+                }
+              
+            }
+          }
+
+          break;
+
+        case 3: // Listo
+          // Actualizar pedido
+          await detalle.update({
+            ID_ESTADO: 4, // SERVIDISIMOOOOO!!!!!!!
+          });
+          break;
+
+        default:
+          break;
+      }
+
+      // --------------------------------------------- Validar estados -------------------------------------
+
+      // Traer el detalle actualizado
+      const detalles = await DetallePedido.findAll({
+        order: [['ID_ESTADO', 'DESC']],
+        where: {
+            ID_PEDIDO: detalle.ID_PEDIDO,
+        },
+      });
+
+      let idEstadoNuevo = 1; // Pendiente
+      
+      // Recorrer todos los detalles
+      for await (let unDetalle of detalles) {
+
+        if (unDetalle.ID_ESTADO === 4) {
+            // Servido
+            idEstadoNuevo = 4;
+        }
+
+        if (unDetalle.ID_ESTADO === 3) {
+            idEstadoNuevo = 3
+        } 
+        
+        if (unDetalle.ID_ESTADO === 2) {
+            idEstadoNuevo = 2
+        }
+
+        if (unDetalle.ID_ESTADO === 1){
+            idEstadoNuevo = 1
+        }
+        
+      }
+
+      // Si hay cambio en el estado del todo el pedido, actualizar pantallas
+      const pedidoVista = await ViewPedido.findByPk(pedido.id);
+
+      // Actualizar estado del pedido y usuario quien modifico
+      await pedido.update({
+        MODIFICADO_POR: id_usuario,
+        ID_ESTADO: idEstadoNuevo,
+      });
+
+      let idPedido = pedido.id;
+      const newPedidoVista = await ViewPedido.findByPk(pedido.id);
+      emit("actualizarTabla", { idPedido, newPedidoVista });
+
+      // Instanciar todos los pedidos de la mesa
+      const pedidosMesa = await Pedido.findAll({
+        order: [['ID_ESTADO', 'DESC']],       //El último siempre dira en que estado esta la orden
+        where: { ID_MESA: pedido.ID_MESA },
+      });
+
+      let idEstadoMesaNuevo = 4;
+      for await (let pedidoMesa of pedidosMesa) {
+        if (pedidoMesa.ID_ESTADO === 4) {
+            // Servido
+            idEstadoMesaNuevo = 4;
+        } 
+        
+        if (pedidoMesa.ID_ESTADO === 3) {
+            // Listo
+            idEstadoMesaNuevo = 3;
+        } else
+        
+        if (pedidoMesa.ID_ESTADO === 2) {
+            // Cocinando
+            idEstadoMesaNuevo = 2;
+        } 
+        
+        if (pedidoMesa.ID_ESTADO === 1) {
+            idEstadoMesaNuevo = 1
+        }
+      }
+
+      // Instanciar mesa
+      const mesa = await Mesa.findByPk(pedido.ID_MESA);
+      await mesa.update({
+        ID_ESTADO: idEstadoMesaNuevo,
+      });
+
+      // Actualizar la mesa a los usuarios
+      let idMesa = mesa.id;
+      const mesaVista = await ViewMesa.findByPk(pedido.ID_MESA);
+      emit("actualizarMesa", { idMesa, mesaVista });
+
+      res.json({ ok: true });
     } catch (error) {
         console.log(error);
         res.status(500).json({
@@ -377,5 +847,6 @@ module.exports = {
     getProductosParaAgregar,
     getBebidas,
     getMesa,
-    postDetalle
+    postDetalle,
+    putEstadoDetalle
 }

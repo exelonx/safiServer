@@ -202,8 +202,8 @@ const postCombo = async (req = request, res = response) => {
 
         for await(let producto of arregloProductos) {
             await ComboProducto.create({
-                ID_COMBO: producto.producto,
-                ID_PRODUCTO: nuevoCombo.id,
+                ID_COMBO: nuevoCombo.id,
+                ID_PRODUCTO: producto.producto,
                 CANTIDAD: producto.cantidad
             })
         }
@@ -257,8 +257,8 @@ const postPromocion = async (req = request, res = response) => {
 
         for await(let producto of arregloProductos) {
             await PromocionProducto.create({
-                ID_PROMOCION: producto.producto,
-                ID_PRODUCTO: nuevoPromocion.id,
+                ID_PROMOCION: nuevoPromocion.id,
+                ID_PRODUCTO: producto.producto,
                 CANTIDAD: producto.cantidad
             })
         }
