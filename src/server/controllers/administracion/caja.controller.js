@@ -157,7 +157,7 @@ const postCaja = async (req = request, res = response) => {
         // // Guardar evento
         // eventBitacora(new Date, id_usuario, 26, 'NUEVO', `SE CREO UNA NUEVA CAJA CON UN SALDO INICIAL DE ${cajaAbierta.SALDO_APERTURA}`);
 
-        emit('estadoCaja');
+        emit('cajaAbierta');
 
         // Responder
         res.json( {
@@ -190,15 +190,18 @@ const putCaja = async (req = request, res = response) => {
                 ESTADO: '1'
             }
         })
-
+        
         const caja = await Caja.findByPk(id);
 
         eventBitacora(new Date, id_usuario, 16, 'ACTUALIZACION', `DATOS ACTUALIZADOS: \`Estado caja:\`, ${caja.ESTADO} , \`Fecha de cierre: \`, ${caja.FECHA_CIERRE}`);
+        
+        emit('cajaCerrada');
 
         res.json({
             ok: true,
             msg: 'La caja se ha cerrado.'
         });
+
 
     } catch (error) {
         console.log(error);
