@@ -4,6 +4,7 @@ const { Op, ForeignKeyConstraintError } = require('sequelize');
 const Parametro = require("../../models/seguridad/parametro");
 const Caja = require('../../models/pedido/caja');
 const { eventBitacora } = require('../../helpers/event-bitacora');
+const { emit } = require('../../helpers/notificar');
 
 // // Llamar todas las cajas paginadas
 const getCajas = async (req = request, res = response) => {
@@ -155,6 +156,8 @@ const postCaja = async (req = request, res = response) => {
         
         // // Guardar evento
         // eventBitacora(new Date, id_usuario, 26, 'NUEVO', `SE CREO UNA NUEVA CAJA CON UN SALDO INICIAL DE ${cajaAbierta.SALDO_APERTURA}`);
+
+        emit('estadoCaja');
 
         // Responder
         res.json( {

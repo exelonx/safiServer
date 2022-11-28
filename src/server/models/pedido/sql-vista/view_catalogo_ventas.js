@@ -8,7 +8,7 @@ const ViewCatalogoVenta = db.define(`VIEW_MP_CATALOGO_VENTA`, {
     ID: {
         type: DataTypes.INTEGER
     },
-    ID_PRODUCTO: {
+    ID_CATALOGO_VENTA: {
         type: DataTypes.INTEGER
     },
     ID_CATALOGO: {
@@ -22,6 +22,12 @@ const ViewCatalogoVenta = db.define(`VIEW_MP_CATALOGO_VENTA`, {
     },
     TIPO_PRODUCTO: {
         type: DataTypes.STRING
+    },
+    ID_IMPUESTO: {
+        type: DataTypes.INTEGER
+    },
+    PORCENTAJE: {
+        type: DataTypes.INTEGER
     },
     NOMBRE: {
         type: DataTypes.STRING
