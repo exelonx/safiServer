@@ -44,6 +44,7 @@ const getCajas = async (req = request, res = response) => {
         const cajas = await Caja.findAll({
             limit: parseInt(limite, 10),
             offset: parseInt(desde, 10),
+            order: [['ID', 'DESC']],
             where: {
                 ESTADO: '0',
 
@@ -179,10 +180,12 @@ const putCaja = async (req = request, res = response) => {
     const { id_usuario = "" } = req.body;
     
     try {
-        
+
+        const caja = await Caja.findByPk(id);
+
         // Actualizar db Rol
         await Caja.update({
-            SALDO_CIERRE: '0',
+            SALDO_CIERRE: caja.SALDO_ACTUAL,
             FECHA_CIERRE: new Date(),
             ESTADO: '0'
         }, {
@@ -191,7 +194,7 @@ const putCaja = async (req = request, res = response) => {
             }
         })
         
-        const caja = await Caja.findByPk(id);
+        
 
         eventBitacora(new Date, id_usuario, 16, 'ACTUALIZACION', `DATOS ACTUALIZADOS: \`Estado caja:\`, ${caja.ESTADO} , \`Fecha de cierre: \`, ${caja.FECHA_CIERRE}`);
         
