@@ -1,6 +1,7 @@
 const { Router } = require('express');
 const { check, body } = require('express-validator');
 const { getCaja, getCajas, getCajaAbierta, postCaja, deleteCaja, putCaja } = require('../../controllers/administracion/caja.controller');
+const { getReporteCaja } = require('../../controllers/administracion/reporteria/caja.report.controller');
 
 const { validarCampos } = require('../../middlewares');
 
@@ -31,5 +32,7 @@ router.delete('/:id', [
     check('quienElimina', 'El id del usuario es obligatorio').not().isEmpty(),
     validarCampos
 ], deleteCaja);
+
+router.post('/reporteria/caja', getReporteCaja);
 
 module.exports = router;
