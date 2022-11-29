@@ -106,6 +106,33 @@ const getDetalleDelPedido = async (req = request, res = response) => {
     }
 }
 
+// const getPedidoMesa
+
+const getUnDetalleDelPedido = async (req = request, res = response) => { 
+
+  const { id_detalle } = req.params
+  try {
+  
+      const detalle = await ViewDetallePedido.findByPk( id_detalle );    //Filtrar por pedidos
+      //Validar Existencia
+      if(!detalle){
+          return res.status(404).json({
+              ok: false,
+              msg: "No existe productos asignados al pedido N°: "+id_detalle
+          })
+      } 
+      res.json( {
+        ok: true,
+        detalle} )
+
+  } catch (error) {
+      console.log(error);
+      res.status(500).json({
+          msg: error.message
+      })
+  }
+}
+
 const getBebidas = async (req = request, res = response) => {
     try {
         
@@ -1064,6 +1091,16 @@ const deletePedido = async (req = request, res = response) => {
     }
 }
 
+const putDetalle = async (req = request, res = response) => {
+  const {id_detalle} = req.params;
+  const { id_producto, cantidad, precio } = req.body
+  try {
+    
+  } catch (error) {
+    
+  }
+}
+
 module.exports = {
     postMesaPedido,
     validarCaja,
@@ -1076,5 +1113,6 @@ module.exports = {
     postDetalle,
     putEstadoDetalle,
     deleteUnDetalle,
-    deletePedido
+    deletePedido,
+    getUnDetalleDelPedido
 }

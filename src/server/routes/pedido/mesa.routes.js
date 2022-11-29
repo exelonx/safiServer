@@ -1,6 +1,6 @@
 const { Router } = require('express');
 const { check, body } = require('express-validator');
-const { postMesaPedido, validarCaja, getMesas, getPedidosPorMesa, getDetalleDelPedido, getProductosParaAgregar, getBebidas, getMesa, postDetalle, putEstadoDetalle, deleteUnDetalle, deletePedido } = require('../../controllers/pedido/mesa.controllers');
+const { postMesaPedido, validarCaja, getMesas, getPedidosPorMesa, getDetalleDelPedido, getProductosParaAgregar, getBebidas, getMesa, postDetalle, putEstadoDetalle, deleteUnDetalle, deletePedido, getUnDetalleDelPedido } = require('../../controllers/pedido/mesa.controllers');
 const { validarEspacio, validarCampos, validarDobleEspacio } = require('../../middlewares');
 
 const router = Router();
@@ -16,6 +16,8 @@ router.get('/pedido/productos/agregar', getProductosParaAgregar)
 router.get('/bebida/lista', getBebidas)
 
 router.get('/pedido/detalle/:id_pedido', getDetalleDelPedido)
+
+router.get('/pedido/detalle/un/:id_detalle', getUnDetalleDelPedido)
 
 router.post('/', [
     check('nombre', 'El nombre debe ir en mayúscula').isUppercase(),
