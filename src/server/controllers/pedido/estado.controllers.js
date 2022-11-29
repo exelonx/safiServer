@@ -131,19 +131,19 @@ const putEstado = async (req = request, res = response) => {
 
     try {
 
-        const estado = await Estado.findByPk(id);
+        const estadoo = await Estado.findByPk(id);
         
         // Si llega sin cambios
-        if(!((estado.ESTADO == estado || estado === ""))) {
+        if(!((estadoo.ESTADO == estado || estado === ""))) {
 
-            eventBitacora(new Date, id_usuario, 25, 'ACTUALIZACION', `IMPUESTO ${estado.ESTADO}, ACTUALIZADO A : ${estado !== "" && estado.ESTADO != estado ? `${estado}` : ""}`);
+            eventBitacora(new Date, id_usuario, 25, 'ACTUALIZACION', `COLOR ${estadoo.COLOR}, ACTUALIZADO A : ${color !== "" && estadoo.COLOR != color ? `${color}` : ""}`);
 
         }
 
         // Actualizar db Catálogo
         await Estado.update({
-            ESTADO: estado !== "" ? estado : Estado.ESTADO,
-            COLOR: color !== "" ? estado : Estado.ESTADO,
+            /* ESTADO: estado !== "" ? estado : Estado.ESTADO, */
+            COLOR: color !== "" ? color : Estado.COLOR,
         }, {
             where: {
                 id: id
@@ -152,7 +152,7 @@ const putEstado = async (req = request, res = response) => {
 
         res.json({
             ok: true,
-            msg: 'Estado: '+ estado.ESTADO + ' ha sido actualizado con éxito'
+            msg: 'Color de estado: '+ color + ' ha sido actualizado con éxito'
         });
 
     } catch (error) {

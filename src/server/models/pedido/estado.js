@@ -12,16 +12,10 @@ const Estado = db.define(`TBL_MP_ESTADO`, {
         type: DataTypes.STRING
     },
     CREADO_POR: {
-        type: DataTypes.STRING
-    },
-    FECHA_CREACION: {
-        type: DataTypes.DATE
+        type: DataTypes.INTEGER
     },
     MODIFICADO_POR: {
-        type: DataTypes.STRING
-    },
-    FECHA_MODIFICACION: {
-        type: DataTypes.DATE
+        type: DataTypes.INTEGER
     }
 }, {
     tableName: 'TBL_MP_ESTADO',
