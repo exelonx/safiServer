@@ -1,5 +1,6 @@
 const { Router } = require('express');
 const { check, body } = require('express-validator');
+const { getReportePermiso } = require('../../controllers/reporteria/permiso.report.controller');
 
 const { getPermisos,
         getPermiso,
@@ -26,5 +27,7 @@ router.put('/:id_permiso',[
 router.get('/config/inicial', configPermisosIniciales)
 
 router.get('/consulta/:pantalla', validarPermiso)
+
+router.post('/reporteria/permiso', getReportePermiso);
 
 module.exports = router;
