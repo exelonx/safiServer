@@ -45,6 +45,8 @@ const routerDescuento = require('../routes/pedido/descuento.routes');
 const routerComboProducto = require('../routes/pedido/combo-producto.routes');
 const routerPromocionProducto = require('../routes/pedido/promocion-producto.routes');
 const routerInsumoProducto = require('../routes/inventario/insumo-producto.routes');
+const routerCocina = require('../routes/pedido/cocina.routes');
+
 
 // Jobs
 const { generarBackup } = require('../jobs/db-backup');
@@ -115,8 +117,12 @@ class Server {
             mesa:             '/api/mesa',
             pedido:           '/api/pedido',
             descuento:        '/api/descuento',
+
             comboProducto:    '/api/combo-producto',
             promocionProducto:'/api/promocion-producto',
+
+            cocina:           '/api/cocina',
+
 
             //FACTURACION
             sar:              '/api/SAR',
@@ -203,8 +209,12 @@ class Server {
         this.app.use(this.apiPath.mesa, routerMesa)                    // Mesas
         this.app.use(this.apiPath.pedido, routerPedido)                // Pedido
         this.app.use(this.apiPath.descuento, routerDescuento)          // Descuento
+
         this.app.use(this.apiPath.comboProducto, routerComboProducto)  // Combo Producto
         this.app.use(this.apiPath.promocionProducto, routerPromocionProducto)  // Promocion Producto
+
+        this.app.use(this.apiPath.cocina, routerCocina)                // Cocina
+
         // Facturacion
         this.app.use(this.apiPath.sar, routerSAR)                      // SAR
     }

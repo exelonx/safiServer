@@ -29,6 +29,9 @@ const ViewDetallePedido = db.define(`VIEW_MP_PEDIDO_DETALLE`, {
     ESTADO: {
         type: DataTypes.STRING
     },
+    COLOR: {
+        type: DataTypes.STRING
+    },
     CANTIDAD: {
         type: DataTypes.INTEGER
     },
