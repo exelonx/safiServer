@@ -3,19 +3,22 @@ const puppeteer = require('puppeteer');
 const { Op } = require('sequelize');
 const base64 = require('node-base64-image');
 
-const ViewPermiso = require(`../../models/seguridad/sql-vistas/view-permiso`);
+const ViewPermisoNotificacion = require(`../../models/notificacion/sql-vistas/view_permiso_notificacion`);
 const Parametro = require('../../models/seguridad/parametro');
+
+// Importar librerias de fechas
+const dayjs = require('dayjs');
+const localizedFormat = require('dayjs/plugin/localizedFormat');
 
 const { compilarTemplate } = require('../../helpers/compilarTemplate');
 
-const getReportePermiso = async (req = request, res = response) => {
+const getReportePermisoNoti = async (req = request, res = response) => {
 
     let { id_rol = "",
-        id_pantalla = "", 
-        mostrarTodos = false} = req.body
+        id_tipo = "",
+        mostrarTodos = false } = req.body
     let filtrarPorRol = {};
-    let filtrarPorPantalla = {}, buscar = "";
-
+    let filtrarPorTipo = {}, buscar = "";
 
     try {
 
@@ -25,53 +28,45 @@ const getReportePermiso = async (req = request, res = response) => {
             };
         }
 
-        if (id_pantalla !== "") {
-            filtrarPorPantalla = {
-                ID_OBJETO: id_pantalla,
-            };
+        if (id_tipo !== '') {
+            filtrarPorTipo = {
+                ID_TIPO_NOTIFICACION: id_tipo
+            }
         }
 
         const buscador = await puppeteer.launch({ headless: true });
         const pagina = await buscador.newPage();
 
-        const permiso = await ViewPermiso.findAll({
+        const permisoNoti = await ViewPermisoNotificacion.findAll({
             where: {
-              [Op.or]: [
-                {
-                  ROL: { [Op.like]: `%${buscar.toUpperCase()}%` },
-                },
-                {
-                  OBJETO: { [Op.like]: `%${buscar.toUpperCase()}%` },
-                },
-                {
-                  CREADO_POR: { [Op.like]: `%${buscar.toUpperCase()}%` },
-                },
-                {
-                  MODIFICADO_POR: { [Op.like]: `%${buscar.toUpperCase()}%` },
-                },
-              ],
-              [Op.and]: [filtrarPorRol, filtrarPorPantalla],
-            },
-          });
+                [Op.or]: [{
+                    ROL: { [Op.like]: `%${buscar.toUpperCase()}%` }
+                }, {
+                    TIPO_NOTIFICACION: { [Op.like]: `%${buscar.toUpperCase()}%` }
+                }, {
+                    CREADO_POR: { [Op.like]: `%${buscar.toUpperCase()}%` }
+                }, {
+                    MODIFICADO_POR: { [Op.like]: `%${buscar.toUpperCase()}%` }
+                }],
+                [Op.and]: [filtrarPorRol, filtrarPorTipo]
+            }
+        });
 
 
-        const permisoMapped = permiso.map((permisos) => {
+        const permisoNotiMapped = permisoNoti.map((permisoNotis) => {
             return {
-                ROL: permisos.ROL,
-                ID_OBJETO: permisos.ID_OBJETO,
-                OBJETO: permisos.OBJETO,
-                PERMISO_INSERCION: permisos.PERMISO_INSERCION,
-                PERMISO_ELIMINACION: permisos.PERMISO_ELIMINACION,
-                PERMISO_ACTUALIZACION: permisos.PERMISO_ACTUALIZACION,
-                PERMISO_CONSULTAR: permisos.PERMISO_CONSULTAR,
-                CREADO_POR: permisos.CREADO_POR,
-                FECHA_CREACION: permisos.FECHA_CREACION,
-                MODIFICADO_POR: permisos.MODIFICADO_POR,
-                FECHA_MODIFICACION: permisos.FECHA_MODIFICACION
+                ROL: permisoNotis.ROL,
+                ID_TIPO_NOTIFICACION: permisoNotis.ID_TIPO_NOTIFICACION,
+                TIPO_NOTIFICACION: permisoNotis.TIPO_NOTIFICACION,
+                RECIBIR_NOTIFICACION: permisoNotis.RECIBIR_NOTIFICACION,
+                CREADO_POR: permisoNotis.CREADO_POR,
+                FECHA_CREACION: dayjs(permisoNotis.FECHA_CREACION).format('D MMM, YYYY, h:mm A'),
+                MODIFICADO_POR: permisoNotis.MODIFICADO_POR,
+                FECHA_MODIFICACION: dayjs(permisoNotis.FECHA_MODIFICACION).format('D MMM, YYYY, h:mm A')
             }
         })
 
-        const content = await compilarTemplate('permiso', { permisos: permisoMapped })
+        const content = await compilarTemplate('permisoNoti', { permisoNotis: permisoNotiMapped })
 
         await pagina.setContent(content)
         const options = {
@@ -108,7 +103,7 @@ const getReportePermiso = async (req = request, res = response) => {
             headerTemplate: `
             <div style="font-size:10px; margin: 0 auto; margin-left: 20px; margin-right: 20px;  width: 100%; display: flex; align-items: center; justify-content: space-between;" >  
             <div style="color: #d12609; width: 22%;"><p>Fecha: <span class="date"></span></p></div>   
-            <div style="display: flex; width: 60%; margin: 0 auto; align-items: center; justify-content: center; flex-direction: column"><div style="font-weight: bold; font-size: 20px;">${nombreEmpresa.VALOR}</div> <div style="color: #d12609; font-size: 20px;">Reporte de Permisos de Sistemas</div></div>   
+            <div style="display: flex; width: 60%; margin: 0 auto; align-items: center; justify-content: center; flex-direction: column"><div style="font-weight: bold; font-size: 20px;">${nombreEmpresa.VALOR}</div> <div style="color: #d12609; font-size: 20px;">Reporte de Permisos de Notificaciones</div></div>   
             <div style=" display: flex; justify-content: end;  width: 20%;">
             <img class="logo" alt="title" src="data:image/png;base64,${logo}" width="40"/>
             </div></div>`,
@@ -135,5 +130,5 @@ const getReportePermiso = async (req = request, res = response) => {
 }
 
 module.exports = {
-    getReportePermiso
+    getReportePermisoNoti
 }
