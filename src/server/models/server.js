@@ -41,8 +41,10 @@ const routerPedido = require('../routes/pedido/pedido.routes');
 const routerTipoProducto = require('../routes/catalogo_ventas/tipoProducto.routes');
 const routerInventarios = require('../routes/inventario/inventario.routes');
 const routerCaja = require('../routes/administracion/caja.routes')
-/* const routerCaja = require('../routes/administracion/caja.router') */
 const routerDescuento = require('../routes/pedido/descuento.routes');
+const routerComboProducto = require('../routes/pedido/combo-producto.routes');
+const routerPromocionProducto = require('../routes/pedido/promocion-producto.routes');
+const routerInsumoProducto = require('../routes/inventario/insumo-producto.routes');
 
 // Jobs
 const { generarBackup } = require('../jobs/db-backup');
@@ -94,6 +96,7 @@ class Server {
             kardex:           '/api/kardex',
             compra:           '/api/compra',
             compraDetalle:    '/api/compra-detalle',
+            insumoProducto:   '/api/insumo-producto',
 
             // NOTIFICACION
             notificacion:     '/api/notificacion',
@@ -112,6 +115,8 @@ class Server {
             mesa:             '/api/mesa',
             pedido:           '/api/pedido',
             descuento:        '/api/descuento',
+            comboProducto:    '/api/combo-producto',
+            promocionProducto:'/api/promocion-producto',
 
             //FACTURACION
             sar:              '/api/SAR',
@@ -182,7 +187,8 @@ class Server {
         this.app.use(this.apiPath.insumos, routerInsumos)              // Insumos
         this.app.use(this.apiPath.inventario, routerInventarios)          // Insumos
         this.app.use(this.apiPath.kardex, routerKardex)                // Kardex
-        this.app.use(this.apiPath.compra, routerCompra)                // Compra              
+        this.app.use(this.apiPath.compra, routerCompra)                // Compra
+        this.app.use(this.apiPath.insumoProducto, routerInsumoProducto)  // Promocion Producto              
         // Notificacion
         this.app.use(this.apiPath.notificacion, routerNotificacion)
         // Catalogo de ventas
@@ -197,6 +203,8 @@ class Server {
         this.app.use(this.apiPath.mesa, routerMesa)                    // Mesas
         this.app.use(this.apiPath.pedido, routerPedido)                // Pedido
         this.app.use(this.apiPath.descuento, routerDescuento)          // Descuento
+        this.app.use(this.apiPath.comboProducto, routerComboProducto)  // Combo Producto
+        this.app.use(this.apiPath.promocionProducto, routerPromocionProducto)  // Promocion Producto
         // Facturacion
         this.app.use(this.apiPath.sar, routerSAR)                      // SAR
     }
