@@ -8,7 +8,7 @@
 
     <link rel="stylesheet" href="style.css">
     <link rel="shortcut icon" href="/img/favicon.ico">
-    <title>Reporte de Permisos</title>
+    <title>Reporte de Pedidos</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -25,31 +25,24 @@
         <thead class="" style="background-color: rgb(224, 224, 224); vertical-align: middle;">
             <tr>
                 <th scope="col">#</th>
-                <th scope="col">Tipo de notificación</th>
-                <th scope="col">Rol</th>
-                <th scope="col">Recibir</th>
-                <th scope="col">Creado por</th>
-                <th scope="col">Creación</th>
+                <th scope="col">Cliente</th>
+                <th scope="col">Mesero</th>
+                <th scope="col">Hora de pedido</th>
+                <th scope="col">Tipo</th>
+                <th scope="col">Subtotal</th>
                 <th scope="col">Modificado por</th>
-                <th scope="col">Modificación</th>
             </tr>
         </thead>
         <tbody>
-            {{#each permisoNotis}}
+            {{#each pedidos}}
             <tr>
                 <td>{{inc @index}}</td>
-                <td>{{TIPO_NOTIFICACION}}</td>      
-                <td>{{ROL}}</td>                 
-                <td>{{#if RECIBIR_NOTIFICACION}}
-                    Si
-                    {{else}}
-                    No
-                    {{/if}}
-                </td>
-                <td>{{CREADO_POR}}</td>
-                <td>{{FECHA_CREACION}}</td>
+                <td>{{NOMBRE_CLIENTE}}</td>      
+                <td>{{NOMBRE_USUARIO}}</td>                 
+                <td>{{HORA_SOLICITUD}}</td>
+                <td>{{TIPO}}</td>
+                <td>{{SUBTOTAL}}</td>
                 <td>{{MODIFICADO_POR}}</td>
-                <td>{{FECHA_MODIFICACION}}</td>
             </tr>
             {{/each}}
         </tbody>
