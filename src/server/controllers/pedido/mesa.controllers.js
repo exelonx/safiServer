@@ -178,7 +178,7 @@ const postMesaPedido = async (req = request, res = response) => {
 
         let id = mesa.id
 
-        await emit('mesa', {id});
+        emit('mesa', {id});
 
         // Respuesta
         res.json({
@@ -593,7 +593,7 @@ const putEstadoDetalle = async (req = request, res = response) => {
               await Kardex.create({
                 ID_USUARIO: id_usuario,
                 ID_INSUMO: insumo.ID_INSUMO,
-                CANTIDAD: parseFloat(insumo.CANTIDAD) * detalle.CANTIDAD,
+                CANTIDAD: insumo.CANTIDAD,
                 TIPO_MOVIMIENTO: "UTILIZADO",
               });
 
