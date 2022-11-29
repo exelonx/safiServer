@@ -8,7 +8,7 @@
 
     <link rel="stylesheet" href="style.css">
     <link rel="shortcut icon" href="/img/favicon.ico">
-    <title>Reporte de Insumos</title>
+    <title>Reporte de Descuentos</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -43,13 +43,18 @@
                     {{/if}}
                 </td>
                 {{!-- <td>{{ID_TIPO_DESCUENTO}}</td> --}}
-                <td>{{#if ID_TIPO_DESCUENTO}}
-                    Si
-                    {{else}}
+                <td>{{#if ES_PORCENTAJE}}
                     No
+                    {{else}}
+                    Si
                     {{/if}}
                 </td>
-                <td>{{CANTIDAD}}</td>
+                <td>{{#if ES_PORCENTAJE}}
+                    {{CANTIDAD}}%
+                    {{else}}
+                    L. {{CANTIDAD}}
+                    {{/if}}
+                </td>
             </tr>
             {{/each}}
         </tbody>
