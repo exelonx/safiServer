@@ -11,6 +11,9 @@ const ViewDetallePedido = db.define(`VIEW_MP_PEDIDO_DETALLE`, {
     ID_PEDIDO: {
         type: DataTypes.INTEGER
     },
+    MESA: {
+        type: DataTypes.STRING
+    },
     ID_PRODUCTO: {
         type: DataTypes.INTEGER
     },
