@@ -1,3 +1,4 @@
+const { Op } = require("sequelize");
 const ViewDetallePedido = require("../../models/pedido/sql-vista/view_detalle");
 
 const getDetallesCocina = async (req = request, res = response) => {
