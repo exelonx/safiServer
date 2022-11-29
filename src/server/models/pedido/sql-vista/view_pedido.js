@@ -25,6 +25,9 @@ const ViewPedido = db.define(`VIEW_MP_PEDIDO`, {
     NOMBRE: {
         type: DataTypes.STRING
     },
+    TIPO: {
+        type: DataTypes.STRING
+    },
     ID_CAJA: {
         type: DataTypes.INTEGER
     },

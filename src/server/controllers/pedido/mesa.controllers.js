@@ -178,7 +178,7 @@ const postMesaPedido = async (req = request, res = response) => {
 
         let id = mesa.id
 
-        emit('mesa', {id});
+        await emit('mesa', {id});
 
         // Respuesta
         res.json({
@@ -593,7 +593,7 @@ const putEstadoDetalle = async (req = request, res = response) => {
               await Kardex.create({
                 ID_USUARIO: id_usuario,
                 ID_INSUMO: insumo.ID_INSUMO,
-                CANTIDAD: insumo.CANTIDAD,
+                CANTIDAD: parseFloat(insumo.CANTIDAD) * detalle.CANTIDAD,
                 TIPO_MOVIMIENTO: "UTILIZADO",
               });
 
@@ -838,6 +838,232 @@ const putEstadoDetalle = async (req = request, res = response) => {
 
 }
 
+const deleteUnDetalle = async (req = request, res = response) => {
+    const { id_detalle } = req.params
+    const { id_usuario, razon } = req.body
+    try {
+        
+        // Instancia para borrar
+        const detalle = await ViewDetallePedido.findByPk(id_detalle);
+
+        await DetallePedido.destroy({where:{ id: id_detalle }})
+
+        // --------------------------------------------- Validar estados -------------------------------------
+
+        // Traer el detalle actualizado
+        const detalles = await DetallePedido.findAll({
+            order: [['ID_ESTADO', 'DESC']],
+            where: {
+                ID_PEDIDO: detalle.ID_PEDIDO,
+            },
+        });
+
+        let idEstadoNuevo = 1; // Pendiente
+        
+        // Recorrer todos los detalles
+        for await (let unDetalle of detalles) {
+
+            if (unDetalle.ID_ESTADO === 4) {
+                // Servido
+                idEstadoNuevo = 4;
+            }
+
+            if (unDetalle.ID_ESTADO === 3) {
+                idEstadoNuevo = 3
+            } 
+            
+            if (unDetalle.ID_ESTADO === 2) {
+                idEstadoNuevo = 2
+            }
+
+            if (unDetalle.ID_ESTADO === 1){
+                idEstadoNuevo = 1
+            }
+            
+        }
+
+
+        // Traer al pedido
+        const pedido = await Pedido.findByPk(detalle.ID_PEDIDO);
+
+        // Actualizar estado del pedido y usuario quien modifico
+        await pedido.update({
+            MODIFICADO_POR: id_usuario,
+            ID_ESTADO: idEstadoNuevo,
+            SUBTOTAL: parseFloat(pedido.SUBTOTAL) - (parseFloat(detalle.PRECIO_DETALLE)*detalle.CANTIDAD)
+        });
+
+        let idPedido = pedido.id;
+        const newPedidoVista = await ViewPedido.findByPk(pedido.id);
+        emit("actualizarTabla", { idPedido, newPedidoVista });
+
+        // Instanciar todos los pedidos de la mesa
+        const pedidosMesa = await Pedido.findAll({
+            order: [['ID_ESTADO', 'DESC']],       //El último siempre dira en que estado esta la orden
+            where: { ID_MESA: pedido.ID_MESA },
+        });
+
+        let idEstadoMesaNuevo = 4;
+        for await (let pedidoMesa of pedidosMesa) {
+            if (pedidoMesa.ID_ESTADO === 4) {
+                // Servido
+                idEstadoMesaNuevo = 4;
+            } 
+            
+            if (pedidoMesa.ID_ESTADO === 3) {
+                // Listo
+                idEstadoMesaNuevo = 3;
+            } else
+            
+            if (pedidoMesa.ID_ESTADO === 2) {
+                // Cocinando
+                idEstadoMesaNuevo = 2;
+            } 
+            
+            if (pedidoMesa.ID_ESTADO === 1) {
+                idEstadoMesaNuevo = 1
+            }
+        }
+
+        // Instanciar mesa
+        const mesa = await Mesa.findByPk(pedido.ID_MESA);
+        await mesa.update({
+            ID_ESTADO: idEstadoMesaNuevo,
+        });
+
+        // Actualizar la mesa a los usuarios
+        let idMesa = mesa.id;
+        const mesaVista = await ViewMesa.findByPk(pedido.ID_MESA);
+        emit("actualizarMesa", { idMesa, mesaVista });
+
+        eventBitacora(new Date, id_usuario, 30, 'BORRADO', `${detalle.CANTIDAD} ${detalle.NOMBRE_PRODUCTO} HA SIDO ELIMINADO DEL PEDIDO DE ${pedido.NOMBRE_CLIENTE} EN LA MESA ${mesaVista.NOMBRE}`);
+
+        // --------------- NOTIFICAR -----------------
+        notificar(2, `Actualización del pedido de ${pedido.NOMBRE_CLIENTE.toLowerCase()} en la mesa ${mesaVista.NOMBRE.toLowerCase()}`, `${detalle.CANTIDAD} ${detalle.NOMBRE_PRODUCTO} ha sido eliminado del pedido de ${pedido.NOMBRE_CLIENTE} en la mesa ${mesaVista.NOMBRE}. Motivo: ${razon}`, id_usuario, "");
+        
+        return res.json({
+            ok: true,
+            msg: `${detalle.CANTIDAD} ${detalle.NOMBRE_PRODUCTO} ha sido eliminado del pedido de ${pedido.NOMBRE_CLIENTE}`
+        })
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: error.message
+        })
+    }
+}
+
+const deletePedido = async (req = request, res = response) => {
+    const { id_pedido } = req.params
+    const { id_usuario, razon } = req.body
+    try {
+
+
+        // Instanciar Pedido para borrar
+        const pedidoPorBorrar = await Pedido.findByPk(id_pedido);
+        let id_mesa = pedidoPorBorrar.ID_MESA;
+
+        const mesaQuizaBorre = await Mesa.findByPk(pedidoPorBorrar.ID_MESA)
+
+        // Instancia para borrar
+        const detallesVista = await ViewDetallePedido.findAll({where: {
+            ID_PEDIDO: id_pedido
+        }});
+
+        for await (let detalleVista of detallesVista) {
+
+            eventBitacora(new Date, id_usuario, 30, 'BORRADO', `${detalleVista.CANTIDAD} ${detalleVista.NOMBRE_PRODUCTO} HA SIDO ELIMINADO DEL PEDIDO DE ${pedidoPorBorrar.NOMBRE_CLIENTE} EN LA MESA ${mesaQuizaBorre.NOMBRE}`);
+            await DetallePedido.destroy({where:{ ID_PEDIDO: id_pedido }})
+
+        }
+
+        // BORRAR PEDIDO
+        let mensajeReponse = `El pedido de ${pedidoPorBorrar.NOMBRE_CLIENTE} en la mesa ${mesaQuizaBorre.NOMBRE} ha sido eliminado`
+        eventBitacora(new Date, id_usuario, 30, 'BORRADO', `EL PEDIDO DE ${pedidoPorBorrar.NOMBRE_CLIENTE} EN LA MESA ${mesaQuizaBorre.NOMBRE} HA SIDO ELIMINADO`);
+        await pedidoPorBorrar.destroy();
+
+        // BORRAR MESA
+        // Traer todas los pedidos de la mesa que quizas se borre, si existe al menos 1, no se borra, si no hay, se borrara
+        const listaPedidos = await Pedido.findAll({where: {ID_MESA: mesaQuizaBorre.id}})
+
+        if(listaPedidos.length < 1) {
+            
+            // --------------- NOTIFICAR -----------------
+            notificar(2, `Mesa ${mesaQuizaBorre.NOMBRE} ha sido eliminada`, `La Mesa ${mesaQuizaBorre.NOMBRE} ha sido eliminada. Motivo: ${razon}`, id_usuario, "");
+            
+            await mesaQuizaBorre.destroy();
+
+            emit('recargar');
+
+            return res.json({
+                ok: true,
+                msg: `Mesa ${mesaQuizaBorre.NOMBRE} ha sido eliminada`
+            })
+
+        }
+
+        // NO SE ELIMINO LA MESA C:
+        // --------------- NOTIFICAR -----------------
+        notificar(2, mensajeReponse, `${mensajeReponse}. Motivo: ${razon}`, id_usuario, "");
+
+        // --------------------------------------------- Validar estados -------------------------------------
+
+        // Instanciar todos los pedidos de la mesa
+        const pedidosMesa = await Pedido.findAll({
+            order: [['ID_ESTADO', 'DESC']],       //El último siempre dira en que estado esta la orden
+            where: { ID_MESA: id_mesa },
+        });
+
+        let idEstadoMesaNuevo = 1;
+
+        for await (let pedidoMesa of pedidosMesa) {
+            if (pedidoMesa.ID_ESTADO === 4) {
+                // Servido
+                idEstadoMesaNuevo = 4;
+            } 
+            
+            if (pedidoMesa.ID_ESTADO === 3) {
+                // Listo
+                idEstadoMesaNuevo = 3;
+            } else
+            
+            if (pedidoMesa.ID_ESTADO === 2) {
+                // Cocinando
+                idEstadoMesaNuevo = 2;
+            } 
+            
+            if (pedidoMesa.ID_ESTADO === 1) {
+                idEstadoMesaNuevo = 1
+            }
+        }
+
+        // Instanciar mesa
+        const mesa = await Mesa.findByPk(id_mesa);
+        await mesa.update({
+            ID_ESTADO: idEstadoMesaNuevo,
+        });
+
+        // Actualizar la mesa a los usuarios
+        let idMesa = mesa.id;
+        const mesaVista = await ViewMesa.findByPk(id_mesa);
+        const listaViewPedidos = await ViewPedido.findAll({where:{id_mesa}});
+        emit('recargarMesa', { idMesa, listaViewPedidos });
+        emit("actualizarMesa", { idMesa, mesaVista });
+        
+        return res.json({
+            ok: true,
+            msg: mensajeReponse
+        })
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: error.message
+        })
+    }
+}
+
 module.exports = {
     postMesaPedido,
     validarCaja,
@@ -848,5 +1074,7 @@ module.exports = {
     getBebidas,
     getMesa,
     postDetalle,
-    putEstadoDetalle
+    putEstadoDetalle,
+    deleteUnDetalle,
+    deletePedido
 }
