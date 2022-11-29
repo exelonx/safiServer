@@ -108,7 +108,7 @@ const getReportePermiso = async (req = request, res = response) => {
             headerTemplate: `
             <div style="font-size:10px; margin: 0 auto; margin-left: 20px; margin-right: 20px;  width: 100%; display: flex; align-items: center; justify-content: space-between;" >  
             <div style="color: #d12609; width: 22%;"><p>Fecha: <span class="date"></span></p></div>   
-            <div style="display: flex; width: 60%; margin: 0 auto; align-items: center; justify-content: center; flex-direction: column"><div style="font-weight: bold; font-size: 20px;">${nombreEmpresa.VALOR}</div> <div style="color: #d12609; font-size: 20px;">Reporte de Permissos</div></div>   
+            <div style="display: flex; width: 60%; margin: 0 auto; align-items: center; justify-content: center; flex-direction: column"><div style="font-weight: bold; font-size: 20px;">${nombreEmpresa.VALOR}</div> <div style="color: #d12609; font-size: 20px;">Reporte de Permisos</div></div>   
             <div style=" display: flex; justify-content: end;  width: 20%;">
             <img class="logo" alt="title" src="data:image/png;base64,${logo}" width="40"/>
             </div></div>`,
