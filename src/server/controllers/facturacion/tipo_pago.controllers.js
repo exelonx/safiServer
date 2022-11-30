@@ -22,24 +22,10 @@ const getTipoPagos = async (req = request, res = response) => {
         }
 
         // Paginación
-        const tipoPago = await TipoPago.findAll({
-            limit: parseInt(limite, 10),
-            offset: parseInt(desde, 10),
-            where: {
-                [Op.or]: [{
-                    FORMA_PAGO: { [Op.like]: `%${buscar.toUpperCase()}%` }
-                }]
-            }
-        });
+        const tipoPago = await TipoPago.findAll(
+            );
 
-        // Contar resultados total
-        const countTipoPago = await TipoPago.count({
-            where: {
-                [Op.or]: [{
-                    FORMA_PAGO: { [Op.like]: `%${buscar.toUpperCase()}%` }
-                }]
-            }
-        });
+        
 
         // Guardar evento
         // if (buscar !== "" && desde == 0) {
@@ -47,7 +33,7 @@ const getTipoPagos = async (req = request, res = response) => {
         // }
 
         // Respuesta
-        res.json({ limite, countTipoPago, tipoPago })
+        res.json({ tipoPago })
 
     } catch (error) {
         console.log(error);
