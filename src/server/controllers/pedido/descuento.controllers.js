@@ -14,6 +14,8 @@ const getDescuentos = async (req = request, res = response) => {
     try {
 
 
+
+
         // Definir el número de objetos a mostrar
         if(!limite || limite === ""){
             const { VALOR } = await Parametro.findOne({where: {PARAMETRO: 'ADMIN_NUM_REGISTROS'}})
@@ -31,7 +33,8 @@ const getDescuentos = async (req = request, res = response) => {
             where: {
                 [Op.or]: [{
                     NOMBRE: { [Op.like]: `%${buscar.toUpperCase() }%`}
-                }]
+                }],
+                [Op.not]: [{ID: 1}]
             }
         });
 
@@ -39,7 +42,8 @@ const getDescuentos = async (req = request, res = response) => {
         const countDescuentos = await ViewDescuento.count({where: {
                 [Op.or]: [{
                     NOMBRE: { [Op.like]: `%${buscar.toUpperCase() }%`}
-                }]
+                }],
+                [Op.not]: [{ID: 1}]
             }
         });
 
