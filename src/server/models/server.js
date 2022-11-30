@@ -46,12 +46,9 @@ const routerComboProducto = require('../routes/pedido/combo-producto.routes');
 const routerPromocionProducto = require('../routes/pedido/promocion-producto.routes');
 const routerInsumoProducto = require('../routes/inventario/insumo-producto.routes');
 const routerCocina = require('../routes/pedido/cocina.routes');
-<<<<<<< HEAD
 const routerFactura = require('../routes/pedido/factura.routes');
-=======
 const routerTipoPago = require('../routes/facturacion/tipo_pago.routes')
 
->>>>>>> c8e4ff5884f959e19106d6e03f318e28a6b4bd6b
 
 // Jobs
 const { generarBackup } = require('../jobs/db-backup');
@@ -223,11 +220,8 @@ class Server {
 
         // Facturacion
         this.app.use(this.apiPath.sar, routerSAR)                      // SAR
-<<<<<<< HEAD
         this.app.use(this.apiPath.facturacion, routerFactura)          // Facturación
-=======
         this.app.use(this.apiPath.tipoPago, routerTipoPago)            // Tipo de pago
->>>>>>> c8e4ff5884f959e19106d6e03f318e28a6b4bd6b
     }
 
     async listen () {
