@@ -245,7 +245,7 @@ const getUsuario = async (req = request, res = response) => {
             })
         }
 
-        res.json( usuario )
+        res.json( {usuario} )
 
     } catch (error) {
         console.log(error);
