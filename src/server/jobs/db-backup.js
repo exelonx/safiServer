@@ -1,17 +1,21 @@
-const mysqldump = require('mysqldump')
+const { request, response } = require('express');
+const path = require('path');
+const mysqldump = require('mysqldump');
+const { patch } = require('../routes/seguridad/auth.routes');
 
-const generarBackup = async() => {
 
+const generarBackup = async(backup) => {
+
+    const nombreBackup = backup + '.sql'
+    
         await mysqldump({
             connection: {
-                host: 'seguridad-dt.czu5fzhmivzz.us-east-2.rds.amazonaws.com',
-                user: 'dream_team',
-                password: 'DreamTeam',
-                database: 'drburger',
-            },
-            dumpToFile: './src/server/backups/db-backup.sql',
+                host: process.env.MYSQL_HOST,
+                user: process.env.SQL_USER,
+                password: process.env.SQL_PASSWORD,
+                database: process.env.ESQUEMA,
+            }, dumpToFile: path.join(__dirname, '../../server/backups', nombreBackup)
         });
-
 }
 
 module.exports = {
