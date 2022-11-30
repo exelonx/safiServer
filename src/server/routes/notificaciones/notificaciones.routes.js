@@ -1,6 +1,7 @@
 const { Router } = require('express');
 const { check } = require('express-validator');
 const { getNotificacionesCampana, postNotificacion, configPermisosInicialesNoti, recibirNotificacion, verNotificacion, getTipoNotificacion, getPermisosNotificaciones, putPermisos, getPermisoNotificacion } = require('../../controllers/notificaciones/notificaciones.controllers');
+const { getReporteNotificacion } = require('../../controllers/notificaciones/reporteria/notificacion.report.controller');
 const { getReportePermisoNoti } = require('../../controllers/reporteria/permisoNoti.report.controller');
 const { validarCampos } = require('../../middlewares');
 
@@ -30,5 +31,7 @@ router.put('/:id_permiso', putPermisos)
 router.get('/permiso/get/:id_permiso', getPermisoNotificacion)
 
 router.post('/reporteria/permisoNoti', getReportePermisoNoti);
+
+router.post('/reporteria/notificacion', getReporteNotificacion);
 
 module.exports = router
