@@ -63,10 +63,14 @@ const getPromocionProductos = async (req = request, res = response) => {
 
 const getPromocionProducto = async (req = request, res = response) => {
     
-    const { id } = req.params
+    const { id_promocion } = req.params
     
     try {
-        const promocionProducto = await ViewPromocionProducto.findByPk( id );
+        const promocionProducto = await ViewPromocionProducto.findAll({
+            where: {
+                ID_PROMOCION: id_promocion
+            }
+        });
 
         // Validar Existencia
         if( !promocionProducto ){
@@ -75,7 +79,7 @@ const getPromocionProducto = async (req = request, res = response) => {
             })
         }
 
-        res.json({ descuento })
+        res.json({ promocionProducto })
     } catch (error) {
         console.log(error);
         res.status(500).json({

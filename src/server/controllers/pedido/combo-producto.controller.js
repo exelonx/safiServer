@@ -63,10 +63,14 @@ const getComboProductos = async (req = request, res = response) => {
 
 const getComboProducto = async (req = request, res = response) => {
     
-    const { id } = req.params
+    const { id_combo } = req.params
     
     try {
-        const comboProducto = await ViewComboProducto.findByPk( id );
+        const comboProducto = await ViewComboProducto.findAll({
+            where:{
+                ID_COMBO: id_combo
+            }
+        });
 
         // Validar Existencia
         if( !comboProducto ){
@@ -75,7 +79,7 @@ const getComboProducto = async (req = request, res = response) => {
             })
         }
 
-        res.json({ descuento })
+        res.json({ comboProducto })
     } catch (error) {
         console.log(error);
         res.status(500).json({

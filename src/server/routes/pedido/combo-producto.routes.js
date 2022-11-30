@@ -7,6 +7,6 @@ const router = Router();
 
 router.get('/', getComboProductos);
 
-router.get('/:id', getComboProducto);
+router.get('/:id_combo', getComboProducto);
 
 module.exports = router;

@@ -7,6 +7,6 @@ const router = Router();
 
 router.get('/', getPromocionProductos);
 
-router.get('/:id', getPromocionProducto);
+router.get('/:id_promocion', getPromocionProducto);
 
 module.exports = router;
