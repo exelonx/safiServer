@@ -46,6 +46,7 @@ const routerComboProducto = require('../routes/pedido/combo-producto.routes');
 const routerPromocionProducto = require('../routes/pedido/promocion-producto.routes');
 const routerInsumoProducto = require('../routes/inventario/insumo-producto.routes');
 const routerCocina = require('../routes/pedido/cocina.routes');
+const routerTipoPago = require('../routes/facturacion/tipo_pago.routes')
 
 
 // Jobs
@@ -126,6 +127,7 @@ class Server {
 
             //FACTURACION
             sar:              '/api/SAR',
+            tipoPago:         '/api/tipo-pago',
         }
 
         // middlewares
@@ -217,6 +219,7 @@ class Server {
 
         // Facturacion
         this.app.use(this.apiPath.sar, routerSAR)                      // SAR
+        this.app.use(this.apiPath.tipoPago, routerTipoPago)            // Tipo de pago
     }
 
     async listen () {

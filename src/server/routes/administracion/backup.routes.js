@@ -1,41 +1,20 @@
 const { Router } = require('express');
 const { check } = require('express-validator');
+const { postBackup, getBackup, validarConexion } = require('../../controllers/administracion/backup.controller');
 
 const { generarBackup } = require('../../jobs/db-backup');
+const { validarEspacio, validarDobleEspacio, validarCampos } = require('../../middlewares');
 
 const router = Router();
 
-router.get('/', async (req, res)=>{
-    try {
+router.get('/', getBackup);
 
-        await generarBackup()
-            .catch(err => console.log('error'));
+router.get('/validar-conexion', validarConexion)
 
-        res.download(`${__dirname}../../../backups/db-backup.sql`, 'db-backup.sql')
-
-    } catch (error) {
-        console.log('error')
-    }
-});
-
-router.post('/subir', async (req, res)=>{
-    if (!req.files || Object.keys(req.files).length === 0 || !req.files.backup) {
-        return res.status(400).send('No files were uploaded.');
-      }
-
-      const { backup } = req.files;
-    
-      // The name of the input field (i.e. "sampleFile") is used to retrieve the uploaded file
-      sampleFile = req.files.sampleFile;
-      uploadPath = __dirname + '/somewhere/on/your/server/' + sampleFile.name;
-    
-      // Use the mv() method to place the file somewhere on your server
-      sampleFile.mv(uploadPath, function(err) {
-        if (err)
-          return res.status(500).send(err);
-    
-        res.send('File uploaded!');
-      });
-})
+router.post('/subir',[
+  check("nombreBackup", "El nombre del backup sólo permite letras").isAlpha("es-ES", {ignore: ''}),
+  check("nombreBackup", "El nombre del backup debe ser en mayúsculas").isUppercase(),
+  validarCampos
+], postBackup)
 
 module.exports = router
