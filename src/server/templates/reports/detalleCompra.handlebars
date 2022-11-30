@@ -20,11 +20,10 @@
 </head>
 
 <body style="font-family: 'Quicksand', sans-serif;" class="mx-5 my-2">
-
-    <h4 style="text-align: center; color: #d12609; font-weight: bold;" class="mb-3">Detalle de compra</h4>
+    {{#each detalleCompras}}
     <div>
       <h6 style="font-weight:bold;">Información de proveedor </h6>
-      <h6> Nombre: </h6>
+      <h6> Nombre:  {{PROVEEDOR}}</h6>
     </div>
 
     <div>
@@ -40,30 +39,32 @@
           </tr>
         </thead>
         <tbody>
+          {{#each detalleCompras}}
             <tr>
-                <th>1</th>
-                <td>...</td>
-                <td>...</td>
+                <td>{{CANTIDAD}}</td>
+                <td>{{NOMBRE}}</td>
+                <td>{{PRECIO_COMPRA}}</td>
                 <td>...</td>
               </tr>
         </tbody>
         <tfoot>
+          {{#each detalleCompras}}
           <tr>
               <td rowspan="8" colspan="2" class="">
               
               </td>
               <td colspan="1" class="table-active fw-bold text-center">Subtotal</td>
-              <td class="fw-semibold">...</td>
+              <td class="fw-semibold">{{SUBTOTAL}}</td>
           </tr>
-          <tr>
+          {{!-- <tr>
 
               <td colspan="1" class="table-active fw-bold text-center">Impuesto</td>
               <td class="fw-semibold">...</td>
-          </tr>
+          </tr> --}}
           <tr>
 
               <td colspan="1" class="table-active fw-bold text-center">Total</td>
-              <td class="fw-semibold">...</td>
+              <td class="fw-semibold">{{TOTAL}}</td>
           </tr>
       </tfoot>
       </table>
