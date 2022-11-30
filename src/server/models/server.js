@@ -46,7 +46,7 @@ const routerComboProducto = require('../routes/pedido/combo-producto.routes');
 const routerPromocionProducto = require('../routes/pedido/promocion-producto.routes');
 const routerInsumoProducto = require('../routes/inventario/insumo-producto.routes');
 const routerCocina = require('../routes/pedido/cocina.routes');
-
+const routerFactura = require('../routes/pedido/factura.routes');
 
 // Jobs
 const { generarBackup } = require('../jobs/db-backup');
@@ -123,9 +123,9 @@ class Server {
 
             cocina:           '/api/cocina',
 
-
             //FACTURACION
             sar:              '/api/SAR',
+            facturacion:      '/api/facturacion'
         }
 
         // middlewares
@@ -217,6 +217,7 @@ class Server {
 
         // Facturacion
         this.app.use(this.apiPath.sar, routerSAR)                      // SAR
+        this.app.use(this.apiPath.facturacion, routerFactura)          // Facturación
     }
 
     async listen () {

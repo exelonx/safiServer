@@ -26,6 +26,9 @@ const ViewDetallePedido = db.define(`VIEW_MP_PEDIDO_DETALLE`, {
     DESCRIPCION: {
         type: DataTypes.STRING
     },
+    EXENTA: {
+        type: DataTypes.BOOLEAN
+    },
     ID_ESTADO: {
         type: DataTypes.INTEGER
     },
