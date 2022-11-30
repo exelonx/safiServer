@@ -8,7 +8,7 @@
 
     <link rel="stylesheet" href="style.css">
     <link rel="shortcut icon" href="/img/favicon.ico">
-    <title>Reporte de Pedidos</title>
+    <title>Reporte</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,27 +20,23 @@
 </head>
 
 <body style="font-family: 'Quicksand', sans-serif;" class="mx-5 my-2">
-
-    <table class="table table-striped" style="text-align: center; vertical-align: middle;">
-        <thead class="" style="background-color: rgb(224, 224, 224); vertical-align: middle;">
+    
+    <table class="table table-striped align-middle" style="text-align: center;">
+        <thead style="background-color: rgb(224, 224, 224)">
             <tr>
                 <th scope="col">#</th>
-                <th scope="col">Cliente</th>
-                <th scope="col">Mesero</th>
-                <th scope="col">Hora de pedido</th>
-                <th scope="col">Subtotal</th>
-                <th scope="col">Modificado por</th>
+                <th scope="col">Nombre promoción</th>
+                <th scope="col">Nombre producto</th>
+                <th scope="col">Cantidad</th>
             </tr>
         </thead>
         <tbody>
-            {{#each pedidos}}
+            {{#each promociones}}
             <tr>
                 <td>{{inc @index}}</td>
-                <td>{{NOMBRE_CLIENTE}}</td>      
-                <td>{{NOMBRE_USUARIO}}</td>                 
-                <td>{{HORA_SOLICITUD}}</td>
-                <td>{{SUBTOTAL}}</td>
-                <td>{{MODIFICADO_POR}}</td>
+                <td>{{NOMBRE_PROMOCION}}</td>
+                <td>{{NOMBRE_PRODUCTO}}</td>
+                <td>{{CANTIDAD}}</td>
             </tr>
             {{/each}}
         </tbody>

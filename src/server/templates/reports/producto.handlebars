@@ -40,7 +40,12 @@
                 <td>{{NOMBRE}}</td>
                 <td>{{DESCRIPCION}}</td>
                 <td>{{PRECIO}}</td>
-                <td>{{PORCENTAJE}}%</td>
+                <td>{{#if EXENTA}}
+                    0%
+                    {{else}}
+                    {{PORCENTAJE}}%
+                    {{/if}}
+                </td>  
                 <td>{{#if BEBIDA}}
                     Si
                     {{else}}

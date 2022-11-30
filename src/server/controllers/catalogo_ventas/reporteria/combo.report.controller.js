@@ -3,13 +3,13 @@ const puppeteer = require('puppeteer');
 const { Op } = require('sequelize');
 const base64 = require('node-base64-image');
 
-const ViewProducto = require(`../../../models/catalogo-ventas/sql-vistas/view_producto`);
 const Parametro = require('../../../models/seguridad/parametro');
 
 const { compilarTemplate } = require('../../../helpers/compilarTemplate');
-const ViewSoloProducto = require('../../../models/catalogo-ventas/sql-vistas/view_solo_producto');
+const ViewComboProducto = require('../../../models/catalogo-ventas/sql-vistas/view_comboProducto');
 
-const getReporteProducto = async (req = request, res = response) => {
+
+const getReporteCombo = async (req = request, res = response) => {
 
     let { buscar = "" } = req.body
 
@@ -18,44 +18,29 @@ const getReporteProducto = async (req = request, res = response) => {
         const buscador = await puppeteer.launch({ headless: true });
         const pagina = await buscador.newPage();
 
-        const producto = await ViewSoloProducto.findAll({
+        const combo = await ViewComboProducto.findAll({
             where: {
                 // WHERE PREGUNTA LIKE %${BUSCAR}% OR LIKE %${BUSCAR}%
                 [Op.or]: [{
-                    NOMBRE: { [Op.like]: `%${buscar.toUpperCase()}%` }
+                    NOMBRE_COMBO: { [Op.like]: `%${buscar.toUpperCase()}%` }
                 }, {
-                    DESCRIPCION: { [Op.like]: `%${buscar.toUpperCase()}%` }
+                    NOMBRE_PRODUCTO: { [Op.like]: `%${buscar.toUpperCase()}%` }
                 }, {
-                    PRECIO: { [Op.like]: `%${buscar.toUpperCase()}%` }
-                }, {
-                    PORCENTAJE: { [Op.like]: `%${buscar.toUpperCase()}%` }
-                }, {
-                    BEBIDA: { [Op.like]: `%${buscar.toUpperCase()}%` }
-                }, {
-                    SIN_ESTADO: { [Op.like]: `%${buscar.toUpperCase()}%` }
+                    CANTIDAD: { [Op.like]: `%${buscar.toUpperCase()}%` }
                 }]
             }
         })
 
 
-        const productoMapped = producto.map((productos) => {
+        const comboMapped = combo.map((combos) => {
             return {
-                NOMBRE: productos.NOMBRE,
-                PORCENTAJE: productos.PORCENTAJE,
-                PRECIO: productos.PRECIO,
-                EXENTA: productos.EXENTA,
-                DESCRIPCION: productos.DESCRIPCION,
-                ESTADO: productos.ESTADO,
-                SIN_ESTADO: productos.SIN_ESTADO,
-                BEBIDA: productos.BEBIDA,
-                CREADO_POR: productos.CREADO_POR,
-                FECHA_CREACION: productos.FECHA_CREACION,
-                MODIFICADO_POR: productos.MODIFICADO_POR,
-                FECHA_MODIFICACION: productos.FECHA_MODIFICACION
+                NOMBRE_COMBO: combos.NOMBRE_COMBO,
+                NOMBRE_PRODUCTO: combos.NOMBRE_PRODUCTO,
+                CANTIDAD: combos.CANTIDAD
             }
         })
 
-        const content = await compilarTemplate('producto', { productos: productoMapped })
+        const content = await compilarTemplate('combo', { combos: comboMapped })
 
         await pagina.setContent(content)
         const options = {
@@ -92,7 +77,7 @@ const getReporteProducto = async (req = request, res = response) => {
             headerTemplate: `
             <div style="font-size:10px; margin: 0 auto; margin-left: 20px; margin-right: 20px;  width: 100%; display: flex; align-items: center; justify-content: space-between;" >  
             <div style="color: #d12609; width: 22%;"><p>Fecha: <span class="date"></span></p></div>   
-            <div style="display: flex; width: 60%; margin: 0 auto; align-items: center; justify-content: center; flex-direction: column"><div style="font-weight: bold; font-size: 20px;">${nombreEmpresa.VALOR}</div> <div style="color: #d12609; font-size: 20px;">Reporte de Productos</div></div>   
+            <div style="display: flex; width: 60%; margin: 0 auto; align-items: center; justify-content: center; flex-direction: column"><div style="font-weight: bold; font-size: 20px;">${nombreEmpresa.VALOR}</div> <div style="color: #d12609; font-size: 20px;">Reporte de Combos</div></div>   
             <div style=" display: flex; justify-content: end;  width: 20%;">
             <img class="logo" alt="title" src="data:image/png;base64,${logo}" width="40"/>
             </div></div>`,
@@ -116,5 +101,5 @@ const getReporteProducto = async (req = request, res = response) => {
 }
 
 module.exports = {
-    getReporteProducto
+    getReporteCombo
 }
