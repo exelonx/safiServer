@@ -14,30 +14,34 @@ const { compilarTemplate } = require('../../../helpers/compilarTemplate');
 
 const getReporteKardex = async (req = request, res = response) => {
 
-    let { buscar = "" } = req.body
+    let { buscar = "", fechaInicial = "", fechaFinal = "" } = req.body
+    let filtrarPorFecha = {}
 
     try {
+
+        // Validar si llegaron fechas
+        if( fechaFinal !== '' && fechaInicial !== '') {
+            filtrarPorFecha = { 
+                FECHA_Y_HORA: {
+                    [Op.between]: [new Date(fechaInicial), new Date(fechaFinal)]
+                }
+            }
+        }
 
         const buscador = await puppeteer.launch({headless: true});
         const pagina = await buscador.newPage();
 
         const kardex = await viewKardex.findAll({
             where: {
-                [Op.or]: [{                    
-                    USUARIO: { [Op.like]: `%${buscar.toUpperCase() }%`}
-                }, {
-                    NOMBRE: { [Op.like]: `%${buscar.toUpperCase()}%`}
-                }, {
-                    UNIDAD_MEDIDA: { [Op.like]: `%${buscar.toUpperCase()}%`}
-                }, {
-                    CANTIDAD: { [Op.like]: `%${buscar.toUpperCase()}%`}
+                // WHERE COLUMNA1 LIKE %${BUSCAR}% OR COLUMNA2 LIKE %${BUSCAR}%
+                [Op.or]: [{
+                    USUARIO: { [Op.like]: `%${buscar.toUpperCase()}%`}
                 }, {
                     TIPO_MOVIMIENTO: { [Op.like]: `%${buscar.toUpperCase()}%`}
-                }, {
-                    FECHA_Y_HORA: { [Op.like]: `%${buscar.toUpperCase()}%`}
-                }]
+                }],
+                [Op.and]: [filtrarPorFecha]
             }
-        })
+        });
 
         
         const kardexMapped = kardex.map(( kardexs )=> {
