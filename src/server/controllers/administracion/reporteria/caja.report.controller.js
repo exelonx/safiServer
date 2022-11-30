@@ -14,12 +14,26 @@ const { compilarTemplate } = require('../../../helpers/compilarTemplate');
 
 const getReporteCaja = async (req = request, res = response) => {
 
-    let { buscar = "" } = req.body
+    let { buscar = "", fechaInicial = "", fechaFinal = "" } = req.body
+    let filtrarPorFecha = {}
 
     try {
 
         const buscador = await puppeteer.launch({headless: true});
         const pagina = await buscador.newPage();
+
+        // Validar si llegaron fechas
+        if( fechaFinal !== '' && fechaInicial !== '') {
+            filtrarPorFecha = { 
+                
+                FECHA_APERTURA: {
+
+                    [Op.between]:[new Date(fechaInicial), new Date(fechaFinal)]
+
+                }
+ 
+            }
+        }
 
         const caja = await cajaModel.findAll({
             where: {
@@ -35,14 +49,10 @@ const getReporteCaja = async (req = request, res = response) => {
                     ESTADO: { [Op.like]: `%${buscar.toUpperCase()}%`}
                 }, {
                     SALDO_ACTUAL: { [Op.like]: `%${buscar.toUpperCase()}%`}
-                }/* , {
-                    FECHA_APERTURA1: { [Op.like]: `%${buscar.toUpperCase()}%`}
-                }, {
-                    FECHA_CIERRE1: { [Op.like]: `%${buscar.toUpperCase()}%`}
-                } */]
+                }],
+                [Op.and]: [filtrarPorFecha]
             }
         })
-
         
         const cajaMapped = caja.map(( cajas )=> {
             return {
