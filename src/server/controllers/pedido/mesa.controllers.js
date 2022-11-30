@@ -19,6 +19,7 @@ const ComboProducto = require('../../models/catalogo-ventas/comboProducto');
 const ViewInsumo = require('../../models/inventario/sql-vista/view-insumo');
 const PromocionProducto = require('../../models/catalogo-ventas/promocionProducto');
 const Kardex = require('../../models/inventario/kardex');
+const DetalleHistorial = require('../../models/pedido/detalle_historal');
 
 const getMesas = async (req = request, res = response) => {
     try {
@@ -204,6 +205,8 @@ const postMesaPedido = async (req = request, res = response) => {
         } 
 
         let id = mesa.id
+
+        eventBitacora(new Date, id_usuario, 30, 'NUEVO', `SE CREO LA ORDEN ${nombre}`);
 
         emit('mesa', {id});
 
@@ -396,6 +399,8 @@ const postDetalle = async (req = request, res = response) => {
                 id: pedido.ID_MESA
             }
         })
+
+        eventBitacora(new Date, id_usuario, 30, 'ACTUALIZACIÓN', `SE AGREGO ${arregloProductos.length} ${arregloProductos.length > 1 ? 'PRODUCTOS': 'PRODUCTO'} AL PEDIDO ${pedido.NOMBRE_CLIENTE}`);
 
         let pedidoPayload = await ViewPedido.findByPk(id_pedido);
         let mesaVista = await ViewMesa.findByPk(pedido.ID_MESA)
@@ -844,6 +849,8 @@ const putEstadoDetalle = async (req = request, res = response) => {
         }
       }
 
+      eventBitacora(new Date, id_usuario, 30, 'ACTUALIZACIÓN', `${detalle.CANTIDAD} ${detalle.NOMBRE_PRODUCTO} HA ACTUALIZADO DE ESTADO`);
+
       // Instanciar mesa
       const mesa = await Mesa.findByPk(pedido.ID_MESA);
       await mesa.update({
@@ -998,6 +1005,8 @@ const deletePedido = async (req = request, res = response) => {
             ID_PEDIDO: id_pedido
         }});
 
+        
+
         for await (let detalleVista of detallesVista) {
 
             eventBitacora(new Date, id_usuario, 30, 'BORRADO', `${detalleVista.CANTIDAD} ${detalleVista.NOMBRE_PRODUCTO} HA SIDO ELIMINADO DEL PEDIDO DE ${pedidoPorBorrar.NOMBRE_CLIENTE} EN LA MESA ${mesaQuizaBorre.NOMBRE}`);
@@ -1093,11 +1102,90 @@ const deletePedido = async (req = request, res = response) => {
 
 const putDetalle = async (req = request, res = response) => {
   const {id_detalle} = req.params;
-  const { id_producto, cantidad, precio } = req.body
+  const { id_producto, cantidad, id_usuario, razon } = req.body
   try {
+    // Instanciar todos los objetos
+    const producto = await ViewProducto.findByPk(id_producto);
+    const detalle = await DetallePedido.findByPk(id_detalle);
+    const pedido = await Pedido.findByPk(detalle.ID_PEDIDO);
+    const mesa = await Mesa.findByPk(pedido.ID_MESA)
+
+    // Creamos registro en el historial
+    const detalleAnterior = await ViewDetallePedido.findByPk(id_detalle);
+    const historial = await DetalleHistorial.create({
+      ID_DETALLE: id_detalle,
+      PRODUCTO_ANTERIOR: `${detalleAnterior.NOMBRE_PRODUCTO} x ${detalleAnterior.CANTIDAD}`
+    })
+
+    // Asignar el subtotal actual
+    let subTotal = parseFloat(pedido.SUBTOTAL)
+
+    let precio = parseFloat(producto.PRECIO) / (1.00 + parseFloat(producto.PORCENTAJE/100));
+
+    let totalImpuesto = 0;
+
+    if(!producto.EXENTA) {
+      
+      totalImpuesto = parseFloat(precio) * (parseFloat(producto.PORCENTAJE/100));
+      
+    }
     
+    // Asignar el precio actual
+    subTotal -= (parseFloat(detalle.PRECIO_DETALLE)*detalle.CANTIDAD).toFixed(2)
+
+    subTotal += (parseFloat(precio.toFixed(2)))*cantidad
+
+    // Actualizar estado del pedido y usuario quien modifico
+    await pedido.update({
+      MODIFICADO_POR: id_usuario,
+      ID_ESTADO: 1,
+      SUBTOTAL: subTotal
+    });
+
+    // Actualizar estado de la mesa
+    await mesa.update({
+      ID_ESTADO: 1
+    })
+    
+    await detalle.update({
+      ID_PRODUCTO: id_producto,
+      PRECIO_DETALLE: precio,
+      TOTAL_IMPUESTO: totalImpuesto,
+      PORCENTAJE: producto.PORCENTAJE,
+      CANTIDAD: cantidad,
+      ID_ESTADO: 1
+    })
+
+    // Actualizar la tabla a los usuarios
+    let idPedido = pedido.id;
+    const newPedidoVista = await ViewPedido.findByPk(pedido.id);
+    emit("actualizarTabla", { idPedido, newPedidoVista });
+
+    // Actualizar la mesa a los usuarios
+    let idMesa = mesa.id;
+    const mesaVista = await ViewMesa.findByPk(pedido.ID_MESA);
+    emit("actualizarMesa", { idMesa, mesaVista });
+
+    // --------------- NOTIFICAR -----------------
+    const detalleNuevo = await ViewDetallePedido.findByPk(id_detalle)
+    notificar(2, `Actualización del pedido de ${pedido.NOMBRE_CLIENTE.toLowerCase()} en la mesa ${mesaVista.NOMBRE.toLowerCase()}`, `Cambio de producto: ${detalleAnterior.NOMBRE_PRODUCTO} x ${detalleAnterior.CANTIDAD} por ${detalleNuevo.NOMBRE_PRODUCTO} x ${detalle.CANTIDAD}. Motivo: ${razon}`, id_usuario, "");
+
+    res.json({
+      ok: true,
+      msg: 'El producto ha sido actualizado con éxito'
+    })
+
+    setTimeout(() => {
+
+      emit("historial", {id_detalle, historial})
+      
+    }, 1500);
+
   } catch (error) {
-    
+    console.log(error);
+        res.status(500).json({
+            msg: error.message
+        })
   }
 }
 
@@ -1114,5 +1202,6 @@ module.exports = {
     putEstadoDetalle,
     deleteUnDetalle,
     deletePedido,
-    getUnDetalleDelPedido
+    getUnDetalleDelPedido,
+    putDetalle
 }
