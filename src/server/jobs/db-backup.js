@@ -1,12 +1,13 @@
 const { request, response } = require('express');
 const path = require('path');
+const fs = require("fs");
 const mysqldump = require('mysqldump');
 const { patch } = require('../routes/seguridad/auth.routes');
 
 
-const generarBackup = async(backup) => {
+const generarBackup = async() => {
 
-    const nombreBackup = backup + '.sql'
+    const nombreBackup = 'db-backup-automatico.sql'
     
         await mysqldump({
             connection: {
@@ -18,7 +19,28 @@ const generarBackup = async(backup) => {
         });
 }
 
+const generarBackupParaApi = async(nombre, direccion) => {
+
+    try {
+    
+        const nombreBackup = nombre + '.sql'
+        
+            await mysqldump({
+                connection: {
+                    host: process.env.MYSQL_HOST,
+                    user: process.env.SQL_USER,
+                    password: process.env.SQL_PASSWORD,
+                    database: process.env.ESQUEMA,
+                }, dumpToFile: path.join(__dirname, '../../server/backups/',direccion , nombreBackup)
+            });
+    } catch (error) {
+        console.log(error)
+    }
+    
+}
+
 module.exports = {
-    generarBackup
+    generarBackup,
+    generarBackupParaApi
 }
 

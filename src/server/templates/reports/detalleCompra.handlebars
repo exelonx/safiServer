@@ -20,15 +20,15 @@
 </head>
 
 <body style="font-family: 'Quicksand', sans-serif;" class="mx-5 my-2">
-    {{#each detalleCompras}}
     <div>
       <h6 style="font-weight:bold;">Información de proveedor </h6>
-      <h6> Nombre:  {{PROVEEDOR}}</h6>
+      <h6> Nombre:  {{detalleCompras[0].detalleCompras}}</h6>
     </div>
 
     <div>
       <h6 style="font-weight:bold;"> Información adicional </h6>
     </div>
+    {{#each detalleCompras}}
     <table class="table" style="text-align: center;">
         <thead style="background-color: rgb(224, 224, 224)">
           <tr>

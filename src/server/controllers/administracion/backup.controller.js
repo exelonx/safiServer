@@ -3,7 +3,8 @@ const { Op } = require('sequelize');
 const mysql = require('mysql2')
 
 const { eventBitacora } = require('../../helpers/event-bitacora');
-const { generarBackup } = require('../../jobs/db-backup');
+const { generarBackup, generarBackupParaApi } = require('../../jobs/db-backup');
+const { emit } = require('../../helpers/notificar');
 
 const getBackup = async (req = request, res = response) => {
     
@@ -78,17 +79,39 @@ const validarConexion = async (req = request, res = response) => {
 
 const postBackup = async (req = request, res = response) => {
     
-    let {nombreBackup=''} = req.body
+    let {nombreBackup='', ubicacion = "", id_usuario = ""} = req.body
 
     try {
+        console.log((ubicacion.length-1) !== "/")
+
+        if(ubicacion.includes('//')) {
+            return res.status(400).json({
+                ok: false,
+                msg: 'Ubicación no válida'
+            })
+        }
+
+        if(ubicacion.substring(ubicacion.length-1) !== "/" && ubicacion != "") {
+            return res.status(400).json({
+                ok: false,
+                msg: 'Falta un "/" en la ubicación'
+            })
+        }
+
+        emit('backup', {id_usuario});
 
         // Crear backup de la base de datos
-        const backup = await generarBackup(nombreBackup);
+        const backup = await generarBackupParaApi(nombreBackup, ubicacion);
 
-        res.status(200).json({
-            ok: true,
-            msg: 'Copia de seguridad creada.'
+        res.download(__dirname+ '../../../../server/backups/'+ubicacion + nombreBackup+'.sql',
+        (err) => {
+            if(err) {
+                console.log(err)
+            } else {
+                console.log('success')
+            }
         })
+
         
     } catch (error) {
         console.log(error);

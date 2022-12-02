@@ -84,7 +84,35 @@ const getInsumoProducto = async (req = request, res = response) => {
     }
 }
 
+const getInsumosProducto = async (req = request, res = response) => {
+    
+    const { id_producto } = req.params
+    
+    try {
+        const insumoProducto = await ViewInsumoProducto.findAll({
+            where: {
+                ID_PRODUCTO: id_producto
+            }
+        });
+
+        // Validar Existencia
+        if( !insumoProducto ){
+            return res.status(404).json({
+                msg: 'No existe un insumo de producto con el id ' + id
+            })
+        }
+
+        res.json({ insumoProducto })
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: error.message
+        })
+    }
+}
+
 module.exports = {
     getInsumoProductos,
-    getInsumoProducto
+    getInsumoProducto,
+    getInsumosProducto
 }

@@ -10,6 +10,9 @@ const InsumoProducto = require('../../models/catalogo-ventas/insumoProducto');
 const CatalogoProducto = require('../../models/catalogo-ventas/categoriaProducto');
 const ComboProducto = require('../../models/catalogo-ventas/comboProducto');
 const PromocionProducto = require('../../models/catalogo-ventas/promocionProducto');
+const ViewCatalogoProducto = require('../../models/catalogo-ventas/sql-vistas/view_catalogo_producto');
+const ViewComboProducto = require('../../models/catalogo-ventas/sql-vistas/view_comboProducto');
+const ViewPromocionProducto = require('../../models/catalogo-ventas/sql-vistas/view_promocionProducto');
 
 // Llamar todas las preguntas paginadas
 const getProductos = async (req = request, res = response) => {
@@ -424,6 +427,70 @@ const deleteProducto = async (req = request, res = response) => {
     }  
 }
 
+// Llamar la lista de catalogo producto para la pantalla de productos
+const getCatalogoProducto = async (req = request, res = response) => {
+
+    const {id_producto} = req.params
+
+    try {
+
+        const catalogoProducto = await ViewCatalogoProducto.findAll({where: {
+            ID_PRODUCTO: id_producto
+        }});
+        
+        // Respuesta
+        res.json({ catalogoProducto })
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: error.message
+        })
+    }
+}
+
+const getComboProducto = async (req = request, res = response) => {
+
+    const {id_producto} = req.params
+
+    try {
+
+        const comboProducto = await ViewComboProducto.findAll({where: {
+            ID_COMBO: id_producto
+        }});
+        
+        // Respuesta
+        res.json({ comboProducto })
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: error.message
+        })
+    }
+}
+
+const getPromoProducto = async (req = request, res = response) => {
+
+    const {id_producto} = req.params
+
+    try {
+
+        const promocionProducto = await ViewPromocionProducto.findAll({where: {
+            ID_PROMOCION: id_producto
+        }});
+        
+        // Respuesta
+        res.json({ promocionProducto })
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: error.message
+        })
+    }
+}
+
 module.exports = {
     getProductos,
     getProducto,
@@ -431,5 +498,8 @@ module.exports = {
     postCombo,
     postPromocion,
     putProducto,
-    deleteProducto
+    deleteProducto,
+    getCatalogoProducto,
+    getComboProducto,
+    getPromoProducto
 }

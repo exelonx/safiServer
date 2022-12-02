@@ -39,16 +39,20 @@
         <p>E-mail: s.romero23@hotmail.com</p>
         <p>B° Mercedes Casa No. 53, Contiguo a Ferretería Pineda, <br> Gracias, Lempira.</p>
     </div>
-    <p>Factura</p>
-    <p>CAI: </p>
+    
+    <p>Factura {{numero}}</p>
+
+    <p>CAI: {{CAI}}</p>
     <br>
-    <p>Rango autorizado:</p>
-    <p>Fecha límite de emisión: </p>
+    <p>Rango autorizado: {{RANGO_MINIMO}} a {{RANGO_MAXIMO}}</p>
+    <p>Fecha límite de emisión: {{FECHA_LIMITE_EMISION}}</p>
+
     <br>
-    <p>Cliente:</p>
-    <p>RTN:</p>
-    <p>Dirección:</p>
+    <p>Cliente: {{cliente}}</p>
+    <p>RTN: {{RTN}}</p>
+    <p>Dirección: {{direccion}}</p>
     <br>
+    
     <p>Datos de Adquiriente Exonerado</p>
     <p>Orden de Compra Exenta #</p>
     <p>Const. Reg. de Exonerados #</p>
@@ -61,19 +65,21 @@
             <th>Cant x Precio</th>
             <th>Gravada</th>
         </tr>
+        {{#each detalle}}
         <tr>
             <td>
-                <hr>Lorem ipsum dolor sit amet cons 
+                <hr>{{NOMBRE_PRODUCTO}} 
             </td>
             
             <td>
-                <hr>Lorem ipsum dolor sit amet cons
+                <hr>{{CANTIDAD}} x {{PRECIO_DETALLE}}
             </td>
             <td>
-                <hr> Lorem ipsum dolor sit amet cons
+                <hr>{{PRECIO_DETALLE}}
             </td>
 
         </tr>
+        {{/each}}
         <tr>
             <td style="text-align: right;" colspan="2">
                 <hr>
@@ -81,36 +87,32 @@
             <td><hr></td>
         </tr>
         <tr>
-            <td style="text-align: right;" colspan="2">Sub-Total L.</td>
-            <td>lorem</td>
-        </tr>
-        <tr>
             <td style="text-align: right;" colspan="2">Descuento y Rebajas Otorgadas</td>
-            <td>lorem</td>
+            <td>{{descuento}}</td>
         </tr>
         <tr>
             <td style="text-align: right;" colspan="2">V. Exenta L.</td>
-            <td>lorem</td>
+            <td>{{venta_exenta}}</td>
         </tr>
         <tr>
             <td style="text-align: right;" colspan="2">V. Gravada L.</td>
-            <td>lorem</td>
+            <td>{{venta_gravada}}</td>
         </tr>
         <tr>
             <td style="text-align: right;" colspan="2">Exonerado L.</td>
-            <td>lorem</td>
+            <td>0.00</td>
         </tr>
         <tr>
             <td style="text-align: right;" colspan="2">15% ISV L.</td>
-            <td>lorem</td>
+            <td>{{isv}}</td>
         </tr>
         <tr>
             <td style="text-align: right;" colspan="2">18% ISV L.</td>
-            <td>lorem</td>
+            <td>{{impBebida}}</td>
         </tr>
         <tr>
             <td style="text-align: right;" colspan="2">Total L.</td>
-            <td>lorem</td>
+            <td>{{total}}</td>
         </tr>
         <tr>
             <td style="text-align: right;" colspan="2">
@@ -120,7 +122,7 @@
         </tr>
         <tr>
             <td style="text-align: right;" colspan="2">Efectivo</td>
-            <td>L. </td>
+            <td>L. {{recibido}}</td>
         </tr>
         <tr>
             <td style="text-align: right;" colspan="2">
@@ -130,7 +132,7 @@
         </tr>
         <tr>
             <td style="text-align: right;" colspan="2">Cambio</td>
-            <td>L.</td>
+            <td>L. {{cambio}}</td>
         </tr>
         
     </table>

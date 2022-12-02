@@ -1,6 +1,6 @@
 const { Router } = require('express');
 const { check, body } = require('express-validator');
-const { getProductos, getProducto, postProducto, deleteProducto, putProducto, postCombo, postPromocion } = require('../../controllers/catalogo_ventas/producto.controllers');
+const { getProductos, getProducto, postProducto, deleteProducto, putProducto, postCombo, postPromocion, getCatalogoProducto, getComboProducto, getPromoProducto } = require('../../controllers/catalogo_ventas/producto.controllers');
 const { getReporteCombo } = require('../../controllers/catalogo_ventas/reporteria/combo.report.controller');
 const { getReporteProducto } = require('../../controllers/catalogo_ventas/reporteria/producto.report.controller');
 const { getReportePromocion } = require('../../controllers/catalogo_ventas/reporteria/promocion.report.controller');
@@ -67,8 +67,16 @@ router.delete('/:id',[
     validarCampos
 ],deleteProducto);
 
+// Reportería
 router.post('/reporteria/producto', getReporteProducto);
 router.post('/reporteria/combo', getReporteCombo);
 router.post('/reporteria/promocion', getReportePromocion);
+
+// Catalogo-producto
+router.get('/catalogo/:id_producto', getCatalogoProducto)
+// Combo-producto
+router.get('/combo/:id_producto', getComboProducto)
+// Promocion-producto
+router.get('/promo/:id_producto', getPromoProducto)
 
 module.exports = router

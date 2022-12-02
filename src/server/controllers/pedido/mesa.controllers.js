@@ -361,9 +361,12 @@ const postDetalle = async (req = request, res = response) => {
 
             let totalImpuesto = 0;
 
-            if(!producto.EXENTA) {
+            if(producto.producto.EXENTA == false) {
 
                 totalImpuesto = parseFloat(precio) * (parseFloat(producto.producto.PORCENTAJE/100));
+
+            } else {
+              precio = parseFloat(producto.producto.PRECIO)
             }
 
             subTotal += (parseFloat(precio.toFixed(2)))*producto.cantidad
@@ -1112,10 +1115,6 @@ const putDetalle = async (req = request, res = response) => {
 
     // Creamos registro en el historial
     const detalleAnterior = await ViewDetallePedido.findByPk(id_detalle);
-    const historial = await DetalleHistorial.create({
-      ID_DETALLE: id_detalle,
-      PRODUCTO_ANTERIOR: `${detalleAnterior.NOMBRE_PRODUCTO} x ${detalleAnterior.CANTIDAD}`
-    })
 
     // Asignar el subtotal actual
     let subTotal = parseFloat(pedido.SUBTOTAL)
@@ -1124,10 +1123,14 @@ const putDetalle = async (req = request, res = response) => {
 
     let totalImpuesto = 0;
 
-    if(!producto.EXENTA) {
+    if(producto.EXENTA == false) {
       
       totalImpuesto = parseFloat(precio) * (parseFloat(producto.PORCENTAJE/100));
       
+    } else {
+
+      precio = parseFloat(producto.PRECIO)
+
     }
     
     // Asignar el precio actual
@@ -1174,12 +1177,6 @@ const putDetalle = async (req = request, res = response) => {
       ok: true,
       msg: 'El producto ha sido actualizado con éxito'
     })
-
-    setTimeout(() => {
-
-      emit("historial", {id_detalle, historial})
-      
-    }, 1500);
 
   } catch (error) {
     console.log(error);
