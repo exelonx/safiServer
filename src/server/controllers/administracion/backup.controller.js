@@ -1,4 +1,5 @@
 const { request, response } = require('express');
+
 const { Op } = require('sequelize');
 const mysql = require('mysql2')
 
@@ -118,14 +119,24 @@ const postBackup = async (req = request, res = response) => {
         res.status(500).json({
             msg: error.message
         })
-    }
-    
+    }       
         
-        
+}
+
+const putBackup = async(req, res = response) =>{
+
+    const {backup} = req.files;
+
+    res.json({
+        ok: true,
+        msg: `Backup ${backup.name} actualizado con éxito.`
+    })
+
 }
 
 module.exports = {
     getBackup,
     validarConexion,
-    postBackup
+    postBackup,
+    putBackup
 }

@@ -1,9 +1,10 @@
 const { Router } = require('express');
 const { check, body } = require('express-validator');
-const { postBackup, getBackup, validarConexion } = require('../../controllers/administracion/backup.controller');
+const { postBackup, getBackup, validarConexion, putBackup } = require('../../controllers/administracion/backup.controller');
 
 const { generarBackup } = require('../../jobs/db-backup');
 const { validarEspacio, validarDobleEspacio, validarCampos } = require('../../middlewares');
+const { validarBackup } = require('../../middlewares/validar-backup');
 
 const router = Router();
 
@@ -15,5 +16,9 @@ router.post('/subir',[
   check("ubicacion", "la ubicacion del backup sólo permite letras").if(body('ubicacion').exists()).if(body('ubicaciono').not().equals('')).isAlpha("es-ES", {ignore: '/'}),
   validarCampos
 ], postBackup)
+
+router.put('/',[
+  validarBackup
+], putBackup)
 
 module.exports = router
