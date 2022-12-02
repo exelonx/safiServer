@@ -6,35 +6,22 @@ const { eventBitacora } = require('../../helpers/event-bitacora');
 const { generarBackup } = require('../../jobs/db-backup');
 
 const getBackup = async (req = request, res = response) => {
-
-    const {servidor ="", usuario = "", contrasena = "", base = "" } = req.body;
     
     try {
 
-        const connection = mysql.createConnection({
-            host: process.env.MYSQL_HOST,
-            user: process.env.SQL_USER,
-            password: process.env.SQL_PASSWORD,
-            database: process.env.ESQUEMA
-        });
 
         const host = process.env.MYSQL_HOST;
         const user = process.env.SQL_USER;
         const password = process.env.SQL_PASSWORD;
         const database = process.env.ESQUEMA;
-        
-        connection.query(`SELECT CONVERT(SUM(data_length + index_length)/1048576, DECIMAL(6,2)) "SIZE(MB)" FROM
-        information_schema.tables WHERE table_schema = "${process.env.ESQUEMA}"`,
-        function(err, result, fields){
+
             res.json({
                 ok: true,
-                result,
                 host,
                 user,
                 password,
                 database
             })
-        })
         
     } catch (error) {
         console.log(error);
@@ -48,7 +35,7 @@ const getBackup = async (req = request, res = response) => {
 
 const validarConexion = async (req = request, res = response) => {
 
-    const {servidor ="", usuario = "", contrasena = "", base = "" } = req.body;
+    const {servidor ="", usuario = "", contrasena = "", base = "" } = req.query;
     
     try {
 
@@ -58,10 +45,25 @@ const validarConexion = async (req = request, res = response) => {
                 msg: "¡Conexión Fállida!"
             })
         }else{
-            return res.status(200).json({
-                ok: true,
-                msg: "¡Conexión Exitosa!"
+
+            const connection = mysql.createConnection({
+                host: process.env.MYSQL_HOST,
+                user: process.env.SQL_USER,
+                password: process.env.SQL_PASSWORD,
+                database: process.env.ESQUEMA
+            });
+            
+            connection.query(`SELECT CONVERT(SUM(data_length + index_length)/1048576, DECIMAL(6,2)) Tamano FROM
+            information_schema.tables WHERE table_schema = "${process.env.ESQUEMA}"`,
+            function(err, tamano, fields){
+                const result = tamano[0].Tamano
+                res.json({
+                    ok: true,
+                    result,
+                    msg: "¡Conexión Exitosa!"
+                })
             })
+
         }
         
     } catch (error) {
