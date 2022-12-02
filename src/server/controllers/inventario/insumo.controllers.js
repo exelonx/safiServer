@@ -109,7 +109,7 @@ const postInsumo = async (req = request, res = response) => {
                 msg: `La cantidad máxima no puede ser inferior o igual a la mínima.`
             })
         }
- 
+
         // Construir modelo
         const nuevoInsumo = await Insumo.create({
             NOMBRE: nombre,
@@ -143,6 +143,13 @@ const putInsumo = async (req = request, res = response) => {
     const { nombre, id_unidad = "", cantidad_maxima = "", cantidad_minima = "", quienModifico = "" } = req.body;
 
     try {
+
+        if(cantidad_maxima <= cantidad_minima) {
+            return res.status(400).json({
+                ok: false,
+                msg: `La cantidad máxima no puede ser inferior o igual a la mínima.`
+            })
+        }
 
         const insumoAnterior = await Insumo.findByPk(id_insumo)
 
