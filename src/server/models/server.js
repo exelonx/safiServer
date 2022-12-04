@@ -4,6 +4,7 @@ const cron = require('node-cron');
 require('dotenv').config();
 const colors = require('colors/safe');
 const path = require('path');
+const fileUpload = require('express-fileupload');
 
 // Sockets
 const socket = require('../sockets/socket');
@@ -172,6 +173,12 @@ class Server {
         console.log()
         // Imagenes
         this.app.use('/imgs', express.static(path.join(process.cwd()+'/src/server/public/imgs')))
+
+        // Carga de archivos
+        this.app.use(fileUpload({
+            useTempFiles : true,
+            tempFileDir : '/tmp/'
+        }));
     }
 
     routes () {
