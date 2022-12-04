@@ -1,5 +1,5 @@
 const { request, response } = require('express');
-const { Op, ForeignKeyConstraintError, DATE } = require('sequelize');
+const { Op, ForeignKeyConstraintError, DATE, UniqueConstraintError } = require('sequelize');
 
 const Parametro = require("../../models/seguridad/parametro");
 const { eventBitacora } = require('../../helpers/event-bitacora');
@@ -130,11 +130,19 @@ const postInsumo = async (req = request, res = response) => {
         } );
 
     } catch (error) {
-        console.log(error);
-        res.status(500).json({
-            ok: false,
-            msg: error.message
-        })
+        if( error instanceof UniqueConstraintError ) {
+            res.status(403).json({
+                ok: false,
+                msg: `El insumo ya existe`
+            })
+        } else {
+
+            console.log(error);
+            res.status(500).json({
+                msg: error.message
+            })
+
+        }
     }
 };
 
@@ -182,10 +190,19 @@ const putInsumo = async (req = request, res = response) => {
             msg: 'Insumo actualizado con éxito'});
 
     } catch (error) {
-        console.log(error);
-        res.status(500).json({
-            msg: error.message
-        })
+        if( error instanceof UniqueConstraintError ) {
+            res.status(403).json({
+                ok: false,
+                msg: `El insumo ya existe`
+            })
+        } else {
+
+            console.log(error);
+            res.status(500).json({
+                msg: error.message
+            })
+
+        }
     }
     
 };
@@ -228,6 +245,7 @@ const deleteInsumo = async (req = request, res = response) => {
         });
 
     } catch (error) {
+
         if( error instanceof ForeignKeyConstraintError ) {
             res.status(403).json({
                 ok: false,

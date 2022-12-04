@@ -584,7 +584,6 @@ const deleteUnDetalle = async (req = request, res = response) => {
             TIPO_MOVIMIENTO: 'DEVOLUCIÓN'
         })   
 
-        
         // Para notificar
         const id_insumo = detalle.ID_INSUMO
         const insumo = await ViewInsumo.findByPk(id_insumo)

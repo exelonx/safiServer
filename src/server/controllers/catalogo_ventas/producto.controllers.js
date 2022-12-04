@@ -13,6 +13,8 @@ const PromocionProducto = require('../../models/catalogo-ventas/promocionProduct
 const ViewCatalogoProducto = require('../../models/catalogo-ventas/sql-vistas/view_catalogo_producto');
 const ViewComboProducto = require('../../models/catalogo-ventas/sql-vistas/view_comboProducto');
 const ViewPromocionProducto = require('../../models/catalogo-ventas/sql-vistas/view_promocionProducto');
+const ViewInsumoProducto = require('../../models/inventario/sql-vista/view_insumoProducto');
+const ViewCatalogoVenta = require('../../models/pedido/sql-vista/view_catalogo_ventas');
 
 // Llamar todas las preguntas paginadas
 const getProductos = async (req = request, res = response) => {
@@ -385,13 +387,22 @@ const deleteProducto = async (req = request, res = response) => {
         // Llamar el producto a borrar
         const producto = await Producto.findByPk( id );
 
-        // Extraer el nombre de la producto
+        // Extraer el nombre del producto
         const { NOMBRE } = producto;
 
         // Borrar producto
         producto.update({
             ESTADO: false
         })
+
+        // Eliminarlo de combos y promociones
+        await PromocionProducto.destroy({where: {
+            ID_PRODUCTO: producto.id
+        }})
+
+        await ComboProducto.destroy({where: {
+            ID_PRODUCTO: producto.id
+        }})
 
         if(producto.ID_TIPO_PRODUCTO == 1) {
             mensaje = 'EL PRODUCTO'
@@ -491,6 +502,625 @@ const getPromoProducto = async (req = request, res = response) => {
     }
 }
 
+const putInfoProducto = async (req = request, res = response) => {
+
+    const {id_producto} = req.params;
+    const {
+        nombre = "", 
+        precio = "", 
+        id_impuesto = "", 
+        descripcion = "", 
+        estado = "", 
+        bebida = "", 
+        exento = "", 
+        fecha_inicio = "", 
+        fecha_final = "",
+        id_usuario = ""
+    } = req.body;
+
+    try {
+
+        const productoModelo = await Producto.findByPk(id_producto);
+
+        if(!productoModelo) {
+            return res.status(404).json({
+                ok: false,
+                msg: 'No existe este producto'
+            })
+        }
+
+        // Si llega con cambios se registran cambios y manda correo
+        if(!((productoModelo.NOMBRE == nombre || nombre === "") 
+            && (productoModelo.PRECIO == precio || precio === "") 
+            && (productoModelo.ID_IMPUESTO == id_impuesto || id_impuesto === "") 
+            && (productoModelo.DESCRIPCION == descripcion || descripcion === "")
+            && (productoModelo.SIN_ESTADO == estado || estado === "")
+            && (productoModelo.BEBIDA == bebida || bebida === "")
+            && (productoModelo.EXENTA == exento || exento === "")
+            && (productoModelo.FECHA_INICIO == fecha_inicio || fecha_inicio === "")
+            && (productoModelo.FECHA_FINAL == fecha_final || fecha_final === ""))) {
+
+            let tipoProducto = "";
+            if(productoModelo.ID_TIPO_PRODUCTO === 1) {
+                tipoProducto = 'AL PRODUCTO ' + productoModelo.NOMBRE
+            }
+            if(productoModelo.ID_TIPO_PRODUCTO === 2) {
+                tipoProducto = 'AL COMBO ' +productoModelo.NOMBRE
+            }
+            if(productoModelo.ID_TIPO_PRODUCTO === 3) {
+                tipoProducto = 'A LA PROMOCION ' +productoModelo.NOMBRE
+            }
+              
+            eventBitacora(
+              new Date(),
+              id_usuario,
+              18,
+              "ACTUALIZACION",
+              `DATOS ACTUALIZADOS ${tipoProducto}: ${
+                nombre !== "" && productoModelo.NOMBRE != nombre
+                  ? "`NOMBRE`"
+                  : ""
+              }
+            ${
+              estado !== "" && productoModelo.SIN_ESTADO != estado
+                ? "`SIN_ESTADO`"
+                : ""
+            } ${
+                id_impuesto !== "" && productoModelo.ID_IMPUESTO != id_impuesto
+                  ? "`IMPUESTO`"
+                  : ""
+              } ${
+                precio !== "" && productoModelo.PRECIO != precio
+                  ? "`PRECIO`"
+                  : ""
+              } ${
+                descripcion !== "" && productoModelo.DESCRIPCION != descripcion
+                  ? "`DESCRIPCION`"
+                  : ""
+              } ${
+                bebida !== "" && productoModelo.BEBIDA != bebida
+                  ? "`ES_BEBIDA`"
+                  : ""
+              } ${
+                exento !== "" && productoModelo.EXENTA != exento
+                  ? "`ES_EXENTO`"
+                  : ""
+              } ${
+                fecha_inicio !== "" && productoModelo.FECHA_INICIO != fecha_inicio
+                  ? "`FECHA_INICIO`"
+                  : ""
+              } ${
+                fecha_final !== "" && productoModelo.FECHA_FINAL != fecha_final
+                  ? "`FECHA_FINAL`"
+                  : ""
+              }`
+            );
+
+        }
+
+        // Actualizar db Usuario
+        await productoModelo.update({
+            NOMBRE: nombre !== "" ? nombre : productoModelo.NOMBRE,
+            PRECIO: precio !== "" ? precio : productoModelo.PRECIO,
+            ID_IMPUESTO: id_impuesto !== "" ? id_impuesto : productoModelo.ID_IMPUESTO,
+            DESCRIPCION: descripcion !== "" ? descripcion : productoModelo.DESCRIPCION,
+            SIN_ESTADO: estado !== "" ? estado : productoModelo.SIN_ESTADO,
+            BEBIDA: bebida !== "" ? bebida : productoModelo.BEBIDA,
+            EXENTA: exento !== "" ? exento : productoModelo.EXENTA,
+            FECHA_INICIO: fecha_inicio !== "" ? fecha_inicio : productoModelo.FECHA_INICIO,
+            FECHA_FINAL: fecha_final !== "" ? fecha_final : productoModelo.FECHA_FINAL,
+            MODIFICADO_POR: id_usuario
+        })
+
+        let tipoProducto = "";
+        if(productoModelo.ID_TIPO_PRODUCTO === 1) {
+            tipoProducto = 'El producto'
+        }
+        if(productoModelo.ID_TIPO_PRODUCTO === 2) {
+            tipoProducto = 'El combo'
+        }
+        if(productoModelo.ID_TIPO_PRODUCTO === 3) {
+            tipoProducto = 'La promoción'
+        }
+
+        return res.json({
+            ok: true,
+            msg: `${tipoProducto} ha sido actualizado con éxito`
+        });
+        
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: error.message
+        })
+    }
+
+}
+
+const putInsumoProducto = async (req = request, res = response) => {
+    const { id_insumoDetalle } = req.params;
+    const { nuevo_insumo = 0, nueva_cantidad = 0.00, id_usuario = "" } = req.body;
+
+    try {
+        
+        // Instanciar el insumo producto
+        const insumoProducto = await InsumoProducto.findByPk(id_insumoDetalle);
+
+        // Instanciar el producto
+        const producto = await Producto.findByPk(insumoProducto.ID_PRODUCTO);
+
+        if( insumoProducto.ID_INSUMO == nuevo_insumo && nueva_cantidad == insumoProducto.CANTIDAD) {
+            const nuevoInsumo = await ViewInsumoProducto.findByPk(id_insumoDetalle)
+
+            let nombreInsumo = nuevoInsumo.NOMBRE_INSUMO;
+            return res.json({
+                ok: true,
+                msg: 'No hay cambios',
+                nombreInsumo
+            })
+        }
+
+        // Actualizar quién modifico
+        await producto.update({
+            MODIFICADO_POR: id_usuario
+        })
+
+        eventBitacora(new Date, id_usuario, 18, 'ACTUALIZACION', `MODIFICACIÓN EN LOS INSUMOS DE ${producto.NOMBRE}`); 
+
+        // Actualizar producto
+        await insumoProducto.update({
+            ID_INSUMO: nuevo_insumo,
+            CANTIDAD: nueva_cantidad
+        })
+
+        const nuevoInsumo = await ViewInsumoProducto.findByPk(id_insumoDetalle)
+
+        let nombreInsumo = nuevoInsumo.NOMBRE_INSUMO;
+
+        return res.json({
+            ok: true,
+            msg: 'Actualización del insumo con éxito',
+            nombreInsumo
+        })
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: error.message
+        })
+    }
+}
+
+const putCatalogoProducto = async (req = request, res = response) => {
+    const { id_catalogoProducto } = req.params;
+    const { nueva_categoria = 0, id_usuario = "" } = req.body;
+
+    try {
+        
+        // Instanciar el insumo producto
+        const categoriaProducto = await CatalogoProducto.findByPk(id_catalogoProducto);
+
+        // Instanciar el producto
+        const producto = await Producto.findByPk(categoriaProducto.ID_PRODUCTO);
+
+        if( categoriaProducto.ID_CATALOGO == nueva_categoria) {
+            const nuevaCategoria = await ViewCatalogoProducto.findByPk(id_catalogoProducto)
+            let nombreCategoria = nuevaCategoria.NOMBRE_CATALOGO
+            return res.json({
+                ok: true,
+                msg: 'No hay cambios',
+                nombreCategoria
+            })
+        }
+
+        // Actualizar quién modifico
+        await producto.update({
+            MODIFICADO_POR: id_usuario
+        })
+
+        eventBitacora(new Date, id_usuario, 18, 'ACTUALIZACION', `MODIFICACIÓN EN LAS CATEGORÍAS DE ${producto.NOMBRE}`); 
+
+        // Actualizar producto
+        await categoriaProducto.update({
+            ID_CATALOGO: nueva_categoria
+        })
+
+        const nuevaCategoria = await ViewCatalogoProducto.findByPk(id_catalogoProducto)
+        let nombreCategoria = nuevaCategoria.NOMBRE_CATALOGO
+        return res.json({
+            ok: true,
+            msg: 'Actualización de la categoría con éxito',
+            nombreCategoria
+        })
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: error.message
+        })
+    }
+}
+
+const putMasCatalogoProducto = async (req = request, res = response) => {
+    try {
+        const {id_producto} = req.params
+        const {id_usuario = "", arregloCatalogo = []} = req.body
+        let catalogoProductoMapped = "";
+
+        catalogoProductoMapped = await arregloCatalogo.map( catalogo => {
+            return {
+                ID_PRODUCTO: id_producto,
+                ID_CATALOGO: catalogo
+            }
+        })
+
+        await CatalogoProducto.bulkCreate(catalogoProductoMapped)
+
+        const nuevoCatalogoProducto = await ViewCatalogoProducto.findAll({where: {ID_PRODUCTO: id_producto}})
+
+        const producto = await Producto.findByPk(id_producto);
+
+        producto.update({
+            MODIFICADO_POR: id_usuario
+        })
+
+        eventBitacora(new Date, id_usuario, 18, 'ACTUALIZACION', `INSERCIÓN EN LAS CATEGORÍAS DE ${producto.NOMBRE}`); 
+
+        return res.json({
+            ok: true,
+            msg: 'Actualización de la categoría con éxito',
+            nuevoCatalogoProducto
+        })
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: error.message
+        })
+    }
+}
+
+const putMasInsumoProducto = async (req = request, res = response) => {
+    try {
+        const {id_producto} = req.params
+        const {id_usuario = "", arregloInsumo = []} = req.body
+        let insumoProductoMapped = "";
+
+        insumoProductoMapped = await arregloInsumo.map( insumo => {
+            return {
+                ID_PRODUCTO: id_producto,
+                ID_INSUMO: insumo.insumo,
+                CANTIDAD: insumo.cantidad
+            }
+        })
+
+        await InsumoProducto.bulkCreate(insumoProductoMapped)
+
+        const nuevoInsumoProducto = await ViewInsumoProducto.findAll({where: {ID_PRODUCTO: id_producto}})
+
+        const producto = await Producto.findByPk(id_producto);
+
+        producto.update({
+            MODIFICADO_POR: id_usuario
+        })
+
+        eventBitacora(new Date, id_usuario, 18, 'ACTUALIZACION', `INSERCIÓN DE NUEVO INSUMOS EN ${producto.NOMBRE}`); 
+
+        return res.json({
+            ok: true,
+            msg: 'Actualización del producto con éxito',
+            nuevoInsumoProducto
+        })
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: error.message
+        })
+    }
+}
+
+const deleteUnInsumo = async (req = request, res = response) => {
+    const {idInsumoProducto} = req.params
+    const {id_usuario} = req.body
+    try {
+        const insumoProducto = await InsumoProducto.findByPk(idInsumoProducto);
+        const producto = await Producto.findByPk(insumoProducto.ID_PRODUCTO);
+        await producto.update({
+            MODIFICADO_POR: id_usuario
+        });
+
+        await insumoProducto.destroy();
+
+        eventBitacora(new Date, id_usuario, 18, 'ACTUALIZACION', `ELIMINACIÓN EN LOS INSUMOS DE ${producto.NOMBRE}`); 
+
+        // Responder
+        res.json({
+            ok:true,
+            msg: 'Insumo ha sido eliminado del producto'
+        })
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: error.message
+        })
+    }
+}
+
+const deleteUnaCategoria = async (req = request, res = response) => {
+    const {idCategoriaProducto} = req.params
+    const {id_usuario} = req.body
+    try {
+        const catalogoProducto = await CatalogoProducto.findByPk(idCategoriaProducto);
+        const producto = await Producto.findByPk(catalogoProducto.ID_PRODUCTO);
+        await producto.update({
+            MODIFICADO_POR: id_usuario
+        });
+
+        await catalogoProducto.destroy();
+
+        eventBitacora(new Date, id_usuario, 18, 'ACTUALIZACION', `ELIMINACIÓN EN LAS CATEGORÍAS DE ${producto.NOMBRE}`); 
+
+        // Responder
+        res.json({
+            ok:true,
+            msg: 'La Categoría ha sido eliminada del producto'
+        })
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: error.message
+        })
+    }
+}
+
+const putMasComboProducto = async (req = request, res = response) => {
+    try {
+        const {id_producto} = req.params
+        const {id_usuario = "", arregloProducto = []} = req.body
+        let comboProductoMapped = "";
+
+        comboProductoMapped = await arregloProducto.map( producto => {
+            return {
+                ID_PRODUCTO: producto.producto,
+                ID_COMBO: id_producto,
+                CANTIDAD: producto.cantidad
+            }
+        })
+
+        await ComboProducto.bulkCreate(comboProductoMapped)
+
+        const nuevoComboProducto = await ViewComboProducto.findAll({where: {ID_COMBO: id_producto}})
+
+        const producto = await Producto.findByPk(id_producto);
+
+        producto.update({
+            MODIFICADO_POR: id_usuario
+        })
+
+        eventBitacora(new Date, id_usuario, 18, 'ACTUALIZACION', `INSERCIÓN DE NUEVOS PRODUCTOS EN ${producto.NOMBRE}`); 
+
+        return res.json({
+            ok: true,
+            msg: 'Actualización del combo con éxito',
+            nuevoComboProducto
+        })
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: error.message
+        })
+    }
+}
+
+const deleteComboProducto = async (req = request, res = response) => {
+    const {idComboProducto} = req.params
+    const {id_usuario} = req.body
+    try {
+        const comboProducto = await ComboProducto.findByPk(idComboProducto);
+        const producto = await Producto.findByPk(comboProducto.ID_COMBO);
+        await producto.update({
+            MODIFICADO_POR: id_usuario
+        });
+
+        await comboProducto.destroy();
+
+        eventBitacora(new Date, id_usuario, 18, 'ACTUALIZACION', `ELIMINACIÓN EN LOS PRODUCTOS DE ${producto.NOMBRE}`); 
+
+        // Responder
+        res.json({
+            ok:true,
+            msg: 'El producto ha sido eliminado del combo'
+        })
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: error.message
+        })
+    }
+}
+
+const putComboProducto = async (req = request, res = response) => {
+    const { id_comboDetalle } = req.params;
+    const { nuevo_producto = 0, nueva_cantidad = 0.00, id_usuario = "" } = req.body;
+
+    try {
+        
+        // Instanciar el insumo producto
+        const comboProducto = await ComboProducto.findByPk(id_comboDetalle);
+
+        // Instanciar el producto
+        const producto = await Producto.findByPk(comboProducto.ID_COMBO);
+
+        if( comboProducto.ID_PRODUCTO == nuevo_producto && nueva_cantidad == comboProducto.CANTIDAD) {
+            const nuevoInsumo = await ViewComboProducto.findByPk(id_comboDetalle)
+
+            let nombreCombo = nuevoInsumo.NOMBRE_INSUMO;
+            return res.json({
+                ok: true,
+                msg: 'No hay cambios',
+                nombreCombo
+            })
+        }
+
+        // Actualizar quién modifico
+        await producto.update({
+            MODIFICADO_POR: id_usuario
+        })
+
+        eventBitacora(new Date, id_usuario, 18, 'ACTUALIZACION', `MODIFICACIÓN EN LOS PRODUCTOS DE ${producto.NOMBRE}`); 
+
+        // Actualizar producto
+        await comboProducto.update({
+            ID_PRODUCTO: nuevo_producto,
+            CANTIDAD: nueva_cantidad
+        })
+
+        const nuevoCombo = await ViewComboProducto.findByPk(id_comboDetalle)
+
+        let nombreCombo = nuevoCombo.NOMBRE_PRODUCTO;
+
+        return res.json({
+            ok: true,
+            msg: 'Actualización del producto del combo con éxito',
+            nombreCombo
+        })
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: error.message
+        })
+    }
+}
+
+const putMasPromocionProducto = async (req = request, res = response) => {
+    try {
+        const {id_producto} = req.params
+        const {id_usuario = "", arregloProducto = []} = req.body
+        let promoProductoMapped = "";
+
+        promoProductoMapped = await arregloProducto.map( producto => {
+            return {
+                ID_PRODUCTO: producto.producto,
+                ID_PROMOCION: id_producto,
+                CANTIDAD: producto.cantidad
+            }
+        })
+
+        await PromocionProducto.bulkCreate(promoProductoMapped)
+
+        const nuevoPromoProducto = await ViewPromocionProducto.findAll({where: {ID_PROMOCION: id_producto}})
+
+        const producto = await Producto.findByPk(id_producto);
+
+        producto.update({
+            MODIFICADO_POR: id_usuario
+        })
+
+        eventBitacora(new Date, id_usuario, 18, 'ACTUALIZACION', `INSERCIÓN DE NUEVOS PRODUCTOS EN ${producto.NOMBRE}`); 
+
+        return res.json({
+            ok: true,
+            msg: 'Actualización del combo con éxito',
+            nuevoPromoProducto
+        })
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: error.message
+        })
+    }
+}
+
+const putPromocionProducto = async (req = request, res = response) => {
+    const { id_promoDetalle } = req.params;
+    const { nuevo_producto = 0, nueva_cantidad = 0.00, id_usuario = "" } = req.body;
+
+    try {
+        
+        // Instanciar el insumo producto
+        const promoProducto = await PromocionProducto.findByPk(id_promoDetalle);
+
+        // Instanciar el producto
+        const producto = await Producto.findByPk(promoProducto.ID_PROMOCION);
+
+        if( promoProducto.ID_PRODUCTO == nuevo_producto && nueva_cantidad == promoProducto.CANTIDAD) {
+            const nuevoPromo = await ViewPromocionProducto.findByPk(id_promoDetalle)
+
+            let nombrePromo = nuevoPromo.NOMBRE_PRODUCTO;
+            return res.json({
+                ok: true,
+                msg: 'No hay cambios',
+                nombrePromo
+            })
+        }
+
+        // Actualizar quién modifico
+        await producto.update({
+            MODIFICADO_POR: id_usuario
+        })
+
+        eventBitacora(new Date, id_usuario, 18, 'ACTUALIZACION', `MODIFICACIÓN EN LOS PRODUCTOS DE ${producto.NOMBRE}`); 
+
+        // Actualizar producto
+        await promoProducto.update({
+            ID_PRODUCTO: nuevo_producto,
+            CANTIDAD: nueva_cantidad
+        })
+
+        const nuevoPromo = await ViewPromocionProducto.findByPk(id_promoDetalle)
+
+        let nombrePromo = nuevoPromo.NOMBRE_PRODUCTO;
+
+        return res.json({
+            ok: true,
+            msg: 'Actualización del producto de la promoción con éxito',
+            nombrePromo
+        })
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: error.message
+        })
+    }
+}
+
+const deletePromoProducto = async (req = request, res = response) => {
+    const {idPromoProducto} = req.params
+    const {id_usuario} = req.body
+    try {
+        const promoProducto = await PromocionProducto.findByPk(idPromoProducto);
+        const producto = await Producto.findByPk(promoProducto.ID_PROMOCION);
+        await producto.update({
+            MODIFICADO_POR: id_usuario
+        });
+
+        await promoProducto.destroy();
+
+        eventBitacora(new Date, id_usuario, 18, 'ACTUALIZACION', `ELIMINACIÓN EN LOS PRODUCTOS DE ${producto.NOMBRE}`); 
+
+        // Responder
+        res.json({
+            ok:true,
+            msg: 'El producto ha sido eliminado de la promoción'
+        })
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: error.message
+        })
+    }
+}
+
+
 module.exports = {
     getProductos,
     getProducto,
@@ -501,5 +1131,18 @@ module.exports = {
     deleteProducto,
     getCatalogoProducto,
     getComboProducto,
-    getPromoProducto
+    getPromoProducto,
+    putInfoProducto,
+    putInsumoProducto,
+    putCatalogoProducto,
+    putMasCatalogoProducto,
+    putMasInsumoProducto,
+    deleteUnInsumo,
+    deleteUnaCategoria,
+    putComboProducto,
+    putMasComboProducto,
+    deleteComboProducto,
+    putPromocionProducto,
+    putMasPromocionProducto,
+    deletePromoProducto
 }
