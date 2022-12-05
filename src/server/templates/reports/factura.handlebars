@@ -31,51 +31,54 @@
         }
     </style>
     <div class="center">
+        <img src="https://i.ibb.co/yXDNP9G/Dr-Burger-CBGW.png" width="80px" alt="">
         <p>DR. BURGER</p>
         <p>"SU RECETA PARA EL HAMBRE"</p>
         <p>De: Sthepanie Anai Romero López</p>
-        <p>R.T.N 0511991036210</p>
-        <p>Cel: 9992-2477</p>
-        <p>E-mail: s.romero23@hotmail.com</p>
+        <p>R.T.N {{rtnVALOR}}</p>
+        <p>Cel: {{celularValor}}</p>
+        <p>E-mail: {{correoValor}}</p>
         <p>B° Mercedes Casa No. 53, Contiguo a Ferretería Pineda, <br> Gracias, Lempira.</p>
     </div>
     
-    <p>Factura {{numero}}</p>
+    <p>Factura {{facturaMapped.NUM_FACTURA}}</p>
 
-    <p>CAI: {{CAI}}</p>
-    <br>
-    <p>Rango autorizado: {{RANGO_MINIMO}} a {{RANGO_MAXIMO}}</p>
-    <p>Fecha límite de emisión: {{FECHA_LIMITE_EMISION}}</p>
+    <p>CAI: {{facturaMapped.CAI}}</p>
+    <p>Rango autorizado:</p>
+    <p>{{facturaMapped.RANGO_MINIMO}} a {{facturaMapped.RANGO_MAXIMO}}</p>
+    <p>Fecha límite de emisión: {{facturaMapped.FECHA_LIMITE_EMISION}}</p>
 
     <br>
-    <p>Cliente: {{cliente}}</p>
-    <p>RTN: {{RTN}}</p>
-    <p>Dirección: {{direccion}}</p>
-    <br>
-    
+    <p>Cliente: {{facturaMapped.NOMBRE}}</p>
+    <p>RTN: {{facturaMapped.RTN_CLIENTE}}</p>
+    <p>Dirección: {{facturaMapped.DIRECCION}}</p>
     <p>Datos de Adquiriente Exonerado</p>
-    <p>Orden de Compra Exenta #</p>
-    <p>Const. Reg. de Exonerados #</p>
-    <p>No. Reg. S. A. G.</p>
+    <p>Orden de Compra Exenta # {{facturaMapped.ORDEN_COMPRA_EXENTA}}</p>
+    <p>Const. Reg. de Exonerados # {{facturaMapped.CONSTANCIA_REGISTRO_EXONERADO}}</p>
+    <p>No. Reg. S. A. G. {{facturaMapped.NUMERO_REGISTROS_SAG}}</p>
     <br>
-    <p>Detalle del pedido</p>
+    <p style="text-align: center;">Detalle del pedido</p>
     <table>
         <tr>
             <th>Descripción</th>
             <th>Cant x Precio</th>
             <th>Gravada</th>
         </tr>
+
+        <hr>
+
         {{#each detalle}}
+
         <tr>
-            <td>
-                <hr>{{NOMBRE_PRODUCTO}} 
+            <td style="text-align: center;">
+                {{NOMBRE_PRODUCTO}} 
             </td>
             
-            <td>
-                <hr>{{CANTIDAD}} x {{PRECIO_DETALLE}}
+            <td style="text-align: center;">
+                {{CANTIDAD}} x {{PRECIO_DETALLE}}
             </td>
-            <td>
-                <hr>{{PRECIO_DETALLE}}
+            <td style="text-align: right;">
+                {{PRECIO_DETALLE}}
             </td>
 
         </tr>
@@ -84,35 +87,41 @@
             <td style="text-align: right;" colspan="2">
                 <hr>
             </td>
-            <td><hr></td>
+            <td>
+                <hr>
+            </td>
         </tr>
         <tr>
             <td style="text-align: right;" colspan="2">Descuento y Rebajas Otorgadas</td>
-            <td>{{descuento}}</td>
+            <td style="text-align: right;">{{facturaMapped.DESCUENTO_REBAJAS}}</td>
         </tr>
         <tr>
             <td style="text-align: right;" colspan="2">V. Exenta L.</td>
-            <td>{{venta_exenta}}</td>
+            <td style="text-align: right;">{{facturaMapped.VENTA_EXENTA}}</td>
         </tr>
         <tr>
             <td style="text-align: right;" colspan="2">V. Gravada L.</td>
-            <td>{{venta_gravada}}</td>
+            <td style="text-align: right;">{{facturaMapped.VENTA_GRAVADA}}</td>
         </tr>
         <tr>
             <td style="text-align: right;" colspan="2">Exonerado L.</td>
-            <td>0.00</td>
+            <td style="text-align: right;">{{facturaMapped.EXONERADO}}</td>
         </tr>
         <tr>
             <td style="text-align: right;" colspan="2">15% ISV L.</td>
-            <td>{{isv}}</td>
+            <td style="text-align: right;">{{facturaMapped.ISV}}</td>
         </tr>
         <tr>
             <td style="text-align: right;" colspan="2">18% ISV L.</td>
-            <td>{{impBebida}}</td>
+            <td style="text-align: right;">{{facturaMapped.IMPUESTO_SOBRE_BEBIDAS_Y_ALCOHOL}}</td>
+        </tr>
+        <tr>
+            <td style="text-align: right;" colspan="2">Subtotal L.</td>
+            <td style="text-align: right;">{{facturaMapped.SUBTOTAL}}</td>
         </tr>
         <tr>
             <td style="text-align: right;" colspan="2">Total L.</td>
-            <td>{{total}}</td>
+            <td style="text-align: right;">{{facturaMapped.TOTAL}}</td>
         </tr>
         <tr>
             <td style="text-align: right;" colspan="2">
@@ -121,8 +130,8 @@
             <td><hr></td>
         </tr>
         <tr>
-            <td style="text-align: right;" colspan="2">Efectivo</td>
-            <td>L. {{recibido}}</td>
+            <td style="text-align: right;" colspan="2">{{facturaMapped.FORMA_PAGO}} L.</td>
+            <td style="text-align: right;">{{facturaMapped.RECIBIDO}}</td>
         </tr>
         <tr>
             <td style="text-align: right;" colspan="2">
@@ -131,11 +140,17 @@
             <td><hr></td>
         </tr>
         <tr>
-            <td style="text-align: right;" colspan="2">Cambio</td>
-            <td>L. {{cambio}}</td>
+            <td style="text-align: right;" colspan="2">CAMBIO L.</td>
+            <td style="text-align: right;">{{facturaMapped.CAMBIO}}</td>
         </tr>
         
     </table>
+
+    <p style="text-align: center;"><b>{{totalLetra}}</b></p>
+
+    <br>
+    <hr style="padding-bottom: 0px; margin-bottom: 0px;">
+    <p style="text-align: center;">Firma</p>
 
 
 </body>

@@ -1042,19 +1042,15 @@ const deletePedido = async (req = request, res = response) => {
 
         }
 
-        // NO SE ELIMINO LA MESA C:
-        // --------------- NOTIFICAR -----------------
-        notificar(2, mensajeReponse, `${mensajeReponse}. Motivo: ${razon}`, id_usuario, "");
-
-        // --------------------------------------------- Validar estados -------------------------------------
-
         // Instanciar todos los pedidos de la mesa
         const pedidosMesa = await Pedido.findAll({
             order: [['ID_ESTADO', 'DESC']],       //El último siempre dira en que estado esta la orden
             where: { ID_MESA: id_mesa },
         });
 
-        let idEstadoMesaNuevo = 1;
+        
+        // --------------------------------------------- Validar estados -------------------------------------
+        let idEstadoMesaNuevo = 6;
 
         for await (let pedidoMesa of pedidosMesa) {
             if (pedidoMesa.ID_ESTADO === 4) {
@@ -1082,6 +1078,25 @@ const deletePedido = async (req = request, res = response) => {
         await mesa.update({
             ID_ESTADO: idEstadoMesaNuevo,
         });
+
+        // Si la mesa paso a estado 6 (Eliminado), actualizar y notificar
+        if(mesa.ID_ESTADO === 6) {
+            
+          // --------------- NOTIFICAR -----------------
+          notificar(2, `Mesa ${mesaQuizaBorre.NOMBRE} ha sido eliminada`, `La Mesa ${mesaQuizaBorre.NOMBRE} ha sido eliminada. Motivo: ${razon}`, id_usuario, "");
+
+          emit('recargar');
+
+          return res.json({
+              ok: true,
+              msg: `Mesa ${mesaQuizaBorre.NOMBRE} ha sido eliminada`
+          })
+
+        }
+
+        // NO SE ELIMINO LA MESA C:
+        // --------------- NOTIFICAR -----------------
+        notificar(2, mensajeReponse, `${mensajeReponse}. Motivo: ${razon}`, id_usuario, "");
 
         // Actualizar la mesa a los usuarios
         let idMesa = mesa.id;

@@ -39,6 +39,9 @@ const Facturacion = db.define(`TBL_MF_FACTURACION`, {
     IMPUESTO_SOBRE_BEBIDAS_Y_ALCOHOL: {
         type: DataTypes.DECIMAL
     },
+    SUBTOTAL: {
+        type: DataTypes.DECIMAL
+    },
     TOTAL: {
         type: DataTypes.DECIMAL
     },
@@ -51,7 +54,7 @@ const Facturacion = db.define(`TBL_MF_FACTURACION`, {
     ORDEN_COMPRA_EXENTA: {
         type: DataTypes.INTEGER
     },
-    NUMERO_COMPRA_SAG: {
+    NUMERO_REGISTROS_SAG: {
         type: DataTypes.STRING
     },
     CONSTANCIA_REGISTRO_EXONERADO: {

@@ -9,6 +9,15 @@ const ViewFacturacion = db.define(`VIEW_MF_FACTURACION`, {
     ID_PEDIDO: {
         type: DataTypes.INTEGER
     },
+    NOMBRE_USUARIO: {
+        type: DataTypes.STRING
+    },
+    NOMBRE_MESA: {
+        type: DataTypes.STRING
+    },
+    HORA_SOLICITUD: {
+        type: DataTypes.DATE
+    },
     ID_PAGO: {
         type: DataTypes.INTEGER
     },
@@ -20,6 +29,18 @@ const ViewFacturacion = db.define(`VIEW_MF_FACTURACION`, {
     },
     NOMBRE: {
         type: DataTypes.STRING
+    },
+    DIRECCION: {
+        type: DataTypes.STRING
+    },
+    RTN_CLIENTE: {
+        type: DataTypes.STRING
+    },
+    DNI: {
+        type: DataTypes.STRING
+    },
+    FECHA_LIMITE_EMISION: {
+        type: DataTypes.DATE
     },
     ID_DESCUENTO: {
         type: DataTypes.INTEGER
@@ -60,6 +81,9 @@ const ViewFacturacion = db.define(`VIEW_MF_FACTURACION`, {
     IMPUESTO_SOBRE_BEBIDAS_Y_ALCOHOL: {
         type: DataTypes.DECIMAL
     },
+    SUBTOTAL: {
+        type: DataTypes.DECIMAL
+    },
     TOTAL: {
         type: DataTypes.DECIMAL
     },
@@ -72,7 +96,7 @@ const ViewFacturacion = db.define(`VIEW_MF_FACTURACION`, {
     ORDEN_COMPRA_EXENTA: {
         type: DataTypes.INTEGER
     },
-    NUMERO_COMPRA_SAG: {
+    NUMERO_REGISTROS_SAG: {
         type: DataTypes.STRING
     },
     CONSTANCIA_REGISTRO_EXONERADO: {
