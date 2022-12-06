@@ -136,6 +136,7 @@ class Server {
         this.conexionDB();
         this.middlewares();
         this.routes();
+        this.manejarRutas()
         this.websocket();
 
         // Tareas programadas
@@ -164,15 +165,15 @@ class Server {
     }
 
     middlewares () {
+
+        // Directorio Público
+        this.app.use( '/', express.static(path.join(process.cwd()+'/src/server/public')) );
+
         // Cors para express
         this.app.use(cors());
 
         // Lectura del body
         this.app.use(express.json());
-
-        console.log()
-        // Imagenes
-        this.app.use('/imgs', express.static(path.join(process.cwd()+'/src/server/public/imgs')))
 
         // Carga de archivos
         this.app.use(fileUpload({
@@ -229,6 +230,12 @@ class Server {
         this.app.use(this.apiPath.sar, routerSAR)                      // SAR
         this.app.use(this.apiPath.facturacion, routerFactura)          // Facturación
         this.app.use(this.apiPath.tipoPago, routerTipoPago)            // Tipo de pago
+    }
+
+    manejarRutas() {
+        this.app.get( '*', ( req, res ) => {
+            res.sendFile( path.resolve( __dirname, '../public/index.html') )
+        })
     }
 
     async listen () {
