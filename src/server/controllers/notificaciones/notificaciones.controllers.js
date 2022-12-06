@@ -11,7 +11,7 @@ const ViewPermisoNotificacion = require('../../models/notificacion/sql-vistas/vi
 const TipoNotificacion = require('../../models/notificacion/tipo_notificacion');
 const Parametro = require('../../models/seguridad/parametro');
 const Roles = require('../../models/seguridad/rol');
-const Usuarios = require('../../models/seguridad/Usuario');
+const Usuarios = require('../../models/seguridad/usuario');
 
 const getNotificacionesCampana = async (req = request, res = response) => {
     
