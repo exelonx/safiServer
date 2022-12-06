@@ -17,12 +17,12 @@ router.post('/', [
     check('id_usuario', 'El id es obligatorio').not().isEmpty(),
     // Validaciones de la unidad_medida
     check('unidad_medida', 'La unidad de medida es obligatoria').not().isEmpty(),
-    check('unidad_medida', 'La unidad de medida debe estar en mayúscula').isUppercase(),
+    check('unidad_medida', 'La unidad de medida debe estar solo en mayúscula').isUppercase(),
     check('unidad_medida', 'Máximo de caracteres: 4').isLength({ max: 4 }),
     check("unidad_medida", "La unidad de medida sólo permite letras").isAlpha("es-ES"),
     check('nombre', 'El nombre de medida es obligatoria').not().isEmpty(),
-    check("nombre", "El nombre sólo permite letras").isAlpha("es-ES"),
-    check('nombre', 'El nombre de medida debe estar en mayúscula').isUppercase(),
+    check("nombre", "El nombre solo permite letras").isAlpha("es-ES"),
+    check('nombre', 'El nombre de medida debe estar solo en mayúscula').isUppercase(),
     check('nombre', 'Máximo de caracteres: 15').isLength({ max: 15 }),
     existeUnidad,
     validarCampos
@@ -30,11 +30,11 @@ router.post('/', [
 
 router.put('/actualizar-unidad/:id', [
     //Validaciones de la unidad_medida
-    check('unidad_medida', 'La unidad de medida debe estar en mayúscula').isUppercase(),
+    check('unidad_medida', 'La unidad de medida debe estar solo en mayúscula').isUppercase(),
     check('unidad_medida', 'Máximo de caracteres: 4').isLength({ max: 4 }),
-    check("unidad_medida", "La unidad de medida sólo permite letras").isAlpha("es-ES"),
-    check("nombre", "El nombre sólo permite letras").isAlpha("es-ES"),
-    check('nombre', 'El nombre de medida debe estar en mayúscula').isUppercase(),
+    check("unidad_medida", "La unidad de medida solo permite letras").isAlpha("es-ES"),
+    check("nombre", "El nombre solo permite letras").isAlpha("es-ES"),
+    check('nombre', 'El nombre de medida debe estar solo en mayúscula').isUppercase(),
     check('nombre', 'Máximo de caracteres: 15').isLength({ max: 15 }),
     // Validaciones de la unidad_medida
     noExisteUnidadPorId,
@@ -43,7 +43,7 @@ router.put('/actualizar-unidad/:id', [
 
 router.delete('/:id', [
     // Validar existencia
-    check('quienElimina', 'El id del usuario es obligatorio').not().isEmpty(),
+    check('quienElimina', 'El usuario que elimina es obligatorio').not().isEmpty(),
     noExisteUnidadPorId,
     validarCampos
 ], deleteUnidad);

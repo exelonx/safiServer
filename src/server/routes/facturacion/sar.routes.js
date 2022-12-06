@@ -17,17 +17,17 @@ router.post('/', [
     check('id_usuario', 'El id es obligatorio').not().isEmpty(),
     // Validaciones del CAI
     validarEspaciosCAI,
-    check('cai', 'El cai es obligatorio').not().isEmpty(),
-    check('cai', 'CAI debe estar en mayúscula').isUppercase(),
-    check('cai', 'Máximo de caracteres en el CAI: 37').isLength({ max: 37 }),
+    check('cai', 'El CAI es obligatorio').not().isEmpty(),
+    check('cai', 'CAI debe estar solo en mayúscula').isUppercase(),
+    check('cai', 'Máximo de carácteres en el CAI: 37').isLength({ max: 37 }),
     existeCAI,
     // Validaciones del rango mínimo
     check('rango_minimo', 'El rango mínimo es obligatorio').not().isEmpty(),
-    check('rango_minimo', 'Máximo de caracteres del rango mímino: 45').isLength({ max: 45 }),
+    check('rango_minimo', 'Máximo de carácteres del rango mímino: 45').isLength({ max: 45 }),
     existeRangoMinimo,
     // Validaciones del rango mínimo
     check('rango_maximo', 'El rango máximo es obligatorio').not().isEmpty(),
-    check('rango_maximo', 'Máximo de caracteres del rango máximo: 45').isLength({ max: 45 }),
+    check('rango_maximo', 'Máximo de carácteres del rango máximo: 45').isLength({ max: 45 }),
     existeRangoMaximo,
     // Validación de fechas
     check('fecha_autorizado', 'La fecha autorizada es obligatoria').not().isEmpty(),
@@ -45,22 +45,22 @@ router.put('/:id', [
     noExisteCAIPorId,
     // Validaciones del rango mínimo
     check('rango_minimo', 'Solo se permiten números en el rango mínimo').not().isNumeric(),
-    check('rango_minimo', 'Máximo de caracteres del rango mímino: 19').isLength({ max: 19 }),
+    check('rango_minimo', 'Máximo de carácteres del rango mímino: 19').isLength({ max: 19 }),
     existeRangoMinimoPut,
     // Validaciones del rango mínimo
     check('rango_maximo', 'Solo se permiten números en el rango máximo').not().isNumeric(),
-    check('rango_maximo', 'Máximo de caracteres del rango máximo: 19').isLength({ max: 19 }),
+    check('rango_maximo', 'Máximo de carácteres del rango máximo: 19').isLength({ max: 19 }),
     existeRangoMaximoPut,
     // Validaciones del número actual
     check('numero_actual', 'Solo se permiten números en el número actual').not().isNumeric(),
-    check('numero_actual', 'Máximo de caracteres del número actual: 19').isLength({ max: 19 }),
+    check('numero_actual', 'Máximo de carácteres del número actual: 19').isLength({ max: 19 }),
     existeCaiPut,
     validarCampos
 ], putSAR);
 
 router.delete('/:id', [
     // Validar existencia
-    check('quienElimina', 'El id del usuario es obligatorio').not().isEmpty(),
+    check('quienElimina', 'El usuario que elimina es obligatorio').not().isEmpty(),
     noExisteCAIPorId,
     validarCampos
 ], deleteSAR);

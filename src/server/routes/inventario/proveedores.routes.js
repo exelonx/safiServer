@@ -20,15 +20,14 @@ router.post('/', [
     validarEspaciosProveedor,
     check('nombre', 'El nombre es obligatorio').not().isEmpty(),
     check('nombre', 'Solo se permite texto').isAlpha('es-ES', {ignore: ' '}),
-    check('nombre', 'Nombre debe estar en mayúscula').isUppercase(),
+    check('nombre', 'Nombre debe estar solo en mayúscula').isUppercase(),
     check('nombre', 'Máximo de caracteres: 50').isLength({ max: 50 }),
     existeProveedor,
     // Validaciones de Teléfono
     check('telefono', 'Solo se permiten números en el teléfono').not().isNumeric(),
     check('telefono', 'Máximo de caracteres: 15').isLength({ max: 15 }),
-    /* check('telefono', 'El telefono es obligatorio').not().isEmpty(), */
     // Validación de direccion
-    check('detalle', 'La dirección debe estar en mayúscula').isUppercase(),
+    check('detalle', 'La dirección debe estar solo en mayúscula').isUppercase(),
     check('detalle', 'Máximo de caracteres: 120').isLength({ max: 120 }),
     check('detalle', 'La dirección es obligatoria').not().isEmpty(),
     check('id_municipio', 'El municipio es obligatorio').not().isEmpty(),
@@ -39,7 +38,7 @@ router.put('/actualizar-proveedor/:id', [
     //Validaciones de nombre del proveedor
     validarEspaciosProveedor,
     check('nombre', 'El nombre del proveedor deben ser solo letras').if(body('nombre').exists()).if(body('nombre').not().equals('')).isAlpha('es-ES', {ignore: ' '}),
-    check('nombre', 'El usuario debe estar en mayúscula').isUppercase(),
+    check('nombre', 'El usuario debe estar solo en mayúscula').isUppercase(),
     check('nombre', 'Máximo de caracteres: 50').isLength({ max: 50 }),
     check("nombre", "No se permite más de un espacio en blanco entre palabras").custom(validarDobleEspacio),
     //Validación si no existe el proveedor
@@ -58,7 +57,7 @@ router.put('/actualizar-proveedor/:id', [
 
 router.delete('/:id', [
     // Validar existencia
-    check('quienElimina', 'El id del usuario es obligatorio').not().isEmpty(),
+    check('quienElimina', 'El usuario que elimina es obligatorio').not().isEmpty(),
     noExisteProveedorPorId,
     validarCampos
 ], deleteProveedor);

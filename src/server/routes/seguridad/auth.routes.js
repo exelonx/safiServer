@@ -22,7 +22,7 @@ const router = Router();
 router.post('/login', [
     // Validaciones de usuario
     check('usuario', 'El usuario es obligatorio').not().isEmpty(),
-    check('usuario', 'Usuario debe estar en Mayúsculas').isUppercase(),
+    check('usuario', 'El usuario debe estar solo en mayúsculas').isUppercase(),
     check('usuario', 'Máximo de 15 carácteres').isLength({ max: 15 }),
     // Validaciones de contraseña
     check('contrasena', 'La contraseña es obligatoria').not().isEmpty(),
@@ -41,7 +41,7 @@ router.get('/revalidar', [
 router.post('/generar-correo-recuperacion', [
     // Validaciones de usuario
     check('usuario', 'El usuario es obligatorio').not().isEmpty(),
-    check('usuario', 'Usuario debe estar en Mayúsculas').isUppercase(),
+    check('usuario', 'El usuario debe estar solo en mayúsculas').isUppercase(),
     check('usuario', 'Máximo de 15 carácteres').isLength({ max: 15 }),
 ], generarCorreoRecuperacion)
 
@@ -58,7 +58,7 @@ router.get('/validar-token-pregunta/:token', [
 router.post('/buscar/username-password', [
     // Validaciones de usuario
     check('usuario', 'El usuario es obligatorio').not().isEmpty(),
-    check('usuario', 'Usuario debe estar en Mayúsculas').isUppercase(),
+    check('usuario', 'El usuario debe estar solo en mayúsculas').isUppercase(),
     check('usuario', 'Máximo de 15 carácteres').isLength({ max: 15 }),
 ], usuarioPorUsernameRecovery)
 

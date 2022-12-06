@@ -30,7 +30,7 @@ router.post('/', [
     existeRol,
     // Validaciones de Descripción
     check('descripcion', 'La descripción es obligatoria').not().isEmpty(),
-    check('descripcion', 'La descripción debe estar en mayúscula').isUppercase(),
+    check('descripcion', 'La descripción debe estar solo en mayúscula').isUppercase(),
     check('descripcion', 'Máximo de caracteres: 100').isLength({ max: 100 }),
     validarCampos
 ], postRol);
@@ -41,7 +41,7 @@ router.put('/:id_rol', [
     check('rol', 'Rol debe estar en mayúscula').isUppercase(),
     check('rol', 'Máximo de caracteres: 30').isLength({ max: 30 }),
     // Validaciones de Descripción
-    check('descripcion', 'La descripción debe estar en mayúscula').isUppercase(),
+    check('descripcion', 'La descripción debe estar solo en mayúscula').isUppercase(),
     check('descripcion', 'Máximo de caracteres: 100').isLength({ max: 100 }),
     existenciaRolParaPut,
     validarCampos
@@ -49,7 +49,7 @@ router.put('/:id_rol', [
 
 router.delete('/:id_rol', [
     // Validar existencia
-    check('quienElimina', 'El id del usuario es obligatorio').not().isEmpty(),
+    check('quienElimina', 'El usuario que elimina es obligatorio').not().isEmpty(),
     noExisteRolPorId,
     validarCampos
 ], DeleteRol);

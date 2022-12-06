@@ -16,8 +16,8 @@ router.get('/:id_insumo', getInsumo);
 router.post('/', [
     //Validaciones para el nombre del insumo
     check("nombre", "El nombre de insumo es obligatorio").not().isEmpty(), 
-    check("nombre", "El nombre sólo permite letras").isAlpha("es-ES", {ignore: ' '}),
-    check("nombre", 'El nombre debe estar en mayúscula').isUppercase(),
+    check("nombre", "El nombre solo permite letras").isAlpha("es-ES", {ignore: ' '}),
+    check("nombre", 'El nombre debe estar solo en mayúscula').isUppercase(),
     check("nombre", "No se permite más de un espacio en blanco entre palabras").custom(validarDobleEspacio),
     //Obliga a escribir la unidad de medida del insumo
     check("id_unidad", "La unidad de medida es obligatoria").not().isEmpty(), 
@@ -35,8 +35,8 @@ router.post('/', [
 router.put('/:id_insumo', [
     //Validaciones para el nombre del insumo
     check("nombre", "El nombre de insumo es obligatorio").not().isEmpty(), 
-    check("nombre", "El nombre sólo permite letras").isAlpha("es-ES", {ignore: ' '}),
-    check("nombre", 'El nombre debe estar en mayúscula').isUppercase(),
+    check("nombre", "El nombre solo permite letras").isAlpha("es-ES", {ignore: ' '}),
+    check("nombre", 'El nombre debe estar solo en mayúscula').isUppercase(),
     check("nombre", "No se permite más de un espacio en blanco entre palabras").custom(validarDobleEspacio),
     //Obliga a escribir la unidad de medida del insumo
     check("id_unidad", "La unidad de medida es obligatoria").not().isEmpty(), 

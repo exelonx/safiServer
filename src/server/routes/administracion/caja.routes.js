@@ -29,7 +29,7 @@ router.put('/:id', [
 
 router.delete('/:id', [
     // Validar existencia
-    check('quienElimina', 'El id del usuario es obligatorio').not().isEmpty(),
+    check('quienElimina', 'El usuario que elimina es obligatorio').not().isEmpty(),
     validarCampos
 ], deleteCaja);
 

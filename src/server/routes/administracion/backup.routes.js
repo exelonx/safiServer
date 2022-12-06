@@ -13,7 +13,7 @@ router.get('/', getBackup);
 router.get('/validar-conexion', validarConexion)
 
 router.post('/subir',[
-  check("ubicacion", "la ubicacion del backup sólo permite letras").if(body('ubicacion').exists()).if(body('ubicaciono').not().equals('')).isAlpha("es-ES", {ignore: '/'}),
+  check("ubicacion", "la ubicación del backup solo permite letras").if(body('ubicacion').exists()).if(body('ubicaciono').not().equals('')).isAlpha("es-ES", {ignore: '/'}),
   validarCampos
 ], postBackup)
 

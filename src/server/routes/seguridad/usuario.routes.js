@@ -41,11 +41,11 @@ router.post('/registro', [
     check('usuario', 'No se permite espacios en blanco en el usuario').custom(validarEspacio),
     // Validaciones de nombre de usuario
     check('nombre_usuario', 'El nombre de usuario es obligatorio').not().isEmpty(),
-    check('nombre_usuario', 'El nombre de usuario debe estar en mayúscula').isUppercase(),
+    check('nombre_usuario', 'El nombre de usuario debe estar solo en mayúscula').isUppercase(),
     validarEspaciosUsuario,
     // validaciones de correo
     check('correo', 'El correo es obligatorio').not().isEmpty(),
-    check('correo', 'El correo no es valido').isEmail(),
+    check('correo', 'El correo no es válido').isEmail(),
     check('correo').custom(emailExistente),
     // Validar contraseña
     existeUsuario,
@@ -64,11 +64,11 @@ router.post('/nuevo-usuario', [
     // Validaciones de nombre de usuario
     check('nombre_usuario', 'El nombre de usuario es obligatorio').not().isEmpty(),
     check('nombre_usuario', 'El nombre de usuario debe estar en mayúscula').isUppercase(),
-    check('nombre_usuario', 'El nombre de usuario debe ser letras').isAlpha('es-ES', {ignore: ' '}),
+    check('nombre_usuario', 'El nombre de usuario debe ser solo letras').isAlpha('es-ES', {ignore: ' '}),
     validarEspaciosUsuario,
     // validaciones de correo
     check('correo', 'El correo es obligatorio').not().isEmpty(),
-    check('correo', 'El correo no es valido').isEmail(),
+    check('correo', 'El correo no es válido').isEmail(),
     check('correo').custom(emailExistente),
     check('id_rol', 'El rol es obligatorio').not().isEmpty(),
     // Validar contraseña
@@ -103,7 +103,7 @@ router.put('/actualizar/:id_usuario', [
         validarEspaciosUsuario,
         check('nombre_usuario', 'El nombre de usuario debe ser letras').if(body('nombre_usuario').exists()).if(body('nombre_usuario').not().equals('')).isAlpha('es-ES', {ignore: ' '}),
         // validaciones de correo
-        check('correo', 'El correo no es valido').if(body('correo').exists()).if(body('correo').not().equals('')).isEmail(),
+        check('correo', 'El correo no es válido').if(body('correo').exists()).if(body('correo').not().equals('')).isEmail(),
         emailExistenteUpdate,
         // Validar contraseña
         existeUsuarioUpdated,

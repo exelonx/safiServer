@@ -20,10 +20,10 @@ router.get('/pedido/detalle/:id_pedido', getDetalleDelPedido)
 router.get('/pedido/detalle/un/:id_detalle', getUnDetalleDelPedido)
 
 router.post('/', [
-    check('nombre', 'El nombre debe ir en mayúscula').isUppercase(),
+    check('nombre', 'El nombre debe ir solo en mayúscula').isUppercase(),
     check('nombre', 'El nombre solo acepta letras').isAlpha('es-ES', {ignore: ' '}),
     check('nombre', 'Solo se permite 1 espacio entre palabras').custom(validarDobleEspacio),
-    check('informacion', 'La información debe ir en mayúscula').isUppercase(),
+    check('informacion', 'La información debe ir solo en mayúscula').isUppercase(),
     check('informacion', 'La información solo acepta letras y números').if(body('informacion').exists()).if(body('informacion').not().equals('')).isAlpha('es-ES', {ignore: ' 1234567890'}),
     check('informacion', 'Solo se permite 1 espacio entre palabras').custom(validarDobleEspacio),
     validarCampos

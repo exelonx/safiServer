@@ -33,10 +33,10 @@ router.get('/pregunta-faltante/:id_usuario', getPreguntasFaltantes)
 router.post('/', [
     // Validaciones de usuarios y preguntas
     check('id_pregunta', 'La pregunta es obligatoria').not().isEmpty(),
-    check('id_usuario', 'El usuario es obligatoria').not().isEmpty(),
+    check('id_usuario', 'El usuario es obligatorio').not().isEmpty(),
     // Validaciones de respuesta
-    check('respuesta', 'La pregunta es obligatoria').not().isEmpty(),
-    check('respuesta', 'La pregunta debe estar en Mayúsculas').isUppercase(),
+    check('respuesta', 'La respuesta es obligatoria').not().isEmpty(),
+    check('respuesta', 'La respuesta debe estar en Mayúsculas').isUppercase(),
     validarCampos
 ], postRespuesta);
 
@@ -48,8 +48,8 @@ router.put('/:id_respuesta', [
     // Validaciones de preguntas
     check('id_pregunta', 'La pregunta es obligatoria').not().isEmpty(),
     // Validaciones de respuesta
-    check('respuesta', 'La pregunta es obligatoria').not().isEmpty(),
-    check('respuesta', 'La pregunta debe estar en Mayúsculas').isUppercase(),
+    check('respuesta', 'La respuesta es obligatoria').not().isEmpty(),
+    check('respuesta', 'La respuesta debe estar en Mayúsculas').isUppercase(),
     check('respuesta', 'Máximo de caracteres: 100').isLength({ max: 100 }),
     validarCampos
 ], putRespuesta);

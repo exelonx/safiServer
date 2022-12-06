@@ -17,9 +17,9 @@ router.post('/',[
     check('id_usuario', ' El ID es obligatorio').not().isEmpty(),
     check('nombre_catalogo', 'El Catálogo es obligatorio').not().isEmpty(),
     check('nombre_catalogo', 'Solo se permite texto').isAlpha('es-ES', {ignore: ' '}),
-    check('nombre_catalogo', 'El nombre del Catálogo debe estar en mayúscula').isUppercase(),
+    check('nombre_catalogo', 'El nombre del Catálogo debe estar solo en mayúscula').isUppercase(),
     check("nombre_catalogo", "No se permite más de un espacio en blanco entre palabras").custom(validarDobleEspacio),
-    check('nombre_catalogo', 'Máximo de caracteres: 100').isLength({ max: 100 }),
+    check('nombre_catalogo', 'Máximo de carácteres: 100').isLength({ max: 100 }),
     existeCatalogo,
     validarCampos
 
@@ -28,9 +28,9 @@ router.post('/',[
 router.put('/editar-catalogo/:id',[
 
     check('nombre_catalogo', 'El nombre del catálogo deben ser solo letras').if(body('nombre_catalogo').exists()).if(body('nombre_catalogo').not().equals('')).isAlpha('es-ES', {ignore: ' '}),
-    check('nombre_catalogo', 'El nombre del Catálogo debe estar en mayúscula').isUppercase(),
+    check('nombre_catalogo', 'El nombre del Catálogo debe estar solo en mayúscula').isUppercase(),
     check("nombre_catalogo", "No se permite más de un espacio en blanco entre palabras").custom(validarDobleEspacio),
-    check('nombre_catalogo', 'Máximo de caracteres: 100').isLength({ max: 100 }),
+    check('nombre_catalogo', 'Máximo de carácteres: 100').isLength({ max: 100 }),
     noExisteCatalogoPorId,
     existeCatalogo,
     validarCampos
