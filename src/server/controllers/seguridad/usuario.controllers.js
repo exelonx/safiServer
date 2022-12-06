@@ -996,7 +996,7 @@ const crearUsuarioMantenimiento = async (req = request, res = response) => {
                 titulo: '¡Bienvenido a Dr. Buger, su cuenta ha sido <strong>creada</strong>!',
                 contenido: `Usuario: <strong>${usuario}</strong><br>
                 Nombre del usuario: <strong>${nombre_usuario}</strong><br><br>
-                Accede al siguiente enlace para iniciar sesión: <a href=http://localhost:4200/auth/login/>Iniciar Sesión</a>`
+                Accede al siguiente enlace para iniciar sesión: <a href=${process.env.DOMINIO_PAG}/>auth/login/>Iniciar Sesión</a>`
             }
 	    }, (err) => {
             if(err) { console.log( err ) };
