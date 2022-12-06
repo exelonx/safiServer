@@ -3,9 +3,7 @@ const { check, body } = require('express-validator');
 const { getInsumos, getInsumo, postInsumo, deleteInsumo, putInsumo } = require('../../controllers/inventario/insumo.controllers');
 const { getReporteInsumo } = require('../../controllers/inventario/reporteria/insumo.report.controller');
 
-const { validarCampos, validarEspacio, validarDobleEspacio } = require('../../middlewares');
-const { validarEspaciosProveedor } = require('../../middlewares/validaciones-proveedores');
-const { existeProveedor, noExisteProveedorPorId } = require('../../middlewares/validar-proveedor-existente');
+const { validarCampos, validarDobleEspacio } = require('../../middlewares');
 
 const router = Router();
 

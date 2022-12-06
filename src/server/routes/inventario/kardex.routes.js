@@ -1,5 +1,4 @@
 const { Router } = require('express');
-const { check, body } = require('express-validator');
 const { getKardex, validarIdInsumoKardex, getNombreInsumo } = require('../../controllers/inventario/kardex.controllers');
 const { getReporteKardex } = require('../../controllers/inventario/reporteria/kardex.report.controller');
 

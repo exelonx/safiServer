@@ -2,7 +2,7 @@ const { response, request } = require("express");
 const bcrypt = require('bcryptjs');
 const { Op } = require("sequelize");
 
-const Usuario = require("../models/seguridad/Usuario");
+const Usuario = require("../models/seguridad/usuario");
 const { eventBitacora } = require("../helpers/event-bitacora");
 
 const existeEmail = async( req = request, res = response, next ) => {

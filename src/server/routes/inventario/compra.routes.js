@@ -1,5 +1,4 @@
 const { Router } = require('express');
-const { check, body } = require('express-validator');
 const { getCompras, postCompra, getCompra, putAddInsumoCompraExistente, putMasInsumosEnDetalle, deleteUnDetalle, putNombreProveedor, anularCompra, imprimirFactura } = require('../../controllers/inventario/compra.controllers');
 const { getReporteCompraInsumos } = require('../../controllers/inventario/reporteria/compra.report.controller');
 const { getReporteDetalleCompra } = require('../../controllers/inventario/reporteria/detalle_compra.report.controller');

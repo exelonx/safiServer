@@ -1,7 +1,5 @@
 const { Router } = require('express');
-const { check, body } = require('express-validator');
 const { getInsumoProducto, getInsumoProductos, getInsumosProducto } = require('../../controllers/inventario/insumo-producto.controllers');
-const { getReporteDescuento } = require('../../controllers/pedido/reporteria/descuento.report.controller');
 
 const router = Router();
 
