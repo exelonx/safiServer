@@ -270,7 +270,7 @@ const generarCorreoRecuperacion = async(req = request, res = response) => {
             titulo: 'Enlace de recuperación de <strong>contraseña</strong>',
             contenido: `El siguiente enlace lo redirigirá al sitio para recuperar su contraseña.<br>
             haga clic sobre el enlace o péguelo en su navegador para completar el proceso de recuperación: 
-            <a href="${process.env.DOMINIO_PAG}/auth/cambio-contrasena/${token}">Recuperar contraseña</a><br><br>
+            <a href="${process.env.DOMINIO_PAG}auth/cambio-contrasena/${token}">Recuperar contraseña</a><br><br>
             <span style="font-size: 12px;">El enlace expirará en ${duracionTokenPass.VALOR}.</span>`
         }
 	}, (err) => {
