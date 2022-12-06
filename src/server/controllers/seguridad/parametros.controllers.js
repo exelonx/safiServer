@@ -5,7 +5,7 @@ const { eventBitacora } = require('../../helpers/event-bitacora');
 
 const Parametro = require('../../models/seguridad/parametro');
 const ViewParametro = require('../../models/seguridad/sql-vistas/view-parametro');
-const Usuarios = require('../../models/seguridad/Usuario');
+const Usuarios = require('../../models/seguridad/usuario');
 
 // Llamar todas los parametros
 const getParametros = async (req = request, res = response) => {

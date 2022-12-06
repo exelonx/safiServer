@@ -6,12 +6,12 @@ const { red } = require('colors');
 
 const PreguntaUsuario = require('../../models/seguridad/pregunta-usuario');
 const ViewPreguntaUsuario = require('../../models/seguridad/sql-vistas/view-pregunta-usuario');
-const Usuarios = require('../../models/seguridad/Usuario');
-const Parametros = require('../../models/seguridad/Parametro');
+const Usuarios = require('../../models/seguridad/usuario');
+const Parametros = require('../../models/seguridad/parametro');
 
 const { eventBitacora } = require('../../helpers/event-bitacora');
 const { crearTransporteSMTP } = require('../../helpers/nodemailer');
-const Parametro = require('../../models/seguridad/Parametro');
+const Parametro = require('../../models/seguridad/parametro');
 
 
 // Llamar todas las preguntas de los usuarios paginadas

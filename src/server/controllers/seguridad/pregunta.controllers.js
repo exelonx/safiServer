@@ -3,7 +3,7 @@ const { Op, ForeignKeyConstraintError } = require("sequelize");
 const { eventBitacora } = require('../../helpers/event-bitacora');
 const Parametro = require('../../models/seguridad/parametro');
 
-const Pregunta = require('../../models/seguridad/Pregunta');
+const Pregunta = require('../../models/seguridad/pregunta');
 
 // Llamar todas las preguntas paginadas
 const getPreguntas = async (req = request, res = response) => {

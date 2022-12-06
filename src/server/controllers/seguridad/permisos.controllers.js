@@ -9,7 +9,7 @@ const Roles = require("../../models/seguridad/rol");
 const Permiso = require("../../models/seguridad/permiso");
 const Parametro = require("../../models/seguridad/parametro");
 const { eventBitacora } = require("../../helpers/event-bitacora");
-const Usuarios = require("../../models/seguridad/Usuario");
+const Usuarios = require("../../models/seguridad/usuario");
 
 const validarPermiso = async (req = request, res = response) => {
   let { pantalla } = req.params
