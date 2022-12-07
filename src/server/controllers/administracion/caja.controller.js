@@ -64,7 +64,7 @@ const getCajas = async (req = request, res = response) => {
         });
 
         // Guardar evento
-        if(desde == 0) {
+        if(fechaFinal !== "" && fechaInicial !== "") {
             eventBitacora(new Date, quienBusco, 26, 'CONSULTA', `SE BUSCÓ LAS CAJAS DE LA FECHA'${cajas.FECHA_APERTURA}'`);
         }
 
