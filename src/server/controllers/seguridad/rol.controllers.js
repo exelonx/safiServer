@@ -171,11 +171,12 @@ const postRol = async (req = request, res = response) => {
 
     //------------------ CREAR PERMISOS DE NOTIFICACIONES -----------------------
     const tipoNotificacion = await TipoNotificacion.findAll();
+
     // Por cada tipo de notificación, crear un permiso
     for await (let tipo of tipoNotificacion) {
       await PermisoNotificacion.create({
         ID_ROL: instanciaRol.ID_ROL,
-        ID_TIPO_NOTIFICACION: tipo.ID_OBJETO,
+        ID_TIPO_NOTIFICACION: tipo.id,
         RECIBIR_NOTIFICACION: false,
         CREADO_POR: id_usuario,
         MODIFICADO_POR: id_usuario,
