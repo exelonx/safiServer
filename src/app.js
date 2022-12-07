@@ -10,7 +10,7 @@
 	*	Adoniss Guillermo Ponce García      - adonisponce230016@gmail.com / +504 3257-4414	  *			                                                                                    *
 	*	                                                                                      *
     *   Fecha de creación: 14/09/2022									                      *
-	*	Última modificación: 16/09/2022					                                      * 
+	*	Última modificación: 7/12/2022					                                      * 
 	*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*
 */
 
