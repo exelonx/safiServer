@@ -29,9 +29,18 @@ const getInformaciónFactura = async (req = request, res = response) => {
     try {
 
         // Traer CAI activo
-        const cai = await ViewSar.findAll();
+        let cai = await ViewSar.findAll();
 
-        console.log(cai.NUMERO_ACTUAL == cai.RANGO_MAXIMO)
+        if(cai.length > 0) {
+            // Ver si existe una factura con el número máximo del cai
+            console.log(cai[0].RANGO_MAXIMO)
+            const numActual = await Facturacion.findOne({where: {NUM_FACTURA: cai[0].RANGO_MAXIMO}})
+            console.log(numActual)
+            // Si existe, mandar vacio
+            if(numActual) {
+                cai = [];
+            }
+        }
         
         // Traer Pedido
         const pedido = await ViewPedido.findByPk(id_pedido)
@@ -132,24 +141,37 @@ const facturar = async (req = request, res = response) => {
     
         // Actualizar el CAI
         const cai = await ViewSar.findOne();
-
-        // SI EXISTE CAI
         if(cai) {
+            // Ver si existe una factura con el número máximo del cai
+            const numActual = await Facturacion.findOne({where: {NUM_FACTURA: cai.RANGO_MAXIMO}})
+            // SI EXISTE CAI
+            if(!numActual) {
 
-            // Actualizar 
-            if(conCAI) {
-        
-                // Actualizar el CAI
-                const cai = await ViewSar.findOne();
-                let nuevoCai = parseInt(cai.NUMERO_ACTUAL.substring(11))
-                nuevoCai++;
-                await cai.update({
-                    NUMERO_ACTUAL: cai.NUMERO_ACTUAL.substring(0, cai.NUMERO_ACTUAL.length - nuevoCai.toString().length) + nuevoCai
-                })
-        
+                // Actualizar 
+                if(conCAI) {
+            
+                    // Actualizar el CAI
+                    const cai = await ViewSar.findOne();
+                    console.log(cai)
+                    let nuevoCai = parseInt(cai.NUMERO_ACTUAL.substring(11))
+                    let rangoMaximo = parseInt(cai.RANGO_MAXIMO.substring(11))
+
+                    if(rangoMaximo !== nuevoCai) {  // Verificar si son el mismo rango, si son el mismo rango, no aumentar
+
+                        nuevoCai++;
+                        await cai.update({
+                            NUMERO_ACTUAL: cai.NUMERO_ACTUAL.substring(0, cai.NUMERO_ACTUAL.length - nuevoCai.toString().length) + nuevoCai
+                        })
+
+                    }
+            
+                }
+
             }
 
         }
+
+        
     
         let clienteNuevoNuevo = {};
         if(cliente != "") {
@@ -338,6 +360,7 @@ const imprimirFacturaPedido = async (req = request, res = response) => {
 
         const pdf = await pagina.pdf({
             width: '302px',
+            height: '2000px',
             printBackground: true,
         })
 

@@ -30,7 +30,7 @@ const getReporteCombo = async (req = request, res = response) => {
                 }]
             }
         })
-
+console.log(combo)
 
         const comboMapped = combo.map((combos) => {
             return {
@@ -39,6 +39,8 @@ const getReporteCombo = async (req = request, res = response) => {
                 CANTIDAD: combos.CANTIDAD
             }
         })
+
+        console.log(comboMapped)
 
         const content = await compilarTemplate('combo', { combos: comboMapped })
 

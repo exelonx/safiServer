@@ -852,7 +852,7 @@ const putEstadoDetalle = async (req = request, res = response) => {
         }
       }
 
-      eventBitacora(new Date, id_usuario, 30, 'ACTUALIZACIÓN', `${detalle.CANTIDAD} ${detalle.NOMBRE_PRODUCTO} HA ACTUALIZADO DE ESTADO`);
+      eventBitacora(new Date, id_usuario, 30, 'ACTUALIZACIÓN', `${detalle.CANTIDAD} ${detalleVista.NOMBRE_PRODUCTO} HA ACTUALIZADO DE ESTADO`);
 
       // Instanciar mesa
       const mesa = await Mesa.findByPk(pedido.ID_MESA);
