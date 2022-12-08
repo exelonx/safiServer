@@ -103,7 +103,7 @@ const postInsumo = async (req = request, res = response) => {
     
     try {
 
-        if(cantidad_maxima <= cantidad_minima) {
+        if(parseInt(cantidad_maxima) <= parseInt(cantidad_minima)) {
             return res.status(400).json({
                 ok: false,
                 msg: `La cantidad máxima no puede ser inferior o igual a la mínima.`
@@ -152,7 +152,9 @@ const putInsumo = async (req = request, res = response) => {
 
     try {
 
-        if(cantidad_maxima <= cantidad_minima) {
+        console.log(cantidad_maxima)
+        console.log(cantidad_minima)
+        if(parseInt(cantidad_maxima) <= parseInt(cantidad_minima)) {
             return res.status(400).json({
                 ok: false,
                 msg: `La cantidad máxima no puede ser inferior o igual a la mínima.`
