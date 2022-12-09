@@ -14,6 +14,12 @@ const getReporteUsuario = async (req = request, res = response) => {
 
     try {
 
+        if(!buscar) {
+            buscar = ""
+        }
+
+        console.log(mostrarInactivos)
+        console.log(buscar)
         const buscador = await puppeteer.launch({headless: true});
         const pagina = await buscador.newPage();
 
@@ -33,7 +39,7 @@ const getReporteUsuario = async (req = request, res = response) => {
                 }],
                 [Op.not]: [{
                     // Si se recibe true mostrara los inactivos
-                    ESTADO_USUARIO: `${mostrarInactivos === 'false' ? 'INACTIVO' : ''}` 
+                    ESTADO_USUARIO: `${mostrarInactivos === false ? 'INACTIVO' : ''}` 
                 }]
             }
         })
