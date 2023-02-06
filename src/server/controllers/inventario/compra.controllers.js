@@ -29,7 +29,7 @@ const getCompras = async (req = request, res = response) => {
         }
 
         // Paginación
-        const compras = await ViewCompra.findAll({
+        const comprasSinMapping = await ViewCompra.findAll({
             limit: parseInt(limite, 10),
             offset: parseInt(desde, 10),
             where: {
@@ -41,6 +41,26 @@ const getCompras = async (req = request, res = response) => {
                 }]
             }
         });
+
+        let compras = [];
+        for await(compra of comprasSinMapping) {
+            let detalle = await ViewCompraDetalle.findAll({where: { ID_COMPRA: compra.ID }})
+            compras.push({
+                ID: compra.ID,
+                ID_PROVEEDOR: compra.ID_PROVEEDOR,
+                PROVEEDOR: compra.PROVEEDOR,
+                TOTAL_PAGADO: compra.TOTAL_PAGADO,
+                FECHA: compra.FECHA,
+                ESTADO: compra.ESTADO,
+                CREADO_POR: compra.CREADO_POR,
+                FECHA_CREACION: compra.FECHA_CREACION,
+                MODIFICADO_POR: compra.MODIFICADO_POR,
+                FECHA_MODIFICACION: compra.FECHA_MODIFICACION,
+                detalle
+            })
+        }
+
+        console.log(compras[0].detalle)
 
         // Contar resultados total
         const countCompra = await ViewCompra.count({

@@ -1,7 +1,7 @@
 const { Router } = require('express');
 const { check, body } = require('express-validator');
 const { getCaja, getCajas, getCajaAbierta, postCaja, deleteCaja, putCaja } = require('../../controllers/administracion/caja.controller');
-const { getReporteCaja } = require('../../controllers/administracion/reporteria/caja.report.controller');
+const { getReporteCaja, getReporteCajaCerrada } = require('../../controllers/administracion/reporteria/caja.report.controller');
 
 const { validarCampos } = require('../../middlewares');
 
@@ -34,5 +34,7 @@ router.delete('/:id', [
 ], deleteCaja);
 
 router.post('/reporteria/caja', getReporteCaja);
+
+router.post('/reporteria/caja/cerrada', getReporteCajaCerrada);
 
 module.exports = router;

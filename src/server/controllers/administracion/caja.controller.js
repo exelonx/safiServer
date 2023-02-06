@@ -5,6 +5,7 @@ const Parametro = require("../../models/seguridad/parametro");
 const Caja = require('../../models/pedido/caja');
 const { eventBitacora } = require('../../helpers/event-bitacora');
 const { emit } = require('../../helpers/notificar');
+const ViewFacturacion = require('../../models/facturacion/sql_views/view_facturacion');
 
 // // Llamar todas las cajas paginadas
 const getCajas = async (req = request, res = response) => {
@@ -110,13 +111,59 @@ const getCajaAbierta = async (req = request, res = response) => {
 
     try {
 
+        // === Contadores ===
+        // Método de pago
+        let efectivo = 0;
+        let tarjeta = 0;
+        let transferencia = 0;
+        // Datos generales
+        let mesa = 0;
+        let totalMesa = 0;
+        let mostrador = 0;
+        let totalMostrador = 0;
+        let clientes = 0;
+
         const cajaAbierta = await Caja.findOne({
             where: {
                 ESTADO: '1'
             }
         })
 
-        res.json({ cajaAbierta })
+        // Saldo inicial
+        efectivo = parseFloat(cajaAbierta.SALDO_APERTURA)
+
+        const pedidosCajaAbierta = await ViewFacturacion.findAll({
+            where: {
+                ID_CAJA: cajaAbierta.id
+            }
+        })
+
+        for await(pedido of pedidosCajaAbierta) {
+            // == Métodos de pago ==
+            if( pedido.ID_PAGO === 1 ) {        // Efectivo
+                efectivo += parseFloat(pedido.TOTAL);
+            } else if( pedido.ID_PAGO === 2 ) { // Tarjeta
+                tarjeta += parseFloat(pedido.TOTAL);
+            } else {                            // Transferencia
+                transferencia += parseFloat(pedido.TOTAL);
+            }  
+
+            // Tipo de pedido
+            if( pedido.TIPO === 'MESA' ) {
+                mesa++;
+                //Incrementar total ingresado en tipo mesa
+                totalMesa += parseFloat(pedido.TOTAL)
+            } else {
+                mostrador++;
+                //Incrementar total ingresado en tipo Mostrador
+                totalMostrador += parseFloat(pedido.TOTAL)
+            }
+        }
+
+        // Traer la cantidad de clientes
+        clientes = pedidosCajaAbierta.length;
+
+        res.json({ cajaAbierta, efectivo, tarjeta, transferencia, mesa, mostrador, clientes, totalMesa, totalMostrador })
 
     } catch (error) {
         console.log(error);

@@ -9,6 +9,12 @@ const ViewFacturacion = db.define(`VIEW_MF_FACTURACION`, {
     ID_PEDIDO: {
         type: DataTypes.INTEGER
     },
+    ID_CAJA: {
+        type: DataTypes.INTEGER
+    },
+    TIPO: {
+        type: DataTypes.STRING
+    },
     NOMBRE_USUARIO: {
         type: DataTypes.STRING
     },
