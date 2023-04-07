@@ -17,6 +17,7 @@ const { eventBitacora } = require("../../helpers/event-bitacora");
 const ViewRol = require("../../models/seguridad/sql-vistas/view_rol");
 const hbs = require("nodemailer-express-handlebars");
 const { cargarOpcionesHBS } = require("../../templates/mail/opcionCorreoHbs");
+const Token = require("../../models/seguridad/token");
 
 
 const registrar = async(req = request, res = response) => {
@@ -475,9 +476,20 @@ const putUsuario = async (req = request, res = response) => {
 
 const putContrasena = async (req = request, res = response) => {
     const { id_usuario } = req.params;
-    let { contrasena, confirmContrasena, quienModifico } = req.body;
+    let { contrasena, confirmContrasena, quienModifico, token } = req.body;
 
     try {
+
+        // Validar Token (Opcional)
+        if (token) {
+            const tokendb = await Token.findByPk(token);
+            if(tokendb) {
+                return res.status(401).json({
+                    ok: false,
+                    msg: `Enlace ya usado`
+                })
+            }
+        }
 
         // Validar que hagan match la confirmación de contraseña
         if( contrasena !== confirmContrasena ) {
@@ -537,6 +549,13 @@ const putContrasena = async (req = request, res = response) => {
         await historialContrasena.save();
 
         // ----------------- DEFINIR ESTADO --------------------
+
+        // Inválidar Token (Solo si es enviado)
+        if(token) {
+            Token.create({
+                TOKEN: token
+            })
+        }
 
         // Traer el número de preguntas configuradas del usuario
         const countPreguntasUser = await PreguntaUsuario.count({where: {

@@ -1,5 +1,6 @@
 const { response, request } = require("express");
-const jwt = require('jsonwebtoken')
+const jwt = require('jsonwebtoken');
+const Token = require("../models/seguridad/token");
 
 // Valida Token de login
 const validarJWT = (req, res = response, next) => {
@@ -45,19 +46,18 @@ const validarJWT = (req, res = response, next) => {
 }
 
 // Validar Token de correo
-const validarCorreoJWT = (req = request, res = response, next) => {
+const validarCorreoJWT = async (req = request, res = response, next) => {
 
     // Leer token desde los params
     const { token } = req.params;
 
-    // if ( !token ) {
-    //     return res.status(401).json({
-    //         ok: false,
-    //         msg: 'error en el token'
-    //     })
-    // }
-
     try {
+
+        // Verificar si el Token ya fue usado
+        const tokendb = await Token.findByPk(token);
+        if(tokendb) {
+            throw new Error
+        }
 
         // Usa semilla de correo
         const { uid } = jwt.verify( token, process.env.SEMILLA_SECRETA_JWT_CORREO );

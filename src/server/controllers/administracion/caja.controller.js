@@ -129,6 +129,13 @@ const getCajaAbierta = async (req = request, res = response) => {
             }
         })
 
+        // Confirmar si existe una caja abierta
+        if( !cajaAbierta ) {
+            return res.status(428).json({
+                ok: false
+            })
+        }
+
         // Saldo inicial
         efectivo = parseFloat(cajaAbierta.SALDO_APERTURA)
 

@@ -2,16 +2,16 @@ const { request, response } = require('express');
 
 const { Op } = require('sequelize');
 const mysql = require('mysql2')
+const { exec } = require('child_process');
 
 const { eventBitacora } = require('../../helpers/event-bitacora');
 const { generarBackup, generarBackupParaApi } = require('../../jobs/db-backup');
 const { emit } = require('../../helpers/notificar');
+const path = require('path');
 
 const getBackup = async (req = request, res = response) => {
     
     try {
-
-
         const host = process.env.MYSQL_HOST;
         const user = process.env.SQL_USER;
         const password = process.env.SQL_PASSWORD;
@@ -102,17 +102,35 @@ const postBackup = async (req = request, res = response) => {
         emit('backup', {id_usuario});
 
         // Crear backup de la base de datos
-        const backup = await generarBackupParaApi(nombreBackup, ubicacion);
-
-        res.download(__dirname+ '../../../../server/backups/'+ubicacion + nombreBackup+'.sql',
-        (err) => {
-            if(err) {
-                console.log(err)
-            } else {
-                console.log('success')
+        // const backup = await generarBackupParaApi(nombreBackup, ubicacion);
+        // var child = exec( `mysqldump -u ${process.env.SQL_USER} -p ${process.env.SQL_PASSWORD} ${process.env.ESQUEMA} > src/server/backups/${nombreBackup}.sql`);
+        const cmd = `"${process.env.PATH_W}mysqldump" -u ${process.env.SQL_USER} -p${process.env.SQL_PASSWORD} ${process.env.ESQUEMA} > src/server/backups/${nombreBackup}.sql`
+        exec(cmd, (error, stdout, stderr) => {
+            if (error) {
+              console.log(`Error al exportar la base de datos: ${error.message}`);
+              return;
             }
-        })
-
+            if (stderr) {
+                res.download(
+                  __dirname +
+                    "../../../../server/backups/" +
+                    ubicacion +
+                    nombreBackup +
+                    ".sql",
+                  (err) => {
+                    if (err) {
+                      console.log(err);
+                    } else {
+                      console.log("success");
+                    }
+                  }
+                );
+              console.log(`Error al exportar la base de datos: ${stderr}`);
+              return;
+            }
+            console.log('Backup creado correctamente');
+            
+          });
         
     } catch (error) {
         console.log(error);
@@ -127,10 +145,23 @@ const putBackup = async(req, res = response) =>{
 
     const {backup} = req.files;
 
-    res.json({
-        ok: true,
-        msg: `Backup ${backup.name} actualizado con éxito.`
+    console.log(backup)
+    const uploadPath = path.join( __dirname, "../../../../src/server/backups/", backup.name);
+
+    await backup.mv(uploadPath, (err) => {
+        if( err ){
+            return res.status(500).json({err})
+        }
     })
+
+    const cmd = `"${process.env.PATH_W}mysql" -u ${process.env.SQL_USER} -p${process.env.SQL_PASSWORD} ${process.env.ESQUEMA} < src/server/backups/${backup.name}`
+    exec(cmd, (error, stdout, stderr) => {
+        if (error) {
+          console.error(`Error al restaurar la base de datos: ${error}`);
+          return;
+        }
+        return res.json({msg: `Base de datos restaurada correctamente`})
+      });
 
 }
 

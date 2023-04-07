@@ -17,7 +17,7 @@ router.post('/subir',[
   validarCampos
 ], postBackup)
 
-router.put('/',[
+router.put('/actualizar',[
   validarBackup
 ], putBackup)
 

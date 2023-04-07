@@ -3,7 +3,7 @@ const path = require('path');
 const fs = require("fs");
 const mysqldump = require('mysqldump');
 const { patch } = require('../routes/seguridad/auth.routes');
-
+const exec = require('child_process').exec;
 
 const generarBackup = async() => {
 
