@@ -10,11 +10,12 @@ const localizedFormat = require('dayjs/plugin/localizedFormat');
 const { compilarTemplate } = require('../../../helpers/compilarTemplate');
 const ViewCatalogo = require('../../../models/catalogo-ventas/sql-vistas/view_catalogo');
 const Parametro = require('../../../models/seguridad/parametro');
+const { eventBitacora } = require('../../../helpers/event-bitacora');
 
 // Llamar todas los parametros
 const getReporteCatalogo = async (req = request, res = response) => {
 
-    let { buscar = "" } = req.body
+    let { buscar = "", id_usuario } = req.body
 
     try {
 
@@ -94,7 +95,7 @@ const getReporteCatalogo = async (req = request, res = response) => {
 
         await buscador.close()
         console.log('descargar')
-
+        eventBitacora(new Date, id_usuario, 17, 'REPORTE', `SE GENERÓ UN REPORTE DE GESTIÓN DE CATÁLOGOS`)
         res.contentType("application/pdf");
         res.send(pdf);
 

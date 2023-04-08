@@ -100,7 +100,7 @@ const postBackup = async (req = request, res = response) => {
         }
 
         emit('backup', {id_usuario});
-
+        eventBitacora(new Date, id_usuario, 20, 'RESPALDO', `SE REALIZÓ UNA COPIA DE LA BASE DE DATOS`)
         // Crear backup de la base de datos
         // const backup = await generarBackupParaApi(nombreBackup, ubicacion);
         // var child = exec( `mysqldump -u ${process.env.SQL_USER} -p ${process.env.SQL_PASSWORD} ${process.env.ESQUEMA} > src/server/backups/${nombreBackup}.sql`);
@@ -125,8 +125,8 @@ const postBackup = async (req = request, res = response) => {
                     }
                   }
                 );
-              console.log(`Error al exportar la base de datos: ${stderr}`);
-              return;
+                
+                return;
             }
             console.log('Backup creado correctamente');
             
@@ -144,6 +144,7 @@ const postBackup = async (req = request, res = response) => {
 const putBackup = async(req, res = response) =>{
 
     const {backup} = req.files;
+    const {id_usuario} = req.body;
 
     console.log(backup)
     const uploadPath = path.join( __dirname, "../../../../src/server/backups/", backup.name);
@@ -160,8 +161,10 @@ const putBackup = async(req, res = response) =>{
           console.error(`Error al restaurar la base de datos: ${error}`);
           return;
         }
+        eventBitacora(new Date, id_usuario, 20, 'RESTAURACIÓN', `SE REALIZÓ UNA RESTAURACIÓN DE LA BASE DE DATOS`)
         return res.json({msg: `Base de datos restaurada correctamente`})
       });
+
 
 }
 

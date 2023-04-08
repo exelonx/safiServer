@@ -7,11 +7,12 @@ const Parametro = require('../../../models/seguridad/parametro');
 
 const { compilarTemplate } = require('../../../helpers/compilarTemplate');
 const ViewComboProducto = require('../../../models/catalogo-ventas/sql-vistas/view_comboProducto');
+const { eventBitacora } = require('../../../helpers/event-bitacora');
 
 
 const getReporteCombo = async (req = request, res = response) => {
 
-    let { buscar = "" } = req.body
+    let { buscar = "", id_usuario } = req.body
 
     try {
 
@@ -30,7 +31,6 @@ const getReporteCombo = async (req = request, res = response) => {
                 }]
             }
         })
-console.log(combo)
 
         const comboMapped = combo.map((combos) => {
             return {
@@ -39,8 +39,6 @@ console.log(combo)
                 CANTIDAD: combos.CANTIDAD
             }
         })
-
-        console.log(comboMapped)
 
         const content = await compilarTemplate('combo', { combos: comboMapped })
 
@@ -90,7 +88,7 @@ console.log(combo)
 
         await buscador.close()
         console.log('descargar')
-
+        eventBitacora(new Date, id_usuario, 18, 'REPORTE', `SE GENERÓ UN REPORTE DE GESTIÓN DE PRODUCTOS DE TIPO COMBO`)
         res.contentType("application/pdf");
         res.send(pdf);
     } catch (error) {

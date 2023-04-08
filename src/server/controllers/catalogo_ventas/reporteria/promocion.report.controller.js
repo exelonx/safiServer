@@ -8,11 +8,12 @@ const Parametro = require('../../../models/seguridad/parametro');
 const { compilarTemplate } = require('../../../helpers/compilarTemplate');
 const ViewComboProducto = require('../../../models/catalogo-ventas/sql-vistas/view_comboProducto');
 const ViewPromocionProducto = require('../../../models/catalogo-ventas/sql-vistas/view_promocionProducto');
+const { eventBitacora } = require('../../../helpers/event-bitacora');
 
 
 const getReportePromocion = async (req = request, res = response) => {
 
-    let { buscar = "" } = req.body
+    let { buscar = "", id_usuario } = req.body
 
     try {
 
@@ -89,7 +90,7 @@ const getReportePromocion = async (req = request, res = response) => {
 
         await buscador.close()
         console.log('descargar')
-
+        eventBitacora(new Date, id_usuario, 18, 'REPORTE', `SE GENERÓ UN REPORTE DE GESTIÓN DE PRODUCTOS DE TIPO PROMOCIÓN`)
         res.contentType("application/pdf");
         res.send(pdf);
     } catch (error) {
