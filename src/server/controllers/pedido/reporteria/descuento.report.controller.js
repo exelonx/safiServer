@@ -7,10 +7,11 @@ const viewDescuento = require(`../../../models/pedido/sql-vista/view_descuento`)
 const Parametro = require('../../../models/seguridad/parametro');
 
 const { compilarTemplate } = require('../../../helpers/compilarTemplate');
+const { eventBitacora } = require('../../../helpers/event-bitacora');
 
 const getReporteDescuento = async (req = request, res = response) => {
 
-    let { buscar = "" } = req.body
+    let { buscar = "", id_usuario } = req.body
 
     try {
 
@@ -28,6 +29,9 @@ const getReporteDescuento = async (req = request, res = response) => {
                     ID_TIPO_DESCUENTO: { [Op.like]: `%${buscar.toUpperCase()}%` }
                 }, {
                     ES_PORCENTAJE: { [Op.like]: `%${buscar.toUpperCase()}%` }
+                }],
+                [Op.not]: [{
+                    NOMBRE: `SIN DESCUENTO` 
                 }]
             }
         })
@@ -91,6 +95,8 @@ const getReporteDescuento = async (req = request, res = response) => {
 
         await buscador.close()
         console.log('descargar')
+
+        eventBitacora(new Date, id_usuario, 29, 'REPORTE', `SE GENERÓ UN REPORTE DE GESTIÓN DE DESCUENTOS`);
 
         res.contentType("application/pdf");
         res.send(pdf);
