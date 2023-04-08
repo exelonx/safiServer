@@ -27,6 +27,7 @@ router.post('/', [
     check('rol', 'El Rol es obligatorio').not().isEmpty(),
     check('rol', 'Rol debe estar en mayúscula').isUppercase(),
     check('rol', 'Máximo de caracteres: 30').isLength({ max: 30 }),
+    check('usuario', 'Solo se permiten letras').isAlpha('es-ES'),
     existeRol,
     // Validaciones de Descripción
     check('descripcion', 'La descripción es obligatoria').not().isEmpty(),
@@ -40,6 +41,7 @@ router.put('/:id_rol', [
     noExisteRolPorId,
     check('rol', 'Rol debe estar en mayúscula').isUppercase(),
     check('rol', 'Máximo de caracteres: 30').isLength({ max: 30 }),
+    check('rol', 'Solo se permiten letras').isAlpha('es-ES'),
     // Validaciones de Descripción
     check('descripcion', 'La descripción debe estar solo en mayúscula').isUppercase(),
     check('descripcion', 'Máximo de caracteres: 100').isLength({ max: 100 }),

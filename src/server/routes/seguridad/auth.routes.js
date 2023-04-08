@@ -24,6 +24,7 @@ router.post('/login', [
     check('usuario', 'El usuario es obligatorio').not().isEmpty(),
     check('usuario', 'El usuario debe estar solo en mayúsculas').isUppercase(),
     check('usuario', 'Máximo de 15 carácteres').isLength({ max: 15 }),
+    check('usuario', 'Solo se permiten letras').isAlpha('es-ES'),
     // Validaciones de contraseña
     check('contrasena', 'La contraseña es obligatoria').not().isEmpty(),
     // validarLongitudDBContra,
