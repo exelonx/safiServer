@@ -8,10 +8,11 @@ const Sar = require('../../../models/facturacion/sar');
 // Importar librerias de fechas
 const dayjs = require('dayjs');
 const localizedFormat = require('dayjs/plugin/localizedFormat');
+const { eventBitacora } = require('../../../helpers/event-bitacora');
 
 const getReporteSAR = async (req = request, res = response) => {
 
-    let { buscar = "" } = req.body
+    let { buscar = "", id_usuario } = req.body
 
     try {
 
@@ -73,6 +74,8 @@ const getReporteSAR = async (req = request, res = response) => {
 
         await buscador.close()
         console.log('descargar')
+
+        eventBitacora(new Date, id_usuario, 27, 'REPORTE', `SE GENERÓ UN REPORTE DE CAI`);
 
         res.contentType("application/pdf");
         res.send(pdf);

@@ -11,10 +11,11 @@ const { compilarTemplate } = require('../../helpers/compilarTemplate');
 
 const ViewBitacora = require('../../models/administracion/sql-vistas/view_bitacora');
 const Parametro = require('../../models/seguridad/parametro');
+const { eventBitacora } = require('../../helpers/event-bitacora');
 
 // Llamar todas los parametros
 const getReporteBitacora = async (req = request, res = response) => {
-    let { buscar = "", fechaInicial = "", fechaFinal = "" } = req.body
+    let { buscar = "", fechaInicial = "", fechaFinal = "", id_usuario } = req.body
     let filtrarPorFecha = {}
     
     try {
@@ -109,6 +110,8 @@ const getReporteBitacora = async (req = request, res = response) => {
 
         await buscador.close()
         console.log('descargar')
+
+        eventBitacora(new Date, id_usuario, 11, 'REPORTE', `SE GENERÓ UN REPORTE DE BITÁCORA`);
 
         res.contentType("application/pdf");
         res.send(pdf);

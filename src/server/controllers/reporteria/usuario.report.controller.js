@@ -7,10 +7,11 @@ const ViewUsuario = require (`../../models/seguridad/sql-vistas/view_usuario`);
 const Parametro = require('../../models/seguridad/parametro');
 
 const { compilarTemplate } = require('../../helpers/compilarTemplate');
+const { eventBitacora } = require('../../helpers/event-bitacora');
 
 const getReporteUsuario = async (req = request, res = response) => {
 
-    let { buscar = "", mostrarInactivos = false} = req.body
+    let { buscar = "", mostrarInactivos = false, id_usuario} = req.body
 
     try {
 
@@ -113,6 +114,8 @@ const getReporteUsuario = async (req = request, res = response) => {
 
         await buscador.close()
         console.log('descargar')
+
+        eventBitacora(new Date, id_usuario, 2, 'REPORTE', `SE GENERÓ UN REPORTE DE USUARIOS`);
 
         res.contentType("application/pdf");
         res.send(pdf);

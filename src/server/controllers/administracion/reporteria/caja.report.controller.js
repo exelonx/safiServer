@@ -13,10 +13,11 @@ const Parametro = require('../../../models/seguridad/parametro');
 const { compilarTemplate } = require('../../../helpers/compilarTemplate');
 const Caja = require('../../../models/pedido/caja');
 const ViewFacturacion = require('../../../models/facturacion/sql_views/view_facturacion');
+const { eventBitacora } = require('../../../helpers/event-bitacora');
 
 const getReporteCaja = async (req = request, res = response) => {
 
-    let { buscar = "", fechaInicial = "", fechaFinal = "" } = req.body
+    let { buscar = "", fechaInicial = "", fechaFinal = "", id_usuario } = req.body
     let filtrarPorFecha = {}
 
     try {
@@ -117,6 +118,8 @@ const getReporteCaja = async (req = request, res = response) => {
 
         await buscador.close()
         console.log('descargar')
+
+        eventBitacora(new Date, id_usuario, 26, 'REPORTE', `SE GENERÓ UN REPORTE DE CAJA`);
 
         res.contentType("application/pdf");
         res.send(pdf);
@@ -253,8 +256,11 @@ const getReporteCajaCerrada = async (req = request, res = response) => {
         await buscador.close()
         console.log('descargar')
 
+        eventBitacora(new Date, id_usuario, 26, 'REPORTE', `SE GENERÓ UN REPORTE DE CAJA`);
+        
         res.contentType("application/pdf");
         res.send(pdf);
+
     } catch (error) {
         console.log(error);
         res.status(500).json({
