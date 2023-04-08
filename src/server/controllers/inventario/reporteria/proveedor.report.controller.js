@@ -10,11 +10,12 @@ const localizedFormat = require('dayjs/plugin/localizedFormat');
 const { compilarTemplate } = require('../../../helpers/compilarTemplate');
 const ViewProveedor = require('../../../models/inventario/sql-vista/view-proveedor');
 const Parametro = require('../../../models/seguridad/parametro');
+const { eventBitacora } = require('../../../helpers/event-bitacora');
 
 // Llamar todas los parametros
 const getReporteProveedor = async (req = request, res = response)=>{
 
-    let{buscar = ""} = req.body
+    let{buscar = "", id_usuario} = req.body
 
     try {
         
@@ -96,7 +97,7 @@ const getReporteProveedor = async (req = request, res = response)=>{
 
         await buscador.close()
         console.log('descargar')
-
+        eventBitacora(new Date, id_usuario, 15, 'REPORTE', `SE GENERÓ UN REPORTE DE GESTIÓN DE PROVEEDORES`);
         res.contentType("application/pdf");
         res.send(pdf);
 

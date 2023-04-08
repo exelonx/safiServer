@@ -10,11 +10,12 @@ const localizedFormat = require('dayjs/plugin/localizedFormat');
 const { compilarTemplate } = require('../../../helpers/compilarTemplate');
 const ViewInsumo = require('../../../models/inventario/sql-vista/view-insumo');
 const Parametro = require('../../../models/seguridad/parametro');
+const { eventBitacora } = require('../../../helpers/event-bitacora');
 
 // Llamar todas los parametros
 const getReporteInsumo = async (req = request, res = response)=>{
 
-    let{buscar = ""} = req.body
+    let{buscar = "", id_usuario} = req.body
 
     try {
         
@@ -100,7 +101,7 @@ const getReporteInsumo = async (req = request, res = response)=>{
 
         await buscador.close()
         console.log('descargar')
-
+        eventBitacora(new Date, id_usuario, 21, 'REPORTE', `SE GENERÓ UN REPORTE DE GESTIÓN DE INSUMOS`);
         res.contentType("application/pdf");
         res.send(pdf);
 

@@ -7,10 +7,11 @@ const Unidad = require('../../../models/inventario/unidad')
 const Parametro = require('../../../models/seguridad/parametro');
 
 const { compilarTemplate } = require('../../../helpers/compilarTemplate');
+const { eventBitacora } = require('../../../helpers/event-bitacora');
 
 const getReporteUnidad = async (req = request, res = response) => {
 
-    let { buscar = "" } = req.body
+    let { buscar = "", id_usuario} = req.body
 
     try {
 
@@ -83,7 +84,7 @@ const getReporteUnidad = async (req = request, res = response) => {
 
         await buscador.close()
         console.log('descargar')
-
+        eventBitacora(new Date, id_usuario, 16, 'REPORTE', `SE GENERÓ UN REPORTE DE GESTIÓN DE UNIDADES`);
         res.contentType("application/pdf");
         res.send(pdf);
     } catch (error) {

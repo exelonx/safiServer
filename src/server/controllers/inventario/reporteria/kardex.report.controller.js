@@ -11,10 +11,11 @@ const viewKardex = require('../../../models/inventario/sql-vista/view_kardex')
 const Parametro = require('../../../models/seguridad/parametro');
 
 const { compilarTemplate } = require('../../../helpers/compilarTemplate');
+const { eventBitacora } = require('../../../helpers/event-bitacora');
 
 const getReporteKardex = async (req = request, res = response) => {
 
-    let { buscar = "", fechaInicial = "", fechaFinal = "" } = req.body
+    let { buscar = "", fechaInicial = "", fechaFinal = "", id_usuario } = req.body
     let filtrarPorFecha = {}
 
     try {
@@ -104,7 +105,7 @@ const getReporteKardex = async (req = request, res = response) => {
 
         await buscador.close()
         console.log('descargar')
-
+        eventBitacora(new Date, id_usuario, 22, 'REPORTE', `SE GENERÓ UN REPORTE DE KARDEX`);
         res.contentType("application/pdf");
         res.send(pdf);
     } catch (error) {
