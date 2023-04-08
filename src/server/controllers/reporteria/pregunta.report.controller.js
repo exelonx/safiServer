@@ -2,6 +2,7 @@ const { request, response } = require('express');
 const puppeteer = require('puppeteer');
 const { Op } = require('sequelize');
 const base64 = require('node-base64-image');
+const { eventBitacora } = require('../../helpers/event-bitacora');
 
 const Pregunta = require('../../models/seguridad/pregunta')
 const Parametro = require('../../models/seguridad/parametro');
@@ -16,7 +17,7 @@ const ViewRol = require('../../models/seguridad/sql-vistas/view_rol');
 // Llamar todas los parametros
 const getReportePregunta = async (req = request, res = response) => {
 
-    let { buscar = "" } = req.body
+    let { buscar = "", id_usuario  } = req.body
 
     try {
 
@@ -88,6 +89,8 @@ const getReportePregunta = async (req = request, res = response) => {
 
         await buscador.close()
         console.log('descargar')
+
+        eventBitacora(new Date, id_usuario, 5, 'REPORTE', `SE GENERÓ UN REPORTE DE PREGUNTAS`);
 
         res.contentType("application/pdf");
         res.send(pdf);

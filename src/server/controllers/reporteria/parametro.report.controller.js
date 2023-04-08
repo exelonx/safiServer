@@ -3,6 +3,7 @@ const puppeteer = require('puppeteer');
 const { Op } = require('sequelize');
 const base64 = require('node-base64-image');
 const Parametro = require('../../models/seguridad/parametro');
+const { eventBitacora } = require('../../helpers/event-bitacora');
 
 // Importar librerias de fechas
 const dayjs = require('dayjs');
@@ -14,7 +15,7 @@ const ViewParametro = require('../../models/seguridad/sql-vistas/view-parametro'
 
 // Llamar todas los parametros
 const getReporteParametro = async (req = request, res = response) => {
-    let { buscar = "" } = req.body
+    let { buscar = "", id_usuario } = req.body
 
     try {
 
@@ -99,6 +100,8 @@ const getReporteParametro = async (req = request, res = response) => {
 
         await buscador.close()
         console.log('descargar')
+
+        eventBitacora(new Date, id_usuario, 10, 'REPORTE', `SE GENERÓ UN REPORTE DE PARÁMETROS`);
 
         res.contentType("application/pdf");
         res.send(pdf);

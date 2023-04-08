@@ -2,6 +2,7 @@ const { request, response } = require('express');
 const puppeteer = require('puppeteer');
 const { Op } = require('sequelize');
 const base64 = require('node-base64-image');
+const { eventBitacora } = require('../../helpers/event-bitacora');
 
 // Importar librerias de fechas
 const dayjs = require('dayjs');
@@ -14,7 +15,7 @@ const Parametro = require('../../models/seguridad/parametro');
 // Llamar todas los parametros
 const getReporteRol = async (req = request, res = response)=>{
 
-    let{buscar = ""} = req.body
+    let{buscar = "", id_usuario } = req.body
 
     try {
         
@@ -97,6 +98,8 @@ const getReporteRol = async (req = request, res = response)=>{
 
         await buscador.close()
         console.log('descargar')
+
+        eventBitacora(new Date, id_usuario, 8, 'REPORTE', `SE GENERÓ UN REPORTE DE ROLES`);
 
         res.contentType("application/pdf");
         res.send(pdf);

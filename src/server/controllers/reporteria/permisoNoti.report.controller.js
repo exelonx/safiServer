@@ -2,6 +2,7 @@ const { request, response } = require('express');
 const puppeteer = require('puppeteer');
 const { Op } = require('sequelize');
 const base64 = require('node-base64-image');
+const { eventBitacora } = require('../../helpers/event-bitacora');
 
 const ViewPermisoNotificacion = require(`../../models/notificacion/sql-vistas/view_permiso_notificacion`);
 const Parametro = require('../../models/seguridad/parametro');
@@ -16,7 +17,8 @@ const getReportePermisoNoti = async (req = request, res = response) => {
 
     let { id_rol = "",
         id_tipo = "",
-        mostrarTodos = false } = req.body
+        mostrarTodos = false,
+        id_usuario } = req.body
     let filtrarPorRol = {};
     let filtrarPorTipo = {}, buscar = "";
 
@@ -114,6 +116,8 @@ const getReportePermisoNoti = async (req = request, res = response) => {
 
         await buscador.close()
         console.log('descargar')
+
+        eventBitacora(new Date, id_usuario, 9, 'REPORTE', `SE GENERÓ UN REPORTE DE NOTIFICACIONES DE PERMISOS`);
 
         res.contentType("application/pdf");
         res.send(pdf);
