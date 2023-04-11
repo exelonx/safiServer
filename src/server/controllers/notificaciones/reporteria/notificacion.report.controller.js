@@ -11,10 +11,11 @@ const dayjs = require('dayjs');
 const localizedFormat = require('dayjs/plugin/localizedFormat');
 
 const { compilarTemplate } = require('../../../helpers/compilarTemplate');
+const { eventBitacora } = require('../../../helpers/event-bitacora');
 
 const getReporteNotificacion = async (req = request, res = response) => {
 
-    let  buscar = "";
+    let { buscar = "", id_usuario } = req.body
 
     try {
 
@@ -111,6 +112,8 @@ const getReporteNotificacion = async (req = request, res = response) => {
 
         await buscador.close()
         console.log('descargar')
+
+        eventBitacora(new Date, id_usuario, 19, 'REPORTE', `SE GENERÓ UN REPORTE DE NOTIFICACIONES`);
 
         res.contentType("application/pdf");
         res.send(pdf);
