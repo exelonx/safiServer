@@ -95,11 +95,6 @@ router.put('/cambiar-contrasena/:id_usuario', [
 ], putContrasena)
 
 router.put('/actualizar/:id_usuario', [
-        //Validaciones de usuario
-        check('usuario', 'El usuario debe estar en mayúscula').isUppercase(),
-        check('usuario', 'El máximo de carácteres son de 15').isLength({max: 15}),
-        check('usuario', 'No se permite espacios en blanco en el usuario').custom(validarEspacio),
-        check('usuario', 'El usuario solo puede contener letras').isAlpha('es-ES'),
         // Validaciones de nombre de usuario
         check('nombre_usuario', 'El nombre de usuario debe estar en mayúscula').isUppercase(),
         validarEspaciosUsuario,
